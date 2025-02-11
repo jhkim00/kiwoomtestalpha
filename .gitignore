@@ -1,0 +1,61 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.dll
+*.dylib
+
+# Virtual environment
+venv/
+env/
+*.venv
+*.env
+
+# PyQt5 Designer UI 파일의 중간 컴파일 결과물
+*.pyc
+*.pyo
+*.qrc.py  # PyQt의 .qrc 리소스 파일을 변환한 Python 파일
+*.ui.py   # PyQt의 .ui 파일을 변환한 Python 파일
+*.qmlc    # PyQt의 QML 캐시 파일
+
+# PyQt 빌드 출력 파일
+*.pro.user
+*.pro.user.*
+*.moc
+moc_*.cpp
+moc_*.h
+ui_*.h
+ui_*.cpp
+qrc_*.cpp
+
+# IDE / Editor 설정 파일
+.vscode/
+.idea/
+*.iml
+
+# Logs & Debug files
+logs/
+*.log
+*.bak
+*.swp
+*.swo
+
+# System-specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Compiled Qt UI files
+*.pyc
+*.pyo
+*.pyd
+*.exe
+*.app
+*.out
+*.o
+*.dSYM/
+
+# Qt Creator 설정 파일
+*.autosave
+*.qmake.stash
