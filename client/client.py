@@ -6,14 +6,7 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QThread
 logger = logging.getLogger()
 
 class Client(QObject):
-    """
-    signals for event callback
-    """
-    login_result = pyqtSignal()
-    # login_info_result = pyqtSignal(list)
-    # account_info_result = pyqtSignal(tuple)
-    # stock_list_result = pyqtSignal(list)
-    # stock_basic_info_result = pyqtSignal(tuple)
+    instance = None
 
     class EventQueueWorker(QThread):
         def __init__(self, eventQueue):
@@ -31,30 +24,35 @@ class Client(QObject):
                 if self.eventMap[request]:
                     logger.debug(f"self.eventMap[{request}]: {self.eventMap[request]}")
                     self.eventMap[request](result)
-                else:
-                    logger.debug("??????????????????????")
 
-    def __init__(self,
-                 requestQueue, responseQueue,
-                 eventQueue):
+    def __init__(self):
         super().__init__()
         logger.debug("")
 
-        self.requestQueue = requestQueue
-        self.responseQueue = responseQueue
-        self.eventQueue = eventQueue
+        self.requestQueue = None
+        self.responseQueue = None
+        self.eventQueue = None
 
-        """
-        slots for callback
-        """
-        self._login_result_slot = None
+        self.eventQueueWorker = None
 
-        self.eventQueueWorker = Client.EventQueueWorker(self.eventQueue)
-        self.eventQueueWorker.start()
+    @classmethod
+    def getInstance(cls):
+        if cls.instance is None:
+            cls.instance = Client()
+        return cls.instance
 
     """
     public method
     """
+    def init(self,
+             requestQueue, responseQueue,
+             eventQueue):
+        self.requestQueue = requestQueue
+        self.responseQueue = responseQueue
+        self.eventQueue = eventQueue
+        self.eventQueueWorker = Client.EventQueueWorker(self.eventQueue)
+        self.eventQueueWorker.start()
+
     def login(self, callback):
         logging.debug("")
         self.requestQueue.put(("login",))
@@ -65,7 +63,6 @@ class Client(QObject):
         self.requestQueue.put(("login_info",))
         request, result = self.responseQueue.get()
         logger.debug(f"request: {request}, result:{result}")
-        logger.debug(f"typeof result: {type(result)}")
 
         return result
 
@@ -74,7 +71,6 @@ class Client(QObject):
         self.requestQueue.put(("account_info", {"account_no": account_no, "screen_no": screen_no}))
         request, result = self.responseQueue.get()
         logger.debug(f"request: {request}, result:{result}")
-        logger.debug(f"typeof result: {type(result)}")
 
         return result
 
@@ -83,7 +79,6 @@ class Client(QObject):
         self.requestQueue.put(("stock_list",))
         request, result = self.responseQueue.get()
         logger.debug(f"request: {request}, result:{result}")
-        logger.debug(f"typeof result: {type(result)}")
 
         return result
 
@@ -92,6 +87,5 @@ class Client(QObject):
         self.requestQueue.put(("stock_basic_info", {"stock_no": stock_no, "screen_no": screen_no}))
         request, result = self.responseQueue.get()
         logger.debug(f"request: {request}, result:{result}")
-        logger.debug(f"typeof result: {type(result)}")
 
         return result

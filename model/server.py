@@ -44,11 +44,11 @@ class Server(Process):
 
     async def mainEventLoop(self):
         self.requestHandlerMap = {
-            "login": (self.handle_login, asyncio.Future()),
-            "login_info": (self.handle_login_info, asyncio.Future()),
-            "account_info": (self.handle_account_info, asyncio.Future()),
-            "stock_list": (self.handle_stock_list, asyncio.Future()),
-            "stock_basic_info": (self.handle_stock_basic_info, asyncio.Future())
+            "login": [self.handle_login, asyncio.Future()],
+            "login_info": [self.handle_login_info, asyncio.Future()],
+            "account_info": [self.handle_account_info, asyncio.Future()],
+            "stock_list": [self.handle_stock_list, asyncio.Future()],
+            "stock_basic_info": [self.handle_stock_basic_info, asyncio.Future()]
         }
         self.eventList = ["login"]
         logger.debug("")
@@ -84,6 +84,10 @@ class Server(Process):
                     break
                 self.requestHandlerMap[request][self.funcIndex](*params)
                 result = await self.requestHandlerMap[request][self.futureIndex]
+
+                # regenerate future
+                self.requestHandlerMap[request][self.futureIndex] = asyncio.Future()
+
                 logger.debug(f"result:{result}")
                 if request in self.eventList:
                     self.eventQueue.put((request, result))
