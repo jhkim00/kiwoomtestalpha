@@ -9,14 +9,14 @@ logger = logging.getLogger()
 
 class Kiwoom(QObject):
     instance = None
-    loginCompleted = pyqtSignal()
+    loginCompleted = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
         logger.debug("")
         self.ocx = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
 
-        self.login = False
+        self.loginState = 0
 
         self.ocx.OnEventConnect.connect(self.OnEventConnect)
         self.ocx.OnReceiveTrData.connect(self.OnReceiveTrData)
@@ -36,9 +36,13 @@ class Kiwoom(QObject):
     # callback functions
     #-------------------------------------------------------------------------------------------------------------------
     def OnEventConnect(self, err_code):
-        self.login = True
-        logger.debug(f"login is done err_code: {err_code}")
-        self.loginCompleted.emit()
+        logger.debug(f"err_code: {err_code}")
+        if err_code == 0:
+            self.loginState = 2
+            self.loginCompleted.emit(True)
+        else:
+            self.loginState = 0
+            self.loginCompleted.emit(False)
 
     def OnReceiveTrData(self, screen, rqname, trcode, record, next):
         logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}, next:{next}")
@@ -78,11 +82,12 @@ class Kiwoom(QObject):
     # OpenAPI+ 메서드
     #-------------------------------------------------------------------------------------------------------------------
     def CommConnect(self):
-        logger.debug("")
+        logger.debug(f"loginState:{self.loginState}")
+        if self.loginState != 0:
+            self.loginCompleted.emit(False)
+            return
+        self.loginState = 1
         self.ocx.dynamicCall("CommConnect()")
-        while self.login is False:
-            pythoncom.PumpWaitingMessages()
-            time.sleep(0.1)
 
     def CommRqData(self, rqname, trcode, next, screen):
         """

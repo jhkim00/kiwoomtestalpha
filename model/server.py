@@ -96,9 +96,9 @@ class Server(Process):
             except Exception:
                 pass  # 타임아웃 발생 시 무시하고 다시 대기
 
-    def notifyLoginCompleted(self):
+    def notifyLoginCompleted(self, result: bool):
         logger.debug("")
-        self.requestHandlerMap["login"][self.futureIndex].set_result(True)
+        self.requestHandlerMap["login"][self.futureIndex].set_result(result)
 
     def notifyLoginInfo(self, info):
         logger.debug("")

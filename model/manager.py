@@ -64,10 +64,10 @@ class Manager(QObject):
     """
     slot for kiwoom
     """
-    @pyqtSlot()
-    def onLoginCompleted(self):
-        logger.debug("")
-        self.notifyLoginCompleted()
+    @pyqtSlot(bool)
+    def onLoginCompleted(self, result):
+        logger.debug(f"result:{result}")
+        self.notifyLoginCompleted(result)
 
     """
     tr callbacks
