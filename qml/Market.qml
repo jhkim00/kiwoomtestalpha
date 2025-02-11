@@ -76,6 +76,12 @@ ApplicationWindow {
             listView: favoriteListView
             width: favoriteListView.width
         }
+
+        onItemClicked: {
+            console.trace()
+            console.log('onItemClicked ' + itemData.name + ', '+ itemData.code)
+            marketViewModel.setCurrentStock({'name': itemData.name, 'code': itemData.code})
+        }
     }
 
     TextButton {

@@ -17,7 +17,7 @@ Rectangle {
         Text {
             id: listViewItemTextName
             anchors.verticalCenter: parent.verticalCenter
-            text: modelData['name']
+            text: modelData.name
             font.pixelSize: 16
             color: 'white'
         }
@@ -30,7 +30,7 @@ Rectangle {
         Text {
             id: listViewItemTextCode
             anchors.verticalCenter: parent.verticalCenter
-            text: modelData['code']
+            text: modelData.code
             font.pixelSize: 12
             font.bold: false
             color: 'white'
@@ -42,56 +42,18 @@ Rectangle {
         height: parent.height
         anchors.verticalCenter: parent.verticalCenter
 
-        property var code: modelData['code']
-        property var priceInfo: modelData['priceInfo']
-        property string startPrice: ''
-        property string highPrice: ''
-        property string lowPrice: ''
-        property string currentPrice: ''
-        property string refPrice: ''
-        property string diffSign: ''
-        property string diffPrice: ''
-        property string diffRate: ''
-        property string volume: ''
-        property string volumeRate: ''
-        property string priceColor: 'white'
-
-        onPriceInfoChanged: {
-            priceRow.updatePriceInfo()
-        }
-
-        function updatePriceInfo() {
-            console.log('updatePriceInfo')
-            if (priceInfo !== null && priceInfo !== undefined) {
-                console.log('priceInfo !== null && priceInfo !== undefined code: %1'.arg(modelData['code']))
-                onPriceInfoInfoChanged(priceInfo.info)
-                priceInfo.infoChanged.connect(onPriceInfoInfoChanged)
-            }
-        }
-
-        function onPriceInfoInfoChanged(info) {
-            console.log('onPriceInfoInfoChanged')
-            if (priceRow === null) {
-                console.log('onPriceInfoInfoChanged priceRow === null')
-                return
-            }
-            try {
-                priceRow.startPrice = info['시가']
-                priceRow.highPrice = info['고가']
-                priceRow.lowPrice = info['저가']
-                priceRow.currentPrice = info['현재가']
-                priceRow.refPrice = info['기준가']
-                priceRow.diffSign = info['대비기호']
-                priceRow.diffPrice = info['전일대비']
-                priceRow.diffRate = info['등락율']
-                priceRow.volume = info['거래량']
-                priceRow.volumeRate = info['거래대비']
-
-                priceRow.priceColor = getPriceColor(priceRow.currentPrice, priceRow.refPrice)
-            } catch (e) {
-                console.log('An error occurred: ' + e)
-            }
-        }
+        property var code: modelData.code
+        property string startPrice: modelData.startPrice
+        property string highPrice: modelData.highPrice
+        property string lowPrice: modelData.lowPrice
+        property string currentPrice: modelData.currentPrice
+        property string refPrice: modelData.refPrice
+        property string diffSign: modelData.diffSign
+        property string diffPrice: modelData.diffPrice
+        property string diffRate: modelData.diffRate
+        property string volume: modelData.volume
+        property string volumeRate: modelData.volumeRate
+        property string priceColor: getPriceColor(currentPrice, refPrice)
 
         function numberStrToNonAbsFormated(numberStr) {
             var result = '';
