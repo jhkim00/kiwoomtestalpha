@@ -59,3 +59,6 @@ ehthumbs.db
 # Qt Creator 설정 파일
 *.autosave
 *.qmake.stash
+
+# sqlist db 파일
+*.db

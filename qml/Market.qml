@@ -20,6 +20,7 @@ ApplicationWindow {
     Component.onCompleted: {
         console.log("market component completed")
         marketViewModel.load()
+        favoriteStockViewModel.load()
     }
 
     StockInfo {
@@ -57,6 +58,24 @@ ApplicationWindow {
         width: 200
         height: 200
         model: marketViewModel.searchedStockList
+    }
+
+    ListView {
+        id: favoriteListView
+        anchors.top: stockInfo.bottom
+        anchors.right: parent.right
+        width: parent.width - _stockListView.width
+        height: parent.height - stockInfo.height
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        model: favoriteStockViewModel.stockList
+
+        signal itemClicked(variant itemData)
+
+        delegate: StockPriceDelegate {
+            listView: favoriteListView
+            width: favoriteListView.width
+        }
     }
 
     TextButton {

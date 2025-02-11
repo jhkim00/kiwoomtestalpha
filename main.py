@@ -11,7 +11,7 @@ from PyQt5.QtCore import QCoreApplication
 from model import Server
 from client import Client
 
-from viewmodel import MainViewModel, AccountViewModel, MarketViewModel
+from viewmodel import MainViewModel, AccountViewModel, MarketViewModel, FavoriteStockViewModel
 
 logger = logging.getLogger()
 requestQueue = multiprocessing.Queue()
@@ -52,6 +52,7 @@ if __name__ == "__main__":
     mainViewModel = MainViewModel(engine.rootContext(), app)
     accountViewModel = AccountViewModel(engine.rootContext(), app)
     marketViewModel = MarketViewModel(engine.rootContext(), app)
+    favoriteStockViewModel = FavoriteStockViewModel(engine.rootContext(), app)
 
     engine.load(QUrl.fromLocalFile("qml/Main.qml"))
 

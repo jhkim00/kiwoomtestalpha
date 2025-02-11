@@ -35,7 +35,7 @@ Rectangle {
     property bool isFavorite: false
 
     function updateFavorite() {
-        //isFavorite = favoriteStockViewModel.isFavoriteStock(stockCode)
+        isFavorite = favoriteStockViewModel.isFavoriteStock(stockCode)
     }
 
     function numberStrToNonAbsFormated(numberStr) {
@@ -133,13 +133,13 @@ Rectangle {
         }
     }
 
-    /*Connections {
+    Connections {
         target: favoriteStockViewModel
         function onStockListChanged() {
             console.log('StockInfo.qml onStockListChanged')
             updateFavorite()
         }
-    }*/
+    }
 
     Item {
         id: stockNameAndCode
@@ -186,6 +186,7 @@ Rectangle {
             normalColor: 'grey'
             radius: 10
             onBtnClicked: {
+                console.trace()
                 console.log('%1 button clicked.'.arg(text))
 
                 isFavorite ? favoriteStockViewModel.delete(stockCode)
