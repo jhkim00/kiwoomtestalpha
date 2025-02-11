@@ -57,7 +57,7 @@ ApplicationWindow {
             }
         }
 
-        /*TextButton {
+        TextButton {
             id: btnOpenCurrentPrice
             width: 200
             height: 30
@@ -76,6 +76,6 @@ ApplicationWindow {
                     newWindow.show();
                 }
             }
-        }*/
+        }
     }
 }

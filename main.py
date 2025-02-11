@@ -2,9 +2,8 @@ import sys
 import logging
 import time
 import multiprocessing
-from multiprocessing import Process, Queue
 
-from PyQt5.QtCore import QUrl, QObject, pyqtSlot
+from PyQt5.QtCore import QUrl
 from PyQt5.QtWidgets import *
 from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtCore import QCoreApplication
@@ -12,7 +11,7 @@ from PyQt5.QtCore import QCoreApplication
 from model import Server
 from client import Client
 
-from viewmodel import MainViewModel, AccountViewModel
+from viewmodel import MainViewModel, AccountViewModel, MarketViewModel
 
 logger = logging.getLogger()
 requestQueue = multiprocessing.Queue()
@@ -22,12 +21,6 @@ eventQueue = multiprocessing.Queue()
 def _handleQmlWarnings(warnings):
     for warning in warnings:
         print("QML Warning:", warning.toString())
-
-g_isLogin = False
-def handleLoginEvent(*param):
-    logger.debug("")
-    global g_isLogin
-    g_isLogin = True
 
 def __onExit():
     logger.debug("")
@@ -49,30 +42,6 @@ if __name__ == "__main__":
 
     client = Client().getInstance()
     client.init(requestQueue, responseQueue, eventQueue)
-    # client.login(handleLoginEvent)
-    #
-    # while not g_isLogin:
-    #     logger.debug('waiting login')
-    #     time.sleep(1)
-    #
-    # result = client.login_info()
-    # logger.debug(f"typeof result: {type(result)}")
-    # logger.debug(f"result: {result}")
-    # accountList = result
-    #
-    # result = client.account_info(accountList[0], "1000")
-    # logger.debug(f"typeof result: {type(result)}")
-    # logger.debug(f"result: {result}")
-    #
-    # result = client.stock_list()
-    # logger.debug(f"typeof result: {type(result)}")
-    # logger.debug(f"result: {result}")
-    #
-    # result = client.stock_basic_info("000250", "1000")
-    # logger.debug(f"typeof result: {type(result)}")
-    # logger.debug(f"result: {result}")
-    #
-    # requestQueue.put(("finish",))
 
     # """
     # GUI start
@@ -82,7 +51,7 @@ if __name__ == "__main__":
 
     mainViewModel = MainViewModel(engine.rootContext(), app)
     accountViewModel = AccountViewModel(engine.rootContext(), app)
-    # marketViewModel = MarketViewModel(engine.rootContext(), app)
+    marketViewModel = MarketViewModel(engine.rootContext(), app)
 
     engine.load(QUrl.fromLocalFile("qml/Main.qml"))
 
