@@ -14,7 +14,7 @@ ApplicationWindow {
     maximumHeight: fixedHeight
     title: "Market"
 
-    property var fixedWidth: 840
+    property var fixedWidth: 1200
     property var fixedHeight: 480
 
     Component.onCompleted: {
@@ -22,9 +22,15 @@ ApplicationWindow {
         marketViewModel.load()
     }
 
+    StockInfo {
+        id: stockInfo
+        width: parent.width
+        height: 100
+    }
+
     StockInputField {
         id: stockInputField
-        y: 10
+        anchors.top: stockInfo.bottom
         width: 200
         height: 40
 
@@ -55,7 +61,8 @@ ApplicationWindow {
 
     TextButton {
         id: btnTest
-        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
         width: 200
         height: 30
         text: "test"

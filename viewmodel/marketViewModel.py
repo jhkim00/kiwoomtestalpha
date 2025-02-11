@@ -10,6 +10,8 @@ class MarketViewModel(QObject):
     stockListChanged = pyqtSignal()
     searchedStockListChanged = pyqtSignal()
     currentStockChanged = pyqtSignal()
+    basicInfoChanged = pyqtSignal()
+    priceInfoChanged = pyqtSignal()
 
     def __init__(self, qmlContext, parent=None):
         logger.debug("")
@@ -20,6 +22,30 @@ class MarketViewModel(QObject):
         self._stockList = []
         self._searchedStockList = []
         self._currentStock = None
+
+        self._basicInfo = {
+            '신용비율': '',
+            '시가총액': '',
+            'PER': '',
+            'PBR': '',
+            '매출액': '',
+            '영업이익': '',
+            '당기순이익': '',
+            '유통주식': '',
+            '유통비율': ''
+        }
+        self._priceInfo = {
+            '시가': '',
+            '고가': '',
+            '저가': '',
+            '현재가': '',
+            '기준가': '',
+            '대비기호': '',
+            '전일대비': '',
+            '등락율': '',
+            '거래량': '',
+            '거래대비': ''
+        }
 
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
@@ -49,6 +75,28 @@ class MarketViewModel(QObject):
             logger.debug(f"stock:{val}")
             self._currentStock = val
             self.currentStockChanged.emit()
+
+    @pyqtProperty(QVariant, notify=basicInfoChanged)
+    def basicInfo(self):
+        return self._basicInfo
+
+    @basicInfo.setter
+    def basicInfo(self, info: dict):
+        if self._basicInfo != info:
+            logger.debug(f'basicInfo: {info}')
+            self._basicInfo = info
+            self.basicInfoChanged.emit()
+
+    @pyqtProperty(QVariant)
+    def priceInfo(self):
+        return self._priceInfo
+
+    @priceInfo.setter
+    def priceInfo(self, info: dict):
+        if self._basicInfo != info:
+            logger.debug(f'priceInfo: {info}')
+            self._priceInfo = info
+            self.priceInfoChanged.emit()
 
     """
     method for qml side
@@ -84,3 +132,14 @@ class MarketViewModel(QObject):
                                               list(filter(lambda x: x["name"].lower().find(inputText.lower()) != -1
                                                                     or x["code"].lower().find(inputText.lower()) != -1,
                                                           self.stockList))))
+
+    @pyqtSlot()
+    def getStockBasicInfo(self):
+        logger.debug("")
+        result = Client.getInstance().stock_basic_info(self.currentStock["code"], "1002")
+        if len(result) > 0:
+            self.basicInfo = {key: result[0][key] for key in self.basicInfo if key in result[0]}
+            logger.debug(self.basicInfo)
+
+            self.priceInfo = {key: result[0][key] for key in self.priceInfo if key in result[0]}
+            logger.debug(self.priceInfo)
