@@ -15,6 +15,7 @@ class Manager(QObject):
         self.kw.loginCompleted.connect(self.onLoginCompleted)
 
         self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
+        self.kw.conditionVerCallback = self.__onReceiveConditionVer
 
         self.notifyLoginCompleted = None
         self.notifyLoginInfo = None
@@ -75,6 +76,10 @@ class Manager(QObject):
             opt_type=data["opt_type"]
         )
 
+    async def getConditionLoad(self):
+        logger.debug("")
+        self.kw.GetConditionLoad()
+
     """
     slot for kiwoom
     """
@@ -113,6 +118,15 @@ class Manager(QObject):
             val = self.kw.GetCommRealData(code, int(fid))
             data[fid] = val
         self.notifyStockPriceReal((code, data))
+
+    """
+    etc callbacks
+    """
+    def __onReceiveConditionVer(self, ret, msg):
+        logger.debug(f"ret:{ret}, msg:{msg}")
+        if ret == 1:
+            result = self.kw.GetConditionNameList()
+            logger.debug(f"result:{result}")
 
     """
     private method

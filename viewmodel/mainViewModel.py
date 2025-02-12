@@ -45,6 +45,7 @@ class MainViewModel(QObject):
     def onLoginResult(self, result):
         logger.debug(f"result:{result}")
         self.loginResultSignal.emit(result)
+        Client.getInstance().condition_load()
 
     def __loginResult(self, result):
         self.login_completed = result

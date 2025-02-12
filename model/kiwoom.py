@@ -22,10 +22,12 @@ class Kiwoom(QObject):
         self.ocx.OnReceiveTrData.connect(self.OnReceiveTrData)
         self.ocx.OnReceiveChejanData.connect(self.OnReceiveChejanData)
         self.ocx.OnReceiveRealData.connect(self.OnReceiveRealData)
+        self.ocx.OnReceiveConditionVer.connect(self.OnReceiveConditionVer)
         self.ocx.exception.connect(self.OnException)
 
         self.trCallbacks = {}
         self.realDataCallbacks = {}
+        self.conditionVerCallback = None
 
     @classmethod
     def getInstance(cls):
@@ -82,6 +84,11 @@ class Kiwoom(QObject):
                 if cb:
                     cb(code, rtype, data)
                     break
+
+    def OnReceiveConditionVer(self, ret, msg):
+        logger.debug(f"ret:{ret}, msg:{msg}")
+        if self.conditionVerCallback:
+            self.conditionVerCallback(ret, msg)
 
     def OnException(self, code: int, source: str, desc: str, help_: str) -> None:
         logger.error(f"code:{code}, source:{source}, desc:{desc}, help:{help_}")
@@ -303,6 +310,7 @@ class Kiwoom(QObject):
         return ret
 
     def GetConditionLoad(self):
+        logger.debug("")
         self.ocx.dynamicCall("GetConditionLoad()")
 
     def GetConditionNameList(self):

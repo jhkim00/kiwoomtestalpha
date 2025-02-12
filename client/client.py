@@ -109,6 +109,10 @@ class Client(QObject):
               "opt_type": opt_type})
         )
 
+    def condition_load(self):
+        logging.debug("")
+        self.requestQueue.put(("condition_load",))
+
     def registerEventCallback(self, event: str, callback):
         self.registerCallback(self.eventQueueWorker, event, callback)
 

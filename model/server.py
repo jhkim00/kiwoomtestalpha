@@ -51,6 +51,7 @@ class Server(Process):
             "stock_list": [self.handle_stock_list, asyncio.Future()],
             "stock_basic_info": [self.handle_stock_basic_info, asyncio.Future()],
             "stock_price_real": [self.handle_stock_price_real, None],
+            "condition_load": [self.handle_condition_load, None],
         }
         self.eventList = ["login"]
         logger.debug("")
@@ -154,3 +155,7 @@ class Server(Process):
     async def handle_stock_price_real(self, data):
         logger.debug(data)
         await self.manager.getStockPriceRealData(data)
+
+    async def handle_condition_load(self):
+        logger.debug("")
+        await self.manager.getConditionLoad()
