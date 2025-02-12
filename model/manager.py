@@ -23,6 +23,7 @@ class Manager(QObject):
         self.notifyStockList = None
         self.notifyStockBasicInfo = None
         self.notifyStockPriceReal = None
+        self.notifyConditionList = None
 
         self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
 
@@ -126,7 +127,8 @@ class Manager(QObject):
         logger.debug(f"ret:{ret}, msg:{msg}")
         if ret == 1:
             result = self.kw.GetConditionNameList()
-            logger.debug(f"result:{result}")
+            # logger.debug(f"result:{result}")
+            self.notifyConditionList(result)
 
     """
     private method

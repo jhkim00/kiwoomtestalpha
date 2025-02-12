@@ -20,6 +20,7 @@ class MainViewModel(QObject):
         self.loginResultSignal.connect(self.__loginResult)
 
         Client.getInstance().registerEventCallback("login", self.onLoginResult)
+        Client.getInstance().registerEventCallback("condition_load", self.onConditionList)
 
     @pyqtProperty(bool, notify=login_completedChanged)
     def login_completed(self):
@@ -46,6 +47,9 @@ class MainViewModel(QObject):
         logger.debug(f"result:{result}")
         self.loginResultSignal.emit(result)
         Client.getInstance().condition_load()
+
+    def onConditionList(self, result: list):
+        logger.debug(f"result:{result}")
 
     def __loginResult(self, result):
         self.login_completed = result

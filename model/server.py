@@ -51,9 +51,9 @@ class Server(Process):
             "stock_list": [self.handle_stock_list, asyncio.Future()],
             "stock_basic_info": [self.handle_stock_basic_info, asyncio.Future()],
             "stock_price_real": [self.handle_stock_price_real, None],
-            "condition_load": [self.handle_condition_load, None],
+            "condition_load": [self.handle_condition_load, asyncio.Future()],
         }
-        self.eventList = ["login"]
+        self.eventList = ["login", "condition_load"]
         logger.debug("")
         self.manager = Manager()
         self.manager.notifyLoginCompleted = self.notifyLoginCompleted
@@ -62,13 +62,14 @@ class Server(Process):
         self.manager.notifyStockList = self.notifyStockList
         self.manager.notifyStockBasicInfo = self.notifyStockBasicInfo
         self.manager.notifyStockPriceReal = self.notifyStockPriceReal
+        self.manager.notifyConditionList = self.notifyConditionList
 
-        """COM 메시지 루프와 요청 처리를 하나의 이벤트 루프에서 실행"""
-        # `asyncio.create_task()`를 사용하여 두 개의 태스크를 동시에 실행
+        """ `asyncio.create_task()`를 사용하여 여러 개의 태스크를 동시에 실행"""
         task1 = asyncio.create_task(self.comEventLoop())  # COM 메시지 처리
         task2 = asyncio.create_task(self.processRequests())  # 요청 처리
+        task3 = asyncio.create_task(self.processEvents())  # 이벤트 처리
 
-        await asyncio.gather(task1, task2)  # 두 개의 작업을 동시에 실행
+        await asyncio.gather(task1, task2, task3)  # 여러 개의 작업을 동시에 실행
 
     async def comEventLoop(self):
         """COM 메시지 루프 (무한 루프)"""
@@ -77,33 +78,32 @@ class Server(Process):
             await asyncio.sleep(0.01)  # CPU 점유율 최소화
 
     async def processRequests(self):
-        """요청을 블로킹 대기 후 처리 (multiprocessing.Queue 사용)"""
         while True:
-            try:
-                logger.debug("")
-                loop = asyncio.get_running_loop()
-                request, *params = await loop.run_in_executor(None, self.requestQueue.get)
-                logger.debug(f"request:{request}")
-                if request == "finish":
-                    self.finish = True
-                    break
-                await self.requestHandlerMap[request][self.funcIndex](*params)
-                future = self.requestHandlerMap[request][self.futureIndex]
-                # 실시간 요청은 요청에 대한 future가 없는 구조
-                if not future:
-                    continue
-                result = await future
+            logger.debug("")
+            loop = asyncio.get_running_loop()
+            request, *params = await loop.run_in_executor(None, self.requestQueue.get)
+            logger.debug(f"request:{request}")
+            if request == "finish":
+                self.finish = True
+                break
+            await self.requestHandlerMap[request][self.funcIndex](*params)
 
-                # regenerate future
-                self.requestHandlerMap[request][self.futureIndex] = asyncio.Future()
+    async def processEvents(self):
+        while True:
+            logger.debug("")
+            futures = [x[self.futureIndex] for x in self.requestHandlerMap.values() if x[self.futureIndex] is not None]
+            done, pending = await asyncio.wait(futures, return_when=asyncio.FIRST_COMPLETED)
+            for fut in done:
+                for key in self.requestHandlerMap:
+                    if fut == self.requestHandlerMap[key][self.futureIndex]:
+                        if key in self.eventList:
+                            self.eventQueue.put((key, fut.result()))
+                        else:
+                            self.responseQueue.put((key, fut.result()))
 
-                logger.debug(f"result:{result}")
-                if request in self.eventList:
-                    self.eventQueue.put((request, result))
-                else:
-                    self.responseQueue.put((request, result))
-            except Exception:
-                pass  # 타임아웃 발생 시 무시하고 다시 대기
+                        # regenerate future
+                        self.requestHandlerMap[key][self.futureIndex] = asyncio.Future()
+                        break
 
     def notifyLoginCompleted(self, result: bool):
         logger.debug("")
@@ -128,6 +128,10 @@ class Server(Process):
     def notifyStockPriceReal(self, data):
         logger.debug("")
         self.realDataQueue.put(("stock_price_real", data))
+
+    def notifyConditionList(self, conditionList):
+        logger.debug("")
+        self.requestHandlerMap["condition_load"][self.futureIndex].set_result(conditionList)
 
     """
     request handler

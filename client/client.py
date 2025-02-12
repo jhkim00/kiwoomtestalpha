@@ -17,10 +17,11 @@ class Client(QObject):
 
         def run(self):
             while True:
+                # logger.debug(f".")
                 request, result = self.queue.get()
-                logger.debug(f"request: {request}")
-                logger.debug(f"typeof result: {type(result)}")
-                logger.debug(f"result: {result}")
+                # logger.debug(f"request: {request}")
+                # logger.debug(f"typeof result: {type(result)}")
+                # logger.debug(f"result: {result}")
                 if request in self.callbackMap:
                     callbacks = self.callbackMap[request]
                     if callbacks and len(callbacks) > 0:
@@ -55,7 +56,7 @@ class Client(QObject):
         self.responseQueue = responseQueue
         self.eventQueue = eventQueue
         self.realDataQueue = realDataQueue
-        
+
         self.eventQueueWorker = Client.QueueWorker(self.eventQueue)
         self.eventQueueWorker.start()
         self.realDataQueueWorker = Client.QueueWorker(self.realDataQueue)

@@ -178,7 +178,7 @@ Rectangle {
         id: listViewItemMouseArea
         anchors.fill: parent
         onClicked: {
-            console.log('onClicked %1'.arg(root.color))
+            console.log('StockPriceDelegate.qml onClicked %1'.arg(root.color))
             listView.itemClicked(modelData)
         }
     }
