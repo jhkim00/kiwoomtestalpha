@@ -19,6 +19,8 @@ class FavoriteStockViewModel(QObject):
         self._stockList = []
         self.priceInfoKeys = ['시가', '고가', '저가', '현재가', '기준가', '대비기호', '전일대비', '등락율', '거래량', '거래대비']
 
+        Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
+
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
         return self._stockList
@@ -89,3 +91,19 @@ class FavoriteStockViewModel(QObject):
             if stock.code == code:
                 return True
         return False
+
+    @pyqtSlot(tuple)
+    def __onStockPriceReal(self, data):
+        logger.debug(f"data:{data}")
+        for stock in self._stockList:
+            if data[0] == stock.code:
+                stock.currentPrice = data[1]['10']
+                stock.diffPrice = data[1]['11']
+                stock.diffRate = data[1]['12']
+                stock.volume = data[1]['13']
+                stock.startPrice = data[1]['16']
+                stock.highPrice = data[1]['17']
+                stock.lowPrice = data[1]['18']
+                stock.diffSign = data[1]['25']
+                stock.volumeRate = data[1]['30']
+                break

@@ -27,25 +27,18 @@ class AccountStockInfoModel(QAbstractListModel):
 
         item = self._data[index.row()]
         if role == self.NameRole:
-            logger.debug(f"data:{item['종목명']}")
             return item["종목명"]
         elif role == self.CurrentPriceRole:
-            logger.debug(f"data:{item['현재가']}")
             return item["현재가"]
         elif role == self.BuyPriceRole:
-            logger.debug(f"data:{item['평균단가']}")
             return item["평균단가"]
         elif role == self.ProfitRateRole:
-            logger.debug(f"data:{item['손익율']}")
             return item["손익율"]
         elif role == self.ProfitRole:
-            logger.debug(f"data:{item['손익금액']}")
             return item["손익금액"]
         elif role == self.CountRole:
-            logger.debug(f"data:{item['보유수량']}")
             return item["보유수량"]
         elif role == self.CurrentValueRole:
-            logger.debug(f"data:{item['평가금액']}")
             return item["평가금액"]
 
         return QVariant()

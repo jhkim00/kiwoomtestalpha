@@ -39,8 +39,9 @@ class StockPriceItemData(QObject):
 
     @name.setter
     def name(self, val: str):
-        self._name = val
-        self.nameChanged.emit()
+        if self._name != val:
+            self._name = val
+            self.nameChanged.emit()
 
     @pyqtProperty(str, notify=codeChanged)
     def code(self):
@@ -48,8 +49,9 @@ class StockPriceItemData(QObject):
 
     @code.setter
     def code(self, val: str):
-        self._code = val
-        self.codeChanged.emit()
+        if self._code != val:
+            self._code = val
+            self.codeChanged.emit()
 
     @pyqtProperty(str, notify=startPriceChanged)
     def startPrice(self):
@@ -57,8 +59,9 @@ class StockPriceItemData(QObject):
 
     @startPrice.setter
     def startPrice(self, val: str):
-        self._startPrice = val
-        self.startPriceChanged.emit()
+        if self._startPrice != val:
+            self._startPrice = val
+            self.startPriceChanged.emit()
 
     @pyqtProperty(str, notify=highPriceChanged)
     def highPrice(self):
@@ -66,8 +69,9 @@ class StockPriceItemData(QObject):
 
     @highPrice.setter
     def highPrice(self, val: str):
-        self._highPrice = val
-        self.highPriceChanged.emit()
+        if self._highPrice != val:
+            self._highPrice = val
+            self.highPriceChanged.emit()
 
     @pyqtProperty(str, notify=lowPriceChanged)
     def lowPrice(self):
@@ -75,8 +79,9 @@ class StockPriceItemData(QObject):
 
     @lowPrice.setter
     def lowPrice(self, val: str):
-        self._lowPrice = val
-        self.lowPriceChanged.emit()
+        if self._lowPrice != val:
+            self._lowPrice = val
+            self.lowPriceChanged.emit()
 
     @pyqtProperty(str, notify=currentPriceChanged)
     def currentPrice(self):
@@ -84,8 +89,9 @@ class StockPriceItemData(QObject):
 
     @currentPrice.setter
     def currentPrice(self, val: str):
-        self._currentPrice = val
-        self.currentPriceChanged.emit()
+        if self._currentPrice != val:
+            self._currentPrice = val
+            self.currentPriceChanged.emit()
 
     @pyqtProperty(str, notify=refPriceChanged)
     def refPrice(self):
@@ -93,8 +99,9 @@ class StockPriceItemData(QObject):
 
     @refPrice.setter
     def refPrice(self, val: str):
-        self._refPrice = val
-        self.refPriceChanged.emit()
+        if self._refPrice != val:
+            self._refPrice = val
+            self.refPriceChanged.emit()
 
     @pyqtProperty(str, notify=diffSignChanged)
     def diffSign(self):
@@ -102,8 +109,9 @@ class StockPriceItemData(QObject):
 
     @diffSign.setter
     def diffSign(self, val: str):
-        self._diffSign = val
-        self.diffSignChanged.emit()
+        if self._diffSign != val:
+            self._diffSign = val
+            self.diffSignChanged.emit()
 
     @pyqtProperty(str, notify=diffPriceChanged)
     def diffPrice(self):
@@ -111,8 +119,9 @@ class StockPriceItemData(QObject):
 
     @diffPrice.setter
     def diffPrice(self, val: str):
-        self._diffPrice = val
-        self.diffPriceChanged.emit()
+        if self._diffPrice != val:
+            self._diffPrice = val
+            self.diffPriceChanged.emit()
 
     @pyqtProperty(str, notify=diffRateChanged)
     def diffRate(self):
@@ -120,8 +129,9 @@ class StockPriceItemData(QObject):
 
     @diffRate.setter
     def diffRate(self, val: str):
-        self._diffRate = val
-        self.diffRateChanged.emit()
+        if self._diffRate != val:
+            self._diffRate = val
+            self.diffRateChanged.emit()
 
     @pyqtProperty(str, notify=volumeChanged)
     def volume(self):
@@ -129,8 +139,9 @@ class StockPriceItemData(QObject):
 
     @volume.setter
     def volume(self, val: str):
-        self._volume = val
-        self.volumeChanged.emit()
+        if self._volume != val:
+            self._volume = val
+            self.volumeChanged.emit()
 
     @pyqtProperty(str, notify=volumeRateChanged)
     def volumeRate(self):
@@ -138,8 +149,9 @@ class StockPriceItemData(QObject):
 
     @volumeRate.setter
     def volumeRate(self, val: str):
-        self._volumeRate = val
-        self.volumeRateChanged.emit()
+        if self._volumeRate != val:
+            self._volumeRate = val
+            self.volumeRateChanged.emit()
 
     def __repr__(self):
         str_ = "==StockPriceItemData==\n"

@@ -135,7 +135,7 @@ class Manager(QObject):
                 outDict = {}
                 for key in multi_data_keys:
                     strData = self.kw.GetCommData(trcode, rqname, i, key)
-                    logger.debug(f"{key}:{strData}")
+                    # logger.debug(f"{key}:{strData}")
                     outDict[key] = strData
                 multi_data.append(outDict)
         return single_data, multi_data
