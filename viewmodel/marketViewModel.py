@@ -104,8 +104,7 @@ class MarketViewModel(QObject):
     @pyqtSlot()
     def test(self):
         logger.debug("")
-        result = Client.getInstance().stock_basic_info(self.currentStock["code"], "1002")
-        logger.debug(f"result:{result}")
+        Client.getInstance().stock_price_real([self.currentStock["code"]], "1002", self.__onStockPriceReal)
 
     @pyqtSlot()
     def load(self):
@@ -143,3 +142,19 @@ class MarketViewModel(QObject):
 
             self.priceInfo = {key: result[0][key] for key in self.priceInfo if key in result[0]}
             logger.debug(self.priceInfo)
+
+    @pyqtSlot(tuple)
+    def __onStockPriceReal(self, data):
+        logger.debug(f"data:{data}")
+        if data[0] == self.currentStock["code"]:
+            self._priceInfo['현재가'] = data[1]['10']
+            self._priceInfo['전일대비'] = data[1]['11']
+            self._priceInfo['등락율'] = data[1]['12']
+            self._priceInfo['거래량'] = data[1]['13']
+            self._priceInfo['시가'] = data[1]['16']
+            self._priceInfo['고가'] = data[1]['17']
+            self._priceInfo['저가'] = data[1]['18']
+            self._priceInfo['대비기호'] = data[1]['25']
+            self._priceInfo['거래대비'] = data[1]['30']
+
+            self.priceInfoChanged.emit()

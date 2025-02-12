@@ -18,6 +18,9 @@ class Manager(QObject):
         self.notifyAccountInfo = None
         self.notifyStockList = None
         self.notifyStockBasicInfo = None
+        self.notifyStockPriceReal = None
+
+        self.stock_price_real_data_fid_list = []
 
     @pyqtSlot()
     def commConnect(self):
@@ -61,6 +64,13 @@ class Manager(QObject):
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
         self.kw.CommRqData(rqname="주식기본정보", trcode="opt10001", next=0, screen=data["screen_no"])
 
+    @pyqtSlot(dict)
+    def getStockPriceRealData(self, data):
+        logger.debug("")
+        self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
+        self.stock_price_real_data_fid_list = data["fid_list"]
+        self.kw.SetRealReg(screen=data["screen_no"], code_list=data["code_list"], fid_list=data["fid_list"], opt_type="0")
+
     """
     slot for kiwoom
     """
@@ -88,6 +98,17 @@ class Manager(QObject):
                 '시가', '고가', '저가', '현재가', '기준가', '대비기호', '전일대비', '등락율', '거래량', '거래대비']
             outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys)
             self.notifyStockBasicInfo(outList)
+
+    """
+    real data callbacks
+    """
+    def __onStockPriceReal(self, code, rtype, data):
+        logger.debug("")
+        data = {}
+        for fid in self.stock_price_real_data_fid_list:
+            val = self.kw.GetCommRealData(code, int(fid))
+            data[fid] = val
+        self.notifyStockPriceReal((code, data))
 
     """
     private method

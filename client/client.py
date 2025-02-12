@@ -8,22 +8,22 @@ logger = logging.getLogger()
 class Client(QObject):
     instance = None
 
-    class EventQueueWorker(QThread):
-        def __init__(self, eventQueue):
+    class QueueWorker(QThread):
+        def __init__(self, queue):
             super().__init__()
             logger.debug("")
-            self.eventQueue = eventQueue
-            self.eventMap = {}
+            self.queue = queue
+            self.callbackMap = {}
 
         def run(self):
             while True:
-                request, result = self.eventQueue.get()
+                request, result = self.queue.get()
                 logger.debug(f"request: {request}")
                 logger.debug(f"typeof result: {type(result)}")
                 logger.debug(f"result: {result}")
-                if self.eventMap[request]:
-                    logger.debug(f"self.eventMap[{request}]: {self.eventMap[request]}")
-                    self.eventMap[request](result)
+                if self.callbackMap[request]:
+                    logger.debug(f"self.callbackMap[{request}]: {self.callbackMap[request]}")
+                    self.callbackMap[request](result)    
 
     def __init__(self):
         super().__init__()
@@ -32,8 +32,10 @@ class Client(QObject):
         self.requestQueue = None
         self.responseQueue = None
         self.eventQueue = None
+        self.realDataQueue = None
 
         self.eventQueueWorker = None
+        self.realDataQueueWorker = None
 
     @classmethod
     def getInstance(cls):
@@ -46,17 +48,21 @@ class Client(QObject):
     """
     def init(self,
              requestQueue, responseQueue,
-             eventQueue):
+             eventQueue, realDataQueue):
         self.requestQueue = requestQueue
         self.responseQueue = responseQueue
         self.eventQueue = eventQueue
-        self.eventQueueWorker = Client.EventQueueWorker(self.eventQueue)
+        self.realDataQueue = realDataQueue
+        
+        self.eventQueueWorker = Client.QueueWorker(self.eventQueue)
         self.eventQueueWorker.start()
+        self.realDataQueueWorker = Client.QueueWorker(self.realDataQueue)
+        self.realDataQueueWorker.start()
 
     def login(self, callback):
         logging.debug("")
         self.requestQueue.put(("login",))
-        self.eventQueueWorker.eventMap["login"] = callback
+        self.eventQueueWorker.callbackMap["login"] = callback
 
     def login_info(self):
         logging.debug("")
@@ -89,3 +95,13 @@ class Client(QObject):
         logger.debug(f"request: {request}, result:{result}")
 
         return result
+
+    def stock_price_real(self, code_list, screen_no, callback):
+        logging.debug("")
+        self.requestQueue.put(
+            ("stock_price_real",
+             {"screen_no": screen_no,
+              "code_list": code_list,
+              "fid_list": ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']})
+        )
+        self.realDataQueueWorker.callbackMap["stock_price_real"] = callback

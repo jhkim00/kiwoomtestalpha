@@ -17,6 +17,7 @@ logger = logging.getLogger()
 requestQueue = multiprocessing.Queue()
 responseQueue = multiprocessing.Queue()
 eventQueue = multiprocessing.Queue()
+realDataQueue = multiprocessing.Queue()
 
 def _handleQmlWarnings(warnings):
     for warning in warnings:
@@ -37,11 +38,11 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     app.aboutToQuit.connect(__onExit)
-    server = Server(requestQueue, responseQueue, eventQueue)
+    server = Server(requestQueue, responseQueue, eventQueue, realDataQueue)
     server.start()
 
     client = Client().getInstance()
-    client.init(requestQueue, responseQueue, eventQueue)
+    client.init(requestQueue, responseQueue, eventQueue, realDataQueue)
 
     # """
     # GUI start

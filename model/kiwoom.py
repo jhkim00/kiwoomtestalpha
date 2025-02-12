@@ -25,6 +25,7 @@ class Kiwoom(QObject):
         self.ocx.exception.connect(self.OnException)
 
         self.trCallbacks = {}
+        self.realDataCallbacks = {}
 
     @classmethod
     def getInstance(cls):
@@ -47,6 +48,7 @@ class Kiwoom(QObject):
     def OnReceiveTrData(self, screen, rqname, trcode, record, next):
         logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}, next:{next}")
         logger.debug(f"record:{record}")
+        logger.debug(f"self.trCallbacks:{self.trCallbacks}")
         for key in self.trCallbacks:
             cb = self.trCallbacks[key]
             if cb:
@@ -73,7 +75,13 @@ class Kiwoom(QObject):
             rtype (str): 리얼타입 (주식시세, 주식체결, ...)
             data (str): 실시간 데이터 전문
         """
-        logger.debug("")
+        logger.debug(f"code:{code}, rtype:{rtype}")
+        for key in self.realDataCallbacks:
+            if key == rtype:
+                cb = self.realDataCallbacks[key]
+                if cb:
+                    cb(code, rtype, data)
+                    break
 
     def OnException(self, code: int, source: str, desc: str, help_: str) -> None:
         logger.error(f"code:{code}, source:{source}, desc:{desc}, help:{help_}")

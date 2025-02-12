@@ -16,13 +16,14 @@ class Server(Process):
 
     def __init__(self,
                  requestQueue, responseQueue,
-                 eventQueue):
+                 eventQueue, realDataQueue):
         super().__init__()
         logger.debug("")
 
         self.requestQueue = requestQueue
         self.responseQueue = responseQueue
         self.eventQueue = eventQueue
+        self.realDataQueue = realDataQueue
 
         self.requestHandlerMap = None
         self.eventList = None
@@ -48,7 +49,8 @@ class Server(Process):
             "login_info": [self.handle_login_info, asyncio.Future()],
             "account_info": [self.handle_account_info, asyncio.Future()],
             "stock_list": [self.handle_stock_list, asyncio.Future()],
-            "stock_basic_info": [self.handle_stock_basic_info, asyncio.Future()]
+            "stock_basic_info": [self.handle_stock_basic_info, asyncio.Future()],
+            "stock_price_real": [self.handle_stock_price_real, None],
         }
         self.eventList = ["login"]
         logger.debug("")
@@ -58,6 +60,7 @@ class Server(Process):
         self.manager.notifyAccountInfo = self.notifyAccountInfo
         self.manager.notifyStockList = self.notifyStockList
         self.manager.notifyStockBasicInfo = self.notifyStockBasicInfo
+        self.manager.notifyStockPriceReal = self.notifyStockPriceReal
 
         """COM 메시지 루프와 요청 처리를 하나의 이벤트 루프에서 실행"""
         # `asyncio.create_task()`를 사용하여 두 개의 태스크를 동시에 실행
@@ -77,13 +80,18 @@ class Server(Process):
         while True:
             try:
                 logger.debug("")
-                request, *params = self.requestQueue.get(timeout=5)  # 블로킹 대기
+                loop = asyncio.get_running_loop()
+                request, *params = await loop.run_in_executor(None, self.requestQueue.get)
                 logger.debug(f"request:{request}")
                 if request == "finish":
                     self.finish = True
                     break
                 self.requestHandlerMap[request][self.funcIndex](*params)
-                result = await self.requestHandlerMap[request][self.futureIndex]
+                future = self.requestHandlerMap[request][self.futureIndex]
+                # 실시간 요청은 요청에 대한 future가 없는 구조
+                if not future:
+                    continue
+                result = await future
 
                 # regenerate future
                 self.requestHandlerMap[request][self.futureIndex] = asyncio.Future()
@@ -116,6 +124,10 @@ class Server(Process):
         logger.debug("")
         self.requestHandlerMap["stock_basic_info"][self.futureIndex].set_result(info)
 
+    def notifyStockPriceReal(self, data):
+        logger.debug("")
+        self.realDataQueue.put(("stock_price_real", data))
+
     """
     request handler
     """
@@ -138,3 +150,7 @@ class Server(Process):
     def handle_stock_basic_info(self, data):
         logger.debug(data)
         self.manager.getStockBasicInfo(data)
+
+    def handle_stock_price_real(self, data):
+        logger.debug(data)
+        self.manager.getStockPriceRealData(data)
