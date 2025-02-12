@@ -86,7 +86,7 @@ class Server(Process):
                 if request == "finish":
                     self.finish = True
                     break
-                self.requestHandlerMap[request][self.funcIndex](*params)
+                await self.requestHandlerMap[request][self.funcIndex](*params)
                 future = self.requestHandlerMap[request][self.futureIndex]
                 # 실시간 요청은 요청에 대한 future가 없는 구조
                 if not future:
@@ -131,26 +131,26 @@ class Server(Process):
     """
     request handler
     """
-    def handle_login(self):
+    async def handle_login(self):
         logger.debug("")
-        self.manager.commConnect()
+        await self.manager.commConnect()
 
-    def handle_login_info(self):
+    async def handle_login_info(self):
         logger.debug("")
-        self.manager.getLoginInfo()
+        await self.manager.getLoginInfo()
 
-    def handle_account_info(self, data):
+    async def handle_account_info(self, data):
         logger.debug(data)
-        self.manager.getAccountInfo(data)
+        await self.manager.getAccountInfo(data)
 
-    def handle_stock_list(self):
+    async def handle_stock_list(self):
         logger.debug("")
-        self.manager.getStockList()
+        await self.manager.getStockList()
 
-    def handle_stock_basic_info(self, data):
+    async def handle_stock_basic_info(self, data):
         logger.debug(data)
-        self.manager.getStockBasicInfo(data)
+        await self.manager.getStockBasicInfo(data)
 
-    def handle_stock_price_real(self, data):
+    async def handle_stock_price_real(self, data):
         logger.debug(data)
-        self.manager.getStockPriceRealData(data)
+        await self.manager.getStockPriceRealData(data)

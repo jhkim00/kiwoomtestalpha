@@ -95,6 +95,7 @@ Rectangle {
     Connections {
         target: marketViewModel
         function onCurrentStockChanged() {
+            console.trace()
             console.log("StockInfo.qml onCurrentStockChanged")
             root.stockName = marketViewModel.currentStock['name']
             root.stockCode =  marketViewModel.currentStock['code']

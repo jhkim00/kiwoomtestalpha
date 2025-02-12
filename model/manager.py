@@ -3,6 +3,7 @@ import logging
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from model.kiwoom import Kiwoom
+from .coolDown import CoolDown
 
 logger = logging.getLogger()
 
@@ -24,30 +25,29 @@ class Manager(QObject):
 
         self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
 
-    @pyqtSlot()
-    def commConnect(self):
+        self.coolDown = CoolDown(limit=1, interval=0.3)
+
+    async def commConnect(self):
         logger.debug("")
         self.kw.CommConnect()
 
-    @pyqtSlot()
-    def getLoginInfo(self):
+    async def getLoginInfo(self):
         logger.debug("")
         data = self.kw.GetLoginInfo("ACCNO")
         logger.debug(data)
         self.notifyLoginInfo(data)
 
-    @pyqtSlot(dict)
-    def getAccountInfo(self, data):
+    async def getAccountInfo(self, data: dict):
         logger.debug("")
         self.kw.trCallbacks["OPW00004"] = self.__onAccountInfo
         self.kw.SetInputValue(id="계좌번호", value=data["account_no"])
         self.kw.SetInputValue(id="비밀번호", value="")
         self.kw.SetInputValue(id="상장폐지조회구분", value="0")
         self.kw.SetInputValue(id="비밀번호입력매체구분", value="00")
+        await self.coolDown.call()
         self.kw.CommRqData(rqname="계좌평가현황요청", trcode="OPW00004", next=0, screen=data["screen_no"])
 
-    @pyqtSlot()
-    def getStockList(self):
+    async def getStockList(self):
         logger.debug("")
         kospi = self.kw.GetCodeListByMarket("0")
         kosdaq = self.kw.GetCodeListByMarket("10")
@@ -59,15 +59,14 @@ class Manager(QObject):
             entire_stock_list.append({'code': code, 'name': name})
         self.notifyStockList(entire_stock_list)
 
-    @pyqtSlot(dict)
-    def getStockBasicInfo(self, data):
+    async def getStockBasicInfo(self, data: dict):
         logger.debug("")
         self.kw.trCallbacks["opt10001"] = self.__onStockBasicInfo
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
+        await self.coolDown.call()
         self.kw.CommRqData(rqname="주식기본정보", trcode="opt10001", next=0, screen=data["screen_no"])
 
-    @pyqtSlot(dict)
-    def getStockPriceRealData(self, data):
+    async def getStockPriceRealData(self, data: dict):
         logger.debug("")
         self.kw.SetRealReg(
             screen=data["screen_no"],
