@@ -288,6 +288,13 @@ class Kiwoom(QObject):
         return data
 
     def SetRealReg(self, screen, code_list, fid_list, opt_type):
+        """
+        :param screen:
+        :param code_list:
+        :param fid_list:
+        :param opt_type: 실시간 등록 타입, 0또는 1, 0: 기존 종목들 실시간 해지 & 등록한 종목만 실시간 등록, 1: 기존 종목들 유지
+        :return:
+        """
         ret = self.ocx.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen, code_list, fid_list, opt_type)
         return ret
 

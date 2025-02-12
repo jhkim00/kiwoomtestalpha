@@ -21,9 +21,11 @@ class Client(QObject):
                 logger.debug(f"request: {request}")
                 logger.debug(f"typeof result: {type(result)}")
                 logger.debug(f"result: {result}")
-                if self.callbackMap[request]:
-                    logger.debug(f"self.callbackMap[{request}]: {self.callbackMap[request]}")
-                    self.callbackMap[request](result)    
+                if request in self.callbackMap:
+                    callbacks = self.callbackMap[request]
+                    if callbacks and len(callbacks) > 0:
+                        for cb in callbacks:
+                            cb(result)
 
     def __init__(self):
         super().__init__()
@@ -59,10 +61,9 @@ class Client(QObject):
         self.realDataQueueWorker = Client.QueueWorker(self.realDataQueue)
         self.realDataQueueWorker.start()
 
-    def login(self, callback):
+    def login(self):
         logging.debug("")
         self.requestQueue.put(("login",))
-        self.eventQueueWorker.callbackMap["login"] = callback
 
     def login_info(self):
         logging.debug("")
@@ -96,12 +97,30 @@ class Client(QObject):
 
         return result
 
-    def stock_price_real(self, code_list, screen_no, callback):
+    def stock_price_real(self, code_list, screen_no, discard_old_stocks: bool):
         logging.debug("")
+        opt_type = "1"
+        if discard_old_stocks:
+            opt_type = "0"
         self.requestQueue.put(
             ("stock_price_real",
              {"screen_no": screen_no,
               "code_list": code_list,
-              "fid_list": ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']})
+              "opt_type": opt_type})
         )
-        self.realDataQueueWorker.callbackMap["stock_price_real"] = callback
+
+    def registerEventCallback(self, event: str, callback):
+        self.registerCallback(self.eventQueueWorker, event, callback)
+
+    def registerRealDataCallback(self, realType: str, callback):
+        self.registerCallback(self.realDataQueueWorker, realType, callback)
+
+    @classmethod
+    def registerCallback(cls, que, type_: str, callback):
+        if que:
+            if type_ in que.callbackMap:
+                callbacks = que.callbackMap[type_]
+                if callback not in callbacks:
+                    callbacks.append(callback)
+            else:
+                que.callbackMap[type_] = [callback]

@@ -19,6 +19,8 @@ class MainViewModel(QObject):
 
         self.loginResultSignal.connect(self.__loginResult)
 
+        Client.getInstance().registerEventCallback("login", self.onLoginResult)
+
     @pyqtProperty(bool, notify=login_completedChanged)
     def login_completed(self):
         return self._login_completed
@@ -35,7 +37,7 @@ class MainViewModel(QObject):
     @pyqtSlot()
     def login(self):
         logger.debug("")
-        Client.getInstance().login(self.onLoginResult)
+        Client.getInstance().login()
 
     """
     client model event

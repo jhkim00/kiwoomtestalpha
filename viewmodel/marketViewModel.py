@@ -47,6 +47,8 @@ class MarketViewModel(QObject):
             '거래대비': ''
         }
 
+        Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
+
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
         return self._stockList
@@ -104,7 +106,7 @@ class MarketViewModel(QObject):
     @pyqtSlot()
     def test(self):
         logger.debug("")
-        Client.getInstance().stock_price_real([self.currentStock["code"]], "1002", self.__onStockPriceReal)
+        Client.getInstance().stock_price_real([self.currentStock["code"]], "1002", discard_old_stocks=False)
 
     @pyqtSlot()
     def load(self):

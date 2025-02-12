@@ -13,6 +13,8 @@ class Manager(QObject):
         self.kw = Kiwoom.getInstance()
         self.kw.loginCompleted.connect(self.onLoginCompleted)
 
+        self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
+
         self.notifyLoginCompleted = None
         self.notifyLoginInfo = None
         self.notifyAccountInfo = None
@@ -20,7 +22,7 @@ class Manager(QObject):
         self.notifyStockBasicInfo = None
         self.notifyStockPriceReal = None
 
-        self.stock_price_real_data_fid_list = []
+        self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
 
     @pyqtSlot()
     def commConnect(self):
@@ -67,9 +69,12 @@ class Manager(QObject):
     @pyqtSlot(dict)
     def getStockPriceRealData(self, data):
         logger.debug("")
-        self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
-        self.stock_price_real_data_fid_list = data["fid_list"]
-        self.kw.SetRealReg(screen=data["screen_no"], code_list=data["code_list"], fid_list=data["fid_list"], opt_type="0")
+        self.kw.SetRealReg(
+            screen=data["screen_no"],
+            code_list=data["code_list"],
+            fid_list=self.stock_price_real_data_fid_list,
+            opt_type=data["opt_type"]
+        )
 
     """
     slot for kiwoom
