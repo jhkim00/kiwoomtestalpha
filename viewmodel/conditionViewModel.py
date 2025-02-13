@@ -19,7 +19,7 @@ class ConditionViewModel(QObject):
 
         self._conditionList = []
         self._conditionInfoDict = {}
-        self._currentConditionCode = ""
+        self._currentConditionCode = -1
 
         Client.getInstance().registerEventCallback("condition_load", self.onConditionList)
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
@@ -36,7 +36,7 @@ class ConditionViewModel(QObject):
 
     @pyqtProperty(list, notify=conditionStockListChanged)
     def conditionStockList(self):
-        if len(self._currentConditionCode) > 0:
+        if self._currentConditionCode >= 0:
             return self._conditionInfoDict[self._currentConditionCode]
         else:
             return []
@@ -49,7 +49,7 @@ class ConditionViewModel(QObject):
         logger.debug("")
         Client.getInstance().condition_load()
 
-    @pyqtSlot(str, str)
+    @pyqtSlot(str, int)
     def conditionInfo(self, name, code):
         logger.debug("")
         found = False
@@ -61,9 +61,14 @@ class ConditionViewModel(QObject):
             logger.error(f"condition is not found name:{name}, code:{code}")
             return
 
+        if code in self._conditionInfoDict:
+            self._currentConditionCode = code
+            self.conditionStockListChanged.emit()
+            return
+
         result = Client.getInstance().condition_info(name, code, "1004")
         logger.debug(f"result:{result}")
-        if int(result["cond_index"]) != int(code):
+        if int(result["cond_index"]) != code:
             logger.error(f"result[cond_index]:{result['cond_index']}, code:{code}")
             raise Exception
 
@@ -80,7 +85,7 @@ class ConditionViewModel(QObject):
     """
     def onConditionList(self, result: list):
         logger.debug(f"result:{result}")
-        self.conditionList = [{'code': x[0], 'name': x[1]} for x in result]
+        self.conditionList = [{'code': int(x[0]), 'name': x[1]} for x in result]
         logger.debug(f"self.conditionList:{self.conditionList}")
         self._currentConditionCode = self.conditionList[0]['code']
 

@@ -108,15 +108,11 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
-            enabled: mainViewModel.login_completed
+            //enabled: mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnOpenChart clicked')
 
-                var component = Qt.createComponent("Chart.qml");
-                if (component.status === Component.Ready) {
-                    var newWindow = component.createObject(root);
-                    newWindow.show();
-                }
+                chartViewModel.test()
             }
         }
     }

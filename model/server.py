@@ -148,7 +148,7 @@ class Server(Process):
         self.requestHandlerMap["condition_info"][self.futureIndex].set_result(info)
 
     def notifyDailyChart(self, info):
-        logger.debug(f"info:{info}")
+        # logger.debug(f"info:{info}")
         self.requestHandlerMap["daily_chart"][self.futureIndex].set_result(info)
 
     """

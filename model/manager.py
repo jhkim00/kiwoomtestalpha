@@ -105,7 +105,7 @@ class Manager(QObject):
         self.kw.SendCondition(
             screen=data["screen_no"],
             cond_name=data["name"],
-            cond_index=int(data["code"]),
+            cond_index=data["code"],
             search=1
         )
 

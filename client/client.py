@@ -124,7 +124,7 @@ class Client(QObject):
 
         return result
 
-    def condition_info(self, name, code, screen_no):
+    def condition_info(self, name, code: int, screen_no):
         logging.debug("")
         self.requestQueue.put(("condition_info", {"name": name, "code": code, "screen_no": screen_no}))
         request, result = self.responseQueue.get()
