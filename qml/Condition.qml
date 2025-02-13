@@ -21,4 +21,15 @@ ApplicationWindow {
         console.log("market component completed")
         conditionViewModel.load()
     }
+
+    ConditionListView {
+        id: conditionListView
+        width: 240
+        height: parent.height
+        model: conditionViewModel.conditionList
+
+        onItemClicked: {
+            console.log('conditionListView onItemClicked ' + itemData['name'] + ', '+ itemData['code'])
+        }
+    }
 }

@@ -41,4 +41,5 @@ class ConditionViewModel(QObject):
     """
     def onConditionList(self, result: list):
         logger.debug(f"result:{result}")
-        self.conditionList = result
+        self.conditionList = [{'code': x[0], 'name': x[1]} for x in result]
+        logger.debug(f"self.conditionList:{self.conditionList}")
