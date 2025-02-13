@@ -11,7 +11,7 @@ from PyQt5.QtCore import QCoreApplication
 from model import Server
 from client import Client
 
-from viewmodel import MainViewModel, AccountViewModel, MarketViewModel, FavoriteStockViewModel
+from viewmodel import MainViewModel, AccountViewModel, MarketViewModel, FavoriteStockViewModel, ConditionViewModel
 
 logger = logging.getLogger()
 requestQueue = multiprocessing.Queue()
@@ -26,6 +26,8 @@ def _handleQmlWarnings(warnings):
 def __onExit():
     logger.debug("")
     requestQueue.put(("finish",))
+    eventQueue.put(("finish",))
+    realDataQueue.put(("finish",))
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
@@ -54,6 +56,7 @@ if __name__ == "__main__":
     accountViewModel = AccountViewModel(engine.rootContext(), app)
     marketViewModel = MarketViewModel(engine.rootContext(), app)
     favoriteStockViewModel = FavoriteStockViewModel(engine.rootContext(), app)
+    conditionViewModel = ConditionViewModel(engine.rootContext(), app)
 
     engine.load(QUrl.fromLocalFile("qml/Main.qml"))
 

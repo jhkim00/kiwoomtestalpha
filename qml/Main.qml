@@ -77,5 +77,26 @@ ApplicationWindow {
                 }
             }
         }
+
+        TextButton {
+            id: btnOpenCondition
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "open condition"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            enabled: mainViewModel.login_completed
+            onBtnClicked: {
+                console.log('btnOpenCondition clicked')
+
+                var component = Qt.createComponent("Condition.qml");
+                if (component.status === Component.Ready) {
+                    var newWindow = component.createObject(root);
+                    newWindow.show();
+                }
+            }
+        }
     }
 }

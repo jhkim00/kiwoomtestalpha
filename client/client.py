@@ -22,6 +22,9 @@ class Client(QObject):
                 # logger.debug(f"request: {request}")
                 # logger.debug(f"typeof result: {type(result)}")
                 # logger.debug(f"result: {result}")
+                if request == "finish":
+                    logger.debug(f"finish received")
+                    break
                 if request in self.callbackMap:
                     callbacks = self.callbackMap[request]
                     if callbacks and len(callbacks) > 0:
