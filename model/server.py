@@ -52,6 +52,7 @@ class Server(Process):
             "stock_basic_info": [self.handle_stock_basic_info, asyncio.Future()],
             "stock_price_real": [self.handle_stock_price_real, None],
             "condition_load": [self.handle_condition_load, asyncio.Future()],
+            "stocks_info": [self.handle_stocks_info, asyncio.Future()],
         }
         self.eventList = ["login", "condition_load"]
         logger.debug("")
@@ -63,6 +64,7 @@ class Server(Process):
         self.manager.notifyStockBasicInfo = self.notifyStockBasicInfo
         self.manager.notifyStockPriceReal = self.notifyStockPriceReal
         self.manager.notifyConditionList = self.notifyConditionList
+        self.manager.notifyStocksInfo = self.notifyStocksInfo
 
         """ `asyncio.create_task()`를 사용하여 여러 개의 태스크를 동시에 실행"""
         task1 = asyncio.create_task(self.comEventLoop())  # COM 메시지 처리
@@ -133,6 +135,10 @@ class Server(Process):
         logger.debug("")
         self.requestHandlerMap["condition_load"][self.futureIndex].set_result(conditionList)
 
+    def notifyStocksInfo(self, info):
+        logger.debug("")
+        self.requestHandlerMap["stocks_info"][self.futureIndex].set_result(info)
+
     """
     request handler
     """
@@ -163,3 +169,7 @@ class Server(Process):
     async def handle_condition_load(self):
         logger.debug("")
         await self.manager.getConditionLoad()
+
+    async def handle_stocks_info(self, data):
+        logger.debug("")
+        await self.manager.getStocksInfo(data)

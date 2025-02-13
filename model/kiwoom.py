@@ -49,12 +49,14 @@ class Kiwoom(QObject):
 
     def OnReceiveTrData(self, screen, rqname, trcode, record, next):
         logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}, next:{next}")
-        logger.debug(f"record:{record}")
-        logger.debug(f"self.trCallbacks:{self.trCallbacks}")
         for key in self.trCallbacks:
             cb = self.trCallbacks[key]
             if cb:
-                cb(screen, rqname, trcode, record, next)
+                logger.debug(f"key:{key}, cb:{cb}")
+                try:
+                    cb(screen, rqname, trcode, record, next)
+                except Exception as e:
+                    logger.error(f"Error while calling cb: {e}", exc_info=True)
 
     def OnReceiveChejanData(self, gubun, item_cnt, fid_list):
         """주문접수, 체결, 잔고 변경시 이벤트가 발생

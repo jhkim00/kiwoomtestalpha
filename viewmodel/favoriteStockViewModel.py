@@ -18,6 +18,7 @@ class FavoriteStockViewModel(QObject):
 
         self._stockList = []
         self.priceInfoKeys = ['시가', '고가', '저가', '현재가', '기준가', '대비기호', '전일대비', '등락율', '거래량', '거래대비']
+        self.priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비']
 
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
@@ -45,13 +46,13 @@ class FavoriteStockViewModel(QObject):
 
         logger.debug(stockList)
 
-        for stock in stockList:
-            result = Client.getInstance().stock_basic_info(stock["code"], "1003")
-            if len(result) > 0:
-                priceInfo = {key: result[0][key] for key in self.priceInfoKeys if key in result[0]}
-                priceItemData = StockPriceItemData(stock['name'], stock['code'], priceInfo)
-                logger.debug(priceItemData)
-                stockPriceList.append(priceItemData)
+        result = Client.getInstance().stocks_info([x["code"] for x in stockList], "1003")
+        logger.debug(f"result:{result}")
+        for info in result:
+            priceInfo = {key: info[key] for key in self.priceInfoKeys_ if key in info}
+            priceItemData = StockPriceItemData(info['종목명'], info['종목코드'], priceInfo, fromSingleInfo=False)
+            logger.debug(priceItemData)
+            stockPriceList.append(priceItemData)
 
         self.stockList = stockPriceList
 

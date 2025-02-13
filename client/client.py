@@ -114,6 +114,13 @@ class Client(QObject):
         logging.debug("")
         self.requestQueue.put(("condition_load",))
 
+    def stocks_info(self, code_list, screen_no):
+        logging.debug(f"code_list:{code_list}")
+        self.requestQueue.put(("stocks_info", {"code_list": code_list, "screen_no": screen_no}))
+        request, result = self.responseQueue.get()
+
+        return result
+
     def registerEventCallback(self, event: str, callback):
         self.registerCallback(self.eventQueueWorker, event, callback)
 

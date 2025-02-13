@@ -18,7 +18,7 @@ class StockPriceItemData(QObject):
     volumeChanged = pyqtSignal()
     volumeRateChanged = pyqtSignal()
 
-    def __init__(self, name: str, code: str, priceInfo: dict):
+    def __init__(self, name: str, code: str, priceInfo: dict, fromSingleInfo=True):
         super().__init__()
         self._name = name
         self._code = code
@@ -27,11 +27,15 @@ class StockPriceItemData(QObject):
         self._lowPrice = priceInfo["저가"]
         self._currentPrice = priceInfo["현재가"]
         self._refPrice = priceInfo["기준가"]
-        self._diffSign = priceInfo["대비기호"]
         self._diffPrice = priceInfo["전일대비"]
         self._diffRate = priceInfo["등락율"]
         self._volume = priceInfo["거래량"]
-        self._volumeRate = priceInfo["거래대비"]
+        if fromSingleInfo:
+            self._diffSign = priceInfo["대비기호"]
+            self._volumeRate = priceInfo["거래대비"]
+        else:
+            self._diffSign = priceInfo["전일대비기호"]
+            self._volumeRate = priceInfo["전일거래량대비"]
 
     @pyqtProperty(str, notify=nameChanged)
     def name(self):

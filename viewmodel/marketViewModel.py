@@ -139,10 +139,10 @@ class MarketViewModel(QObject):
         logger.debug("")
         result = Client.getInstance().stock_basic_info(self.currentStock["code"], "1002")
         if len(result) > 0:
-            self.basicInfo = {key: result[0][key] for key in self.basicInfo if key in result[0]}
+            self.basicInfo = {key: result[key] for key in self.basicInfo if key in result}
             logger.debug(self.basicInfo)
 
-            self.priceInfo = {key: result[0][key] for key in self.priceInfo if key in result[0]}
+            self.priceInfo = {key: result[key] for key in self.priceInfo if key in result}
             logger.debug(self.priceInfo)
 
     @pyqtSlot(tuple)

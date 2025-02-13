@@ -24,6 +24,7 @@ class Manager(QObject):
         self.notifyStockBasicInfo = None
         self.notifyStockPriceReal = None
         self.notifyConditionList = None
+        self.notifyStocksInfo = None
 
         self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
 
@@ -77,6 +78,19 @@ class Manager(QObject):
             opt_type=data["opt_type"]
         )
 
+    async def getStocksInfo(self, data: dict):
+        logger.debug("")
+        self.kw.trCallbacks["OPTKWFID"] = self.__onStocksInfo
+        await self.coolDown.call()
+        self.kw.CommKwRqData(
+            arr_code=";".join(data["code_list"]),
+            next=0,
+            code_count=len(data["code_list"]),
+            type=0,
+            rqname="복수종목정보요청",
+            screen=data["screen_no"]
+        )
+
     async def getConditionLoad(self):
         logger.debug("")
         self.kw.GetConditionLoad()
@@ -106,8 +120,18 @@ class Manager(QObject):
         if rqname == "주식기본정보":
             single_data_keys = ['신용비율', '시가총액', 'PER', 'PBR', '매출액', '영업이익', '당기순이익', '유통주식', '유통비율',
                 '시가', '고가', '저가', '현재가', '기준가', '대비기호', '전일대비', '등락율', '거래량', '거래대비']
-            outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys)
+            outList, _ = self.__getCommDataByKeys(trcode, rqname, single_data_keys)
             self.notifyStockBasicInfo(outList)
+
+    def __onStocksInfo(self, screen, rqname, trcode, record, next):
+        logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}")
+        if rqname == "복수종목정보요청":
+            single_data_keys = []
+            multi_data_keys = ['종목명', '종목코드', '시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비']
+            _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
+
+        # logger.debug(f"outList{outList}")
+        self.notifyStocksInfo(outList)
 
     """
     real data callbacks
