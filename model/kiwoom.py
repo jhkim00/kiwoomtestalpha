@@ -23,11 +23,13 @@ class Kiwoom(QObject):
         self.ocx.OnReceiveChejanData.connect(self.OnReceiveChejanData)
         self.ocx.OnReceiveRealData.connect(self.OnReceiveRealData)
         self.ocx.OnReceiveConditionVer.connect(self.OnReceiveConditionVer)
+        self.ocx.OnReceiveTrCondition.connect(self.OnReceiveTrCondition)
         self.ocx.exception.connect(self.OnException)
 
         self.trCallbacks = {}
         self.realDataCallbacks = {}
         self.conditionVerCallback = None
+        self.trConditionCallback = None
 
     @classmethod
     def getInstance(cls):
@@ -79,7 +81,7 @@ class Kiwoom(QObject):
             rtype (str): 리얼타입 (주식시세, 주식체결, ...)
             data (str): 실시간 데이터 전문
         """
-        logger.debug(f"code:{code}, rtype:{rtype}")
+        # logger.debug(f"code:{code}, rtype:{rtype}")
         for key in self.realDataCallbacks:
             if key == rtype:
                 cb = self.realDataCallbacks[key]
@@ -91,6 +93,24 @@ class Kiwoom(QObject):
         logger.debug(f"ret:{ret}, msg:{msg}")
         if self.conditionVerCallback:
             self.conditionVerCallback(ret, msg)
+
+    def OnReceiveTrCondition(self, screen_no, code_list, cond_name, cond_index, next):
+        """일반조회 TR에 대한 callback 함수
+
+        Args:
+            screen_no (str): 종목코드
+            code_list (str): 종목리스트(";"로 구분)
+            cond_name (str): 조건명
+            cond_index (int): 조건명 인덱스
+            next (int): 연속조회(0: 연속조회 없음, 2: 연속조회)
+        """
+        logger.debug(
+            f"screen:{screen_no}, code_list:{code_list}, cond_name:{cond_name}, cond_index:{cond_index}, next:{next}")
+        try:
+            if self.trConditionCallback:
+                self.trConditionCallback(screen_no, code_list, cond_name, cond_index, next)
+        except Exception as e:
+            logger.error(f"Error while calling cb: {e}", exc_info=True)
 
     def OnException(self, code: int, source: str, desc: str, help_: str) -> None:
         logger.error(f"code:{code}, source:{source}, desc:{desc}, help:{help_}")

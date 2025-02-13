@@ -26,8 +26,8 @@ def _handleQmlWarnings(warnings):
 def __onExit():
     logger.debug("")
     requestQueue.put(("finish",))
-    eventQueue.put(("finish",))
-    realDataQueue.put(("finish",))
+    eventQueue.put(("finish", ""))
+    realDataQueue.put(("finish", ""))
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)

@@ -148,6 +148,8 @@ class MarketViewModel(QObject):
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
         logger.debug(f"data:{data}")
+        if self.currentStock is None:
+            return
         if data[0] == self.currentStock["code"]:
             self._priceInfo['현재가'] = data[1]['10']
             self._priceInfo['전일대비'] = data[1]['11']

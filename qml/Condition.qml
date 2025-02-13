@@ -30,6 +30,7 @@ ApplicationWindow {
 
         onItemClicked: {
             console.log('conditionListView onItemClicked ' + itemData['name'] + ', '+ itemData['code'])
+            conditionViewModel.conditionInfo(itemData['name'], itemData['code'])
         }
     }
 }

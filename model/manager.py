@@ -14,8 +14,12 @@ class Manager(QObject):
         self.kw = Kiwoom.getInstance()
         self.kw.loginCompleted.connect(self.onLoginCompleted)
 
+        self.kw.trCallbacks["opt10001"] = self.__onStockBasicInfo
+        self.kw.trCallbacks["OPW00004"] = self.__onAccountInfo
+        self.kw.trCallbacks["OPTKWFID"] = self.__onStocksInfo
         self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
         self.kw.conditionVerCallback = self.__onReceiveConditionVer
+        self.kw.trConditionCallback = self.__onReceiveTrCondition
 
         self.notifyLoginCompleted = None
         self.notifyLoginInfo = None
@@ -25,6 +29,7 @@ class Manager(QObject):
         self.notifyStockPriceReal = None
         self.notifyConditionList = None
         self.notifyStocksInfo = None
+        self.notifyConditionInfo = None
 
         self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
 
@@ -42,7 +47,6 @@ class Manager(QObject):
 
     async def getAccountInfo(self, data: dict):
         logger.debug("")
-        self.kw.trCallbacks["OPW00004"] = self.__onAccountInfo
         self.kw.SetInputValue(id="계좌번호", value=data["account_no"])
         self.kw.SetInputValue(id="비밀번호", value="")
         self.kw.SetInputValue(id="상장폐지조회구분", value="0")
@@ -64,7 +68,6 @@ class Manager(QObject):
 
     async def getStockBasicInfo(self, data: dict):
         logger.debug("")
-        self.kw.trCallbacks["opt10001"] = self.__onStockBasicInfo
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
         await self.coolDown.call()
         self.kw.CommRqData(rqname="주식기본정보", trcode="opt10001", next=0, screen=data["screen_no"])
@@ -80,7 +83,6 @@ class Manager(QObject):
 
     async def getStocksInfo(self, data: dict):
         logger.debug("")
-        self.kw.trCallbacks["OPTKWFID"] = self.__onStocksInfo
         await self.coolDown.call()
         self.kw.CommKwRqData(
             arr_code=";".join(data["code_list"]),
@@ -94,6 +96,16 @@ class Manager(QObject):
     async def getConditionLoad(self):
         logger.debug("")
         self.kw.GetConditionLoad()
+
+    async def sendCondition(self, data):
+        logger.debug("")
+        await self.coolDown.call()
+        self.kw.SendCondition(
+            screen=data["screen_no"],
+            cond_name=data["name"],
+            cond_index=int(data["code"]),
+            search=1
+        )
 
     """
     slot for kiwoom
@@ -137,7 +149,7 @@ class Manager(QObject):
     real data callbacks
     """
     def __onStockPriceReal(self, code, rtype, data):
-        logger.debug("")
+        # logger.debug("")
         data = {}
         for fid in self.stock_price_real_data_fid_list:
             val = self.kw.GetCommRealData(code, int(fid))
@@ -153,6 +165,10 @@ class Manager(QObject):
             result = self.kw.GetConditionNameList()
             # logger.debug(f"result:{result}")
             self.notifyConditionList(result)
+
+    def __onReceiveTrCondition(self, screen_no, code_list, cond_name, cond_index, next):
+        logger.debug(f"screen:{screen_no}, code_list:{code_list}, cond_name:{cond_name}, cond_index:{cond_index}, next:{next}")
+        self.notifyConditionInfo({"code_list": code_list.strip(";").split(";"), "cond_name": cond_name, "cond_index": cond_index})
 
     """
     private method
