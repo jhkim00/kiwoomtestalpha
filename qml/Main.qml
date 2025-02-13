@@ -98,5 +98,26 @@ ApplicationWindow {
                 }
             }
         }
+
+        TextButton {
+            id: btnOpenChart
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "open chart"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            enabled: mainViewModel.login_completed
+            onBtnClicked: {
+                console.log('btnOpenChart clicked')
+
+                var component = Qt.createComponent("Chart.qml");
+                if (component.status === Component.Ready) {
+                    var newWindow = component.createObject(root);
+                    newWindow.show();
+                }
+            }
+        }
     }
 }

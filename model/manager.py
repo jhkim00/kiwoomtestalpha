@@ -17,6 +17,7 @@ class Manager(QObject):
         self.kw.trCallbacks["opt10001"] = self.__onStockBasicInfo
         self.kw.trCallbacks["OPW00004"] = self.__onAccountInfo
         self.kw.trCallbacks["OPTKWFID"] = self.__onStocksInfo
+        self.kw.trCallbacks["opt10081"] = self.__onDailyChart
         self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
         self.kw.conditionVerCallback = self.__onReceiveConditionVer
         self.kw.trConditionCallback = self.__onReceiveTrCondition
@@ -30,6 +31,7 @@ class Manager(QObject):
         self.notifyConditionList = None
         self.notifyStocksInfo = None
         self.notifyConditionInfo = None
+        self.notifyDailyChart = None
 
         self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
 
@@ -107,6 +109,12 @@ class Manager(QObject):
             search=1
         )
 
+    async def getDailyChart(self, data):
+        logger.debug("")
+        self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
+        await self.coolDown.call()
+        self.kw.CommRqData(rqname="주식일봉차트", trcode="opt10081", next=0, screen=data["screen_no"])
+
     """
     slot for kiwoom
     """
@@ -142,8 +150,18 @@ class Manager(QObject):
             multi_data_keys = ['종목명', '종목코드', '시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비']
             _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
 
-        # logger.debug(f"outList{outList}")
-        self.notifyStocksInfo(outList)
+            # logger.debug(f"outList{outList}")
+            self.notifyStocksInfo(outList)
+
+    def __onDailyChart(self, screen, rqname, trcode, record, next):
+        logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}")
+        if rqname == "주식일봉차트":
+            single_data_keys = []
+            multi_data_keys = ['종목코드', '현재가', '거래량', '거래대금', '일자', '시가', '고가', '저가', '수정주가구분', '수정비율', '대업종구분',
+                       '소업종구분', '종목정보', '수정주가이벤트', '전일종가']
+            _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
+
+            self.notifyDailyChart(outList)
 
     """
     real data callbacks

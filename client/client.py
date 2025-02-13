@@ -89,7 +89,7 @@ class Client(QObject):
         logging.debug("")
         self.requestQueue.put(("stock_list",))
         request, result = self.responseQueue.get()
-        logger.debug(f"request: {request}, result:{result}")
+        # logger.debug(f"request: {request}, result:{result}")
 
         return result
 
@@ -127,6 +127,13 @@ class Client(QObject):
     def condition_info(self, name, code, screen_no):
         logging.debug("")
         self.requestQueue.put(("condition_info", {"name": name, "code": code, "screen_no": screen_no}))
+        request, result = self.responseQueue.get()
+
+        return result
+
+    def daily_chart(self, code, screen_no):
+        logging.debug("")
+        self.requestQueue.put(("daily_chart", {"stock_no": code, "screen_no": screen_no}))
         request, result = self.responseQueue.get()
 
         return result

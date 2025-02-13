@@ -86,7 +86,7 @@ class ConditionViewModel(QObject):
 
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
-        logger.debug(f"data:{data}")
+        # logger.debug(f"data:{data}")
         for stock in self.conditionStockList:
             if data[0] == stock.code:
                 stock.currentPrice = data[1]['10']
