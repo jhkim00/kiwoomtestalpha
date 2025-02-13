@@ -147,7 +147,7 @@ class MarketViewModel(QObject):
 
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
-        logger.debug(f"data:{data}")
+        # logger.debug(f"data:{data}")
         if self.currentStock is None:
             return
         if data[0] == self.currentStock["code"]:

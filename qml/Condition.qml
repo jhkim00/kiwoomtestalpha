@@ -33,4 +33,27 @@ ApplicationWindow {
             conditionViewModel.conditionInfo(itemData['name'], itemData['code'])
         }
     }
+
+    ListView {
+        id: stockPriceListView
+        anchors.top: parent.top
+        anchors.right: parent.right
+        width: parent.width - conditionListView.width
+        height: parent.height
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        model: conditionViewModel.conditionStockList
+
+        signal itemClicked(variant itemData)
+
+        delegate: StockPriceDelegate {
+            listView: stockPriceListView
+            width: stockPriceListView.width
+        }
+
+        onItemClicked: {
+            console.log('Market.qml onItemClicked ' + itemData.name + ', '+ itemData.code)
+            marketViewModel.setCurrentStock({'name': itemData.name, 'code': itemData.code})
+        }
+    }
 }

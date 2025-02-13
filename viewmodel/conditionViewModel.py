@@ -19,9 +19,10 @@ class ConditionViewModel(QObject):
 
         self._conditionList = []
         self._conditionInfoDict = {}
-        self._currentConditionCode = ''
+        self._currentConditionCode = ""
 
         Client.getInstance().registerEventCallback("condition_load", self.onConditionList)
+        Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
     @pyqtProperty(list, notify=conditionListChanged)
     def conditionList(self):
@@ -35,7 +36,10 @@ class ConditionViewModel(QObject):
 
     @pyqtProperty(list, notify=conditionStockListChanged)
     def conditionStockList(self):
-        return self._conditionInfoDict[self._currentConditionCode]
+        if len(self._currentConditionCode) > 0:
+            return self._conditionInfoDict[self._currentConditionCode]
+        else:
+            return []
 
     """
     method for qml side
@@ -65,11 +69,11 @@ class ConditionViewModel(QObject):
 
         codeList = result["code_list"]
         stockPriceList = self.__getStockPriceList(codeList)
-        logger.debug(f"stockPriceList:{stockPriceList}")
+        # logger.debug(f"stockPriceList:{stockPriceList}")
         self._conditionInfoDict[code] = stockPriceList
         self._currentConditionCode = code
         self.conditionStockListChanged.emit()
-        logger.debug(f"self._conditionInfoDict:{self._conditionInfoDict}")
+        # logger.debug(f"self._conditionInfoDict:{self._conditionInfoDict}")
 
     """
     client model event
@@ -80,12 +84,28 @@ class ConditionViewModel(QObject):
         logger.debug(f"self.conditionList:{self.conditionList}")
         self._currentConditionCode = self.conditionList[0]['code']
 
+    @pyqtSlot(tuple)
+    def __onStockPriceReal(self, data):
+        logger.debug(f"data:{data}")
+        for stock in self.conditionStockList:
+            if data[0] == stock.code:
+                stock.currentPrice = data[1]['10']
+                stock.diffPrice = data[1]['11']
+                stock.diffRate = data[1]['12']
+                stock.volume = data[1]['13']
+                stock.startPrice = data[1]['16']
+                stock.highPrice = data[1]['17']
+                stock.lowPrice = data[1]['18']
+                stock.diffSign = data[1]['25']
+                stock.volumeRate = data[1]['30']
+                break
+
     """
     private method
     """
     def __getStockPriceList(self, codeList):
         result = Client.getInstance().stocks_info(codeList, "1004")
-        logger.debug(f"result:{result}")
+        # logger.debug(f"result:{result}")
         stockPriceList = []
         for info in result:
             priceInfo = {key: info[key] for key in self.priceInfoKeys_ if key in info}
