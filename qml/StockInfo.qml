@@ -94,10 +94,10 @@ Rectangle {
 
     Connections {
         target: marketViewModel
-        function onCurrentStockChanged() {
+        function onCurrentStockChanged(name, code) {
             console.log("StockInfo.qml onCurrentStockChanged")
-            root.stockName = marketViewModel.currentStock['name']
-            root.stockCode =  marketViewModel.currentStock['code']
+            root.stockName = name
+            root.stockCode =  code
             marketViewModel.getStockBasicInfo()
 
             root.updateFavorite()

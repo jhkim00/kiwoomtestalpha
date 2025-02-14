@@ -9,7 +9,7 @@ logger = logging.getLogger()
 class MarketViewModel(QObject):
     stockListChanged = pyqtSignal()
     searchedStockListChanged = pyqtSignal()
-    currentStockChanged = pyqtSignal()
+    currentStockChanged = pyqtSignal(str, str)
     basicInfoChanged = pyqtSignal()
     priceInfoChanged = pyqtSignal()
 
@@ -76,7 +76,7 @@ class MarketViewModel(QObject):
         if self._currentStock != val:
             logger.debug(f"stock:{val}")
             self._currentStock = val
-            self.currentStockChanged.emit()
+            self.currentStockChanged.emit(self._currentStock['name'], self._currentStock['code'])
 
     @pyqtProperty(QVariant, notify=basicInfoChanged)
     def basicInfo(self):

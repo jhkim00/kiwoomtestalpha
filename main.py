@@ -60,6 +60,8 @@ if __name__ == "__main__":
     conditionViewModel = ConditionViewModel(engine.rootContext(), app)
     chartViewModel = ChartViewModel(engine.rootContext(), app)
 
+    marketViewModel.currentStockChanged.connect(chartViewModel.setStock)
+
     engine.load(QUrl.fromLocalFile("qml/Main.qml"))
 
     if not engine.rootObjects():
