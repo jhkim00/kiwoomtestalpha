@@ -108,7 +108,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
-            //enabled: mainViewModel.login_completed
+            enabled: mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnOpenChart clicked')
 

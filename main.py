@@ -3,7 +3,7 @@ import logging
 import time
 import multiprocessing
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QT_VERSION_STR
 from PyQt5.QtWidgets import *
 from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtCore import QCoreApplication
@@ -38,6 +38,8 @@ if __name__ == "__main__":
     streamHandler = logging.StreamHandler()
     streamHandler.setFormatter(formatter)
     logger.addHandler(streamHandler)
+
+    logger.debug("Qt version:", QT_VERSION_STR)
 
     app = QApplication(sys.argv)
     app.aboutToQuit.connect(__onExit)
