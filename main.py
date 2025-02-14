@@ -39,7 +39,7 @@ if __name__ == "__main__":
     streamHandler.setFormatter(formatter)
     logger.addHandler(streamHandler)
 
-    logger.debug("Qt version:", QT_VERSION_STR)
+    logger.debug(f"Qt version:{QT_VERSION_STR}")
 
     app = QApplication(sys.argv)
     app.aboutToQuit.connect(__onExit)

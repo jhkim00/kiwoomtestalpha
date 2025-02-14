@@ -16,6 +16,10 @@ ApplicationWindow {
     property var fixedWidth: 240
     property var fixedHeight: 480
 
+    property var accountWindow: null
+    property var marketWindow: null
+    property var conditionWindow: null
+
     Column {
         width: parent.width
         y: 10
@@ -48,12 +52,13 @@ ApplicationWindow {
             enabled: mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnOpenAccountInfo clicked')
-
-                var component = Qt.createComponent("Account.qml");
-                if (component.status === Component.Ready) {
-                    var newWindow = component.createObject(root);
-                    newWindow.show();
+                if (root.accountWindow === null) {
+                    var component = Qt.createComponent("Account.qml")
+                    if (component.status === Component.Ready) {
+                        root.accountWindow = component.createObject()
+                    }
                 }
+                root.accountWindow.show()
             }
         }
 
@@ -70,11 +75,13 @@ ApplicationWindow {
             onBtnClicked: {
                 console.log('btnOpenCurrentPrice clicked')
 
-                var component = Qt.createComponent("Market.qml");
-                if (component.status === Component.Ready) {
-                    var newWindow = component.createObject(root);
-                    newWindow.show();
+                if (root.marketWindow === null) {
+                    var component = Qt.createComponent("Market.qml")
+                    if (component.status === Component.Ready) {
+                        root.marketWindow = component.createObject()
+                    }
                 }
+                root.marketWindow.show()
             }
         }
 
@@ -91,11 +98,13 @@ ApplicationWindow {
             onBtnClicked: {
                 console.log('btnOpenCondition clicked')
 
-                var component = Qt.createComponent("Condition.qml");
-                if (component.status === Component.Ready) {
-                    var newWindow = component.createObject(root);
-                    newWindow.show();
+                if (root.conditionWindow === null) {
+                    var component = Qt.createComponent("Condition.qml")
+                    if (component.status === Component.Ready) {
+                        root.conditionWindow = component.createObject()
+                    }
                 }
+                root.conditionWindow.show()
             }
         }
 

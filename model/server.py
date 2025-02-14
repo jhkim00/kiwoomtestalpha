@@ -56,6 +56,7 @@ class Server(Process):
             "condition_info": [self.handle_condition_info, asyncio.Future()],
             "stop_condition_info": [self.handle_stop_condition_info, None],
             "daily_chart": [self.handle_daily_chart, asyncio.Future()],
+            "send_order": [self.handle_send_order, asyncio.Future()],
         }
         self.eventList = ["login", "condition_load"]
         logger.debug("")
@@ -203,3 +204,7 @@ class Server(Process):
     async def handle_daily_chart(self, data):
         logger.debug("")
         await self.manager.getDailyChart(data)
+
+    async def handle_send_order(self, data):
+        logger.debug("")
+        await self.manager.sendOrder(data)

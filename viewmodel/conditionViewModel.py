@@ -103,8 +103,7 @@ class ConditionViewModel(QObject):
     def onConditionList(self, result: list):
         logger.debug(f"result:{result}")
         self.conditionList = [{'code': int(x[0]), 'name': x[1]} for x in result]
-        logger.debug(f"self.conditionList:{self.conditionList}")
-        self._currentConditionCode = self.conditionList[0]['code']
+        logger.debug(f"self.conditionList:{self.conditionList}")        
 
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):

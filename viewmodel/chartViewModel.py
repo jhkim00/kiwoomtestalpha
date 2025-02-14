@@ -52,7 +52,7 @@ class ChartViewModel(QObject):
         df = df.sort_values("time")
         # logger.debug(f"df:{df}")
         if self.chart is None:
-            self.chart = Chart()
+            self.chart = Chart(width=1920, height=1080, x=0, y=0, title='Daily Chart', toolbox=True)
 
         self.chart.set(df)
 
@@ -84,7 +84,7 @@ class ChartViewModel(QObject):
         self.stockCode = code
         if self.chart is None:
             return
-        self.load(code)
+        self.load()
 
     """
     client model event
@@ -101,12 +101,16 @@ class ChartViewModel(QObject):
             self.df.iloc[-1, self.df.columns.get_loc('open')] = abs(int(data[1]['16']))
             self.df.iloc[-1, self.df.columns.get_loc('high')] = abs(int(data[1]['17']))
             self.df.iloc[-1, self.df.columns.get_loc('low')] = abs(int(data[1]['18']))
+            tick = pd.Series(
+                {
+                    'time': self.df.iloc[-1]['time'],
+                    'price': self.df.iloc[-1]['close'],
+                    'volume': self.df.iloc[-1]['volume'],
+                }
+            )
 
-            logger.debug(f"tick:{self.df.iloc[-1]}")
-
-            # for i, tick in self.df.iterrows():
-                # logger.debug(f"tick:{tick}")
-                # self.chart.update_from_tick(tick)
+            # logger.debug(f"tick:{self.df.iloc[-1]}")
+            self.chart.update_from_tick(tick)
 
     """
     private method

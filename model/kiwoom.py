@@ -68,7 +68,7 @@ class Kiwoom(QObject):
             item_cnt (int): 아이템 갯수
             fid_list (str): fid list
         """
-        logger.debug("")
+        logger.debug(f"gubun:{gubun}, item_cnt:{item_cnt}, fid_list:{fid_list}")
 
     def OnReceiveRealData(self, code, rtype, data):
         # logger.debug(f'code: {code}')
@@ -111,6 +111,9 @@ class Kiwoom(QObject):
                 self.trConditionCallback(screen_no, code_list, cond_name, cond_index, next)
         except Exception as e:
             logger.error(f"Error while calling cb: {e}", exc_info=True)
+
+    def OnReceiveMsg(self, screen, rqname, trcode, msg):
+        logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}, msg:{msg}");
 
     def OnException(self, code: int, source: str, desc: str, help_: str) -> None:
         logger.error(f"code:{code}, source:{source}, desc:{desc}, help:{help_}")

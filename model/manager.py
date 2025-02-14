@@ -124,6 +124,21 @@ class Manager(QObject):
         await self.coolDown.call()
         self.kw.CommRqData(rqname="주식일봉차트", trcode="opt10081", next=0, screen=data["screen_no"])
 
+    async def sendOrder(self, data):
+        logger.debug("")
+        await self.coolDown.call()
+        self.kw.SendOrder(
+            rqname="주식주문",
+            screen=data["screen_no"],
+            accno=data["account_no"],
+            order_type=data["order_type"],
+            code=data["stock_no"],
+            quantity=data["quantity"],
+            price=data["price"],
+            hoga=data["hoga"],
+            order_no=data["order_no"]
+        )
+
     """
     slot for kiwoom
     """
