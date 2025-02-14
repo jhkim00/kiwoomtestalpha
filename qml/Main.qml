@@ -112,7 +112,7 @@ ApplicationWindow {
             onBtnClicked: {
                 console.log('btnOpenChart clicked')
 
-                chartViewModel.load(marketViewModel.currentStock["code"])
+                chartViewModel.load()
             }
         }
     }
