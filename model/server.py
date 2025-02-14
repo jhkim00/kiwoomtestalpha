@@ -71,11 +71,16 @@ class Server(Process):
         self.manager.notifyDailyChart = self.notifyDailyChart
 
         """ `asyncio.create_task()`를 사용하여 여러 개의 태스크를 동시에 실행"""
-        task1 = asyncio.create_task(self.comEventLoop())  # COM 메시지 처리
-        task2 = asyncio.create_task(self.processRequests())  # 요청 처리
-        task3 = asyncio.create_task(self.processEvents())  # 이벤트 처리
+        tasks = [
+            asyncio.create_task(self.comEventLoop()),       # COM 메시지 처리
+            asyncio.create_task(self.processRequests()),    # 요청 처리
+            asyncio.create_task(self.processEvents())       # 이벤트 처리
+        ]
 
-        await asyncio.gather(task1, task2, task3)  # 여러 개의 작업을 동시에 실행
+        """ 하나의 태스크가 종료되면 나머지 태스크들도 종료되도록 하여 프로세스가 종료되도록 함 """
+        done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+        for task in pending:
+            task.cancel()
 
     async def comEventLoop(self):
         """COM 메시지 루프 (무한 루프)"""
