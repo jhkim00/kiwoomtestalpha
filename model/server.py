@@ -54,6 +54,7 @@ class Server(Process):
             "condition_load": [self.handle_condition_load, asyncio.Future()],
             "stocks_info": [self.handle_stocks_info, asyncio.Future()],
             "condition_info": [self.handle_condition_info, asyncio.Future()],
+            "stop_condition_info": [self.handle_stop_condition_info, None],
             "daily_chart": [self.handle_daily_chart, asyncio.Future()],
         }
         self.eventList = ["login", "condition_load"]
@@ -194,6 +195,10 @@ class Server(Process):
     async def handle_condition_info(self, data):
         logger.debug("")
         await self.manager.sendCondition(data)
+
+    async def handle_stop_condition_info(self, data):
+        logger.debug("")
+        await self.manager.sendConditionStop(data)
 
     async def handle_daily_chart(self, data):
         logger.debug("")

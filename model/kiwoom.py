@@ -361,8 +361,8 @@ class Kiwoom(QObject):
         """
         self.ocx.dynamicCall("SendCondition(QString, QString, int, int)", screen, cond_name, cond_index, search)
 
-    def SendConditionStop(self, screen, cond_name, index):
-        self.ocx.dynamicCall("SendConditionStop(QString, QString, int)", screen, cond_name, index)
+    def SendConditionStop(self, screen, cond_name, cond_index):
+        self.ocx.dynamicCall("SendConditionStop(QString, QString, int)", screen, cond_name, cond_index)
 
     def GetCommDataEx(self, trcode, rqname):
         data = self.ocx.dynamicCall("GetCommDataEx(QString, QString)", trcode, rqname)

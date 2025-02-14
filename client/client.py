@@ -131,6 +131,10 @@ class Client(QObject):
 
         return result
 
+    def stop_condition_info(self, name, code: int, screen_no):
+        logging.debug("")
+        self.requestQueue.put(("stop_condition_info", {"name": name, "code": code, "screen_no": screen_no}))
+
     def daily_chart(self, code, screen_no):
         logging.debug("")
         self.requestQueue.put(("daily_chart", {"stock_no": code, "screen_no": screen_no}))

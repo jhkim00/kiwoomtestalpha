@@ -1,5 +1,5 @@
 import logging
-
+import time
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
 
 from client import Client
@@ -11,6 +11,7 @@ class ConditionViewModel(QObject):
     conditionListChanged = pyqtSignal()
     conditionStockListChanged = pyqtSignal()
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비']
+    max_realtime_condition_count = 5
 
     def __init__(self, qmlContext, parent=None):
         super().__init__(parent)
@@ -58,13 +59,29 @@ class ConditionViewModel(QObject):
                 found = True
                 break
         if not found:
-            logger.error(f"condition is not found name:{name}, code:{code}")
+            logger.error(f"condition is not found. name:{name}, code:{code}")
             return
 
         if code in self._conditionInfoDict:
             self._currentConditionCode = code
             self.conditionStockListChanged.emit()
             return
+
+        if len(self._conditionInfoDict) >= self.max_realtime_condition_count:
+            stop_cond_key = next(iter(self._conditionInfoDict))
+            stop_cond_name = ''
+            for cond in self._conditionList:
+                if cond['code'] == stop_cond_key:
+                    stop_cond_name = cond['name']
+                    break
+
+            if len(stop_cond_name) == 0:
+                logger.error(f"condition {code} name is not found.")
+                raise Exception
+
+            del self._conditionInfoDict[stop_cond_key]
+            logger.debug(f"stop {stop_cond_key}:{stop_cond_name} condition info")
+            Client.getInstance().stop_condition_info(stop_cond_name, stop_cond_key, "1004")
 
         result = Client.getInstance().condition_info(name, code, "1004")
         logger.debug(f"result:{result}")

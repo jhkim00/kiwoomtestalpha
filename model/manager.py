@@ -109,6 +109,15 @@ class Manager(QObject):
             search=1
         )
 
+    async def sendConditionStop(self, data):
+        logger.debug("")
+        await self.coolDown.call()
+        self.kw.SendConditionStop(
+            screen=data["screen_no"],
+            cond_name=data["name"],
+            cond_index=data["code"]
+        )
+
     async def getDailyChart(self, data):
         logger.debug("")
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
