@@ -24,12 +24,14 @@ class Kiwoom(QObject):
         self.ocx.OnReceiveRealData.connect(self.OnReceiveRealData)
         self.ocx.OnReceiveConditionVer.connect(self.OnReceiveConditionVer)
         self.ocx.OnReceiveTrCondition.connect(self.OnReceiveTrCondition)
+        self.ocx.OnReceiveRealCondition.connect(self.OnReceiveRealCondition)
         self.ocx.exception.connect(self.OnException)
 
         self.trCallbacks = {}
         self.realDataCallbacks = {}
         self.conditionVerCallback = None
         self.trConditionCallback = None
+        self.realConditionCallback = None
 
     @classmethod
     def getInstance(cls):
@@ -109,6 +111,22 @@ class Kiwoom(QObject):
         try:
             if self.trConditionCallback:
                 self.trConditionCallback(screen_no, code_list, cond_name, cond_index, next)
+        except Exception as e:
+            logger.error(f"Error while calling cb: {e}", exc_info=True)
+
+    def OnReceiveRealCondition(self, code, id_type, cond_name, cond_index):
+        """이벤트 함수로 편입, 이탈 종목이 실시간으로 들어오는 callback 함수
+
+        Args:
+            code (str): 종목코드
+            id_type (str): 편입('I'), 이탈('D')
+            cond_name (str): 조건명
+            cond_index (str): 조건명 인덱스
+        """
+        logger.debug(f"code:{code}, id_type:{id_type}, cond_name:{cond_name}, cond_index:{cond_index}")
+        try:
+            if self.realConditionCallback:
+                self.realConditionCallback(code, id_type, cond_name, cond_index)
         except Exception as e:
             logger.error(f"Error while calling cb: {e}", exc_info=True)
 

@@ -10,6 +10,8 @@ logger = logging.getLogger()
 class ConditionViewModel(QObject):
     conditionListChanged = pyqtSignal()
     conditionStockListChanged = pyqtSignal()
+    conditionRealReceived = pyqtSignal(dict)
+
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비']
     max_realtime_condition_count = 5
 
@@ -24,6 +26,9 @@ class ConditionViewModel(QObject):
 
         Client.getInstance().registerEventCallback("condition_load", self.onConditionList)
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
+        Client.getInstance().registerRealDataCallback("condition_info_real", self.__onConditionInfoReal)
+
+        self.conditionRealReceived.connect(self.__onConditionInfoRealReceived)
 
     @pyqtProperty(list, notify=conditionListChanged)
     def conditionList(self):
@@ -121,6 +126,11 @@ class ConditionViewModel(QObject):
                 stock.volumeRate = data[1]['30']
                 break
 
+    @pyqtSlot(dict)
+    def __onConditionInfoReal(self, data):
+        logger.debug("")
+        self.conditionRealReceived.emit(data)
+
     """
     private method
     """
@@ -135,3 +145,20 @@ class ConditionViewModel(QObject):
             stockPriceList.append(priceItemData)
 
         return stockPriceList
+
+    @pyqtSlot(dict)
+    def __onConditionInfoRealReceived(self, data):
+        logger.debug(f"data:{data}")
+        # code: str, id_type: str, cond_name: str, cond_index: str
+        cond_index = int(data["cond_index"])
+        stockPriceList = self._conditionInfoDict[cond_index]
+        codeList = [stockPrice.code for stockPrice in stockPriceList]
+
+        if data["id_type"] == 'I':  # 종목편입
+            codeList.append(data['code'])
+        elif data["id_type"] == 'D':  # 종목이탈
+            codeList.remove(data['code'])
+
+        stockPriceList = self.__getStockPriceList(codeList)
+        self._conditionInfoDict[cond_index] = stockPriceList
+        self.conditionStockListChanged.emit()

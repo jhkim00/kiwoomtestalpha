@@ -21,6 +21,7 @@ class Manager(QObject):
         self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
         self.kw.conditionVerCallback = self.__onReceiveConditionVer
         self.kw.trConditionCallback = self.__onReceiveTrCondition
+        self.kw.realConditionCallback = self.__onReceiveRealCondition
 
         self.notifyLoginCompleted = None
         self.notifyLoginInfo = None
@@ -32,6 +33,7 @@ class Manager(QObject):
         self.notifyStocksInfo = None
         self.notifyConditionInfo = None
         self.notifyDailyChart = None
+        self.notifyConditionInfoReal = None
 
         self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
 
@@ -210,7 +212,15 @@ class Manager(QObject):
 
     def __onReceiveTrCondition(self, screen_no, code_list, cond_name, cond_index, next):
         logger.debug(f"screen:{screen_no}, code_list:{code_list}, cond_name:{cond_name}, cond_index:{cond_index}, next:{next}")
-        self.notifyConditionInfo({"code_list": code_list.strip(";").split(";"), "cond_name": cond_name, "cond_index": cond_index})
+        self.notifyConditionInfo(
+            {"code_list": code_list.strip(";").split(";"), "cond_name": cond_name, "cond_index": cond_index}
+        )
+
+    def __onReceiveRealCondition(self, code: str, id_type: str, cond_name: str, cond_index: str):
+        logger.debug("")
+        self.notifyConditionInfoReal(
+            {"code": code, "id_type": id_type, "cond_name": cond_name, "cond_index": cond_index, }
+        )
 
     """
     private method

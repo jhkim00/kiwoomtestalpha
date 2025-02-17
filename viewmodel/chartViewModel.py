@@ -92,7 +92,7 @@ class ChartViewModel(QObject):
 
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
-        logger.debug(f"data:{data}")
+        # logger.debug(f"data:{data}")
         if self.df is None:
             return
         if data[0] == self.stockCode:

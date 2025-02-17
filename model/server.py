@@ -71,6 +71,7 @@ class Server(Process):
         self.manager.notifyStocksInfo = self.notifyStocksInfo
         self.manager.notifyConditionInfo = self.notifyConditionInfo
         self.manager.notifyDailyChart = self.notifyDailyChart
+        self.manager.notifyConditionInfoReal = self.notifyConditionInfoReal
 
         """ `asyncio.create_task()`를 사용하여 여러 개의 태스크를 동시에 실행"""
         tasks = [
@@ -157,6 +158,10 @@ class Server(Process):
     def notifyDailyChart(self, info):
         # logger.debug(f"info:{info}")
         self.requestHandlerMap["daily_chart"][self.futureIndex].set_result(info)
+
+    def notifyConditionInfoReal(self, data):
+        # logger.debug("")
+        self.realDataQueue.put(("condition_info_real", data))
 
     """
     request handler
