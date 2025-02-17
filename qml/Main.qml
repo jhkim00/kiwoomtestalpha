@@ -124,5 +124,39 @@ ApplicationWindow {
                 chartViewModel.load()
             }
         }
+
+        TextButton {
+            id: btnBuy
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "buy"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            enabled: mainViewModel.login_completed
+            onBtnClicked: {
+                console.log('btnBuy clicked')
+
+                tradeViewModel.buy()
+            }
+        }
+
+        TextButton {
+            id: btnSell
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "sell"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            enabled: mainViewModel.login_completed
+            onBtnClicked: {
+                console.log('btnSell clicked')
+
+                tradeViewModel.sell()
+            }
+        }
     }
 }

@@ -142,6 +142,21 @@ class Client(QObject):
 
         return result
 
+    def send_order(self, account_no, order_type, stock_no, quantity, price, hoga, order_no, screen_no):
+        logging.debug("")
+        self.requestQueue.put(
+            ("send_order",
+             {"account_no": account_no,
+              "order_type": order_type,
+              "stock_no": stock_no,
+              "quantity": quantity,
+              "price": price,
+              "hoga": hoga,
+              "order_no": order_no,
+              "screen_no": screen_no}
+             )
+        )
+
     def registerEventCallback(self, event: str, callback):
         self.registerCallback(self.eventQueueWorker, event, callback)
 

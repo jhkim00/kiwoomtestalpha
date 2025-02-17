@@ -127,7 +127,7 @@ class Manager(QObject):
         self.kw.CommRqData(rqname="주식일봉차트", trcode="opt10081", next=0, screen=data["screen_no"])
 
     async def sendOrder(self, data):
-        logger.debug("")
+        logger.debug(f"{data}")
         await self.coolDown.call()
         self.kw.SendOrder(
             rqname="주식주문",

@@ -8,7 +8,7 @@ logger = logging.getLogger()
 
 class AccountViewModel(QObject):
     accountListChanged = pyqtSignal()
-    currentAccountChanged = pyqtSignal()
+    currentAccountChanged = pyqtSignal(str)
     currentAccountInfoChanged = pyqtSignal()
     currentAccountStockInfoChanged = pyqtSignal()
 
@@ -40,7 +40,7 @@ class AccountViewModel(QObject):
         if self._currentAccount != val:
             logger.debug(f"currentAccount changed: {val}")
             self._currentAccount = val
-            self.currentAccountChanged.emit()
+            self.currentAccountChanged.emit(val)
 
     @pyqtProperty(list, notify=currentAccountInfoChanged)
     def currentAccountInfo(self):
