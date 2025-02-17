@@ -23,6 +23,26 @@ ApplicationWindow {
     property var conditionWindow: null
     property var logWindow: null
 
+    onClosing: {
+        console.log("Application is closing")
+        if (accountWindow) {
+            accountWindow.close()
+            accountWindow.destroy()
+        }
+        if (marketWindow) {
+            marketWindow.close()
+            marketWindow.destroy()
+        }
+        if (conditionWindow) {
+            conditionWindow.close()
+            conditionWindow.destroy()
+        }
+        if (logWindow) {
+            logWindow.close()
+            logWindow.destroy()
+        }
+    }
+
     Column {
         width: parent.width
         y: 10

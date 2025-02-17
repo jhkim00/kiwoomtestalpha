@@ -144,7 +144,7 @@ class ChartViewModel(QObject):
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):
         # logger.debug(f"data:{data}")
-        if self.df:
+        if self.df is not None:
             if data[0] == self.stockCode:
                 tick = pd.Series(
                     {
