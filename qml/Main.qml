@@ -33,7 +33,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "login"
+            text: "Login"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -48,7 +48,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "account info"
+            text: "Account info"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -70,7 +70,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "current price"
+            text: "Current price"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -93,7 +93,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "condition"
+            text: "Condition"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -116,7 +116,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "daily chart"
+            text: "Chart"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -129,28 +129,11 @@ ApplicationWindow {
         }
 
         TextButton {
-            id: btnOpenMinuteChart
-            width: 200
-            height: 30
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "minute chart"
-            textSize: 20
-            normalColor: 'lightsteelblue'
-            radius: 4
-            enabled: mainViewModel.login_completed
-            onBtnClicked: {
-                console.log('btnOpenMinuteChart clicked')
-
-                chartViewModel.loadMinuteChart()
-            }
-        }
-
-        TextButton {
             id: btnBuy
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "buy"
+            text: "Buy"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -167,7 +150,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "sell"
+            text: "Sell"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -184,7 +167,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "log"
+            text: "Log"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4

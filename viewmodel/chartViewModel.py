@@ -58,7 +58,7 @@ class ChartViewModel(QObject):
         df = df.sort_values("time")
         # logger.debug(f"df:{df}")
         if self.chart is None:
-            self.chart = Chart(width=1920, height=1080, x=0, y=0, title='Daily Chart', toolbox=True)
+            self.chart = Chart(width=1920, height=1080, x=0, y=0, title='Chart', toolbox=True, inner_height=0.5)
 
         self.chart.set(df)
 
@@ -83,6 +83,8 @@ class ChartViewModel(QObject):
         # self.line_120.set(sma_data_120)
 
         self.df = df
+        self.loadMinuteChart()
+
         self.chart.show()
 
     @pyqtSlot()
@@ -109,20 +111,16 @@ class ChartViewModel(QObject):
         df = df.sort_values("time")
         # logger.debug(f"df:{df}")
         if self.mChart is None:
-            self.mChart = Chart(width=1920, height=1080, x=0, y=0, title='Minute Chart', toolbox=True)
+            self.mChart = self.chart.create_subchart(position='bottom', width=1, height=0.5)
 
         self.mChart.set(df)
-
         self.mDf = df
-        self.mChart.show()
 
     @pyqtSlot(str, str)
     def setStock(self, name, code):
         self.stockCode = code
         if self.chart:
             self.load()
-        if self.mChart:
-            self.loadMinuteChart()
 
     """
     client model event
