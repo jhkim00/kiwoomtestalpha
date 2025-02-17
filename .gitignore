@@ -62,3 +62,6 @@ ehthumbs.db
 
 # sqlist db 파일
 *.db
+
+# 실시간검색 로그 파일
+*.txt
