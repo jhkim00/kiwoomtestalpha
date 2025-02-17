@@ -56,6 +56,7 @@ class Server(Process):
             "condition_info": [self.handle_condition_info, asyncio.Future()],
             "stop_condition_info": [self.handle_stop_condition_info, None],
             "daily_chart": [self.handle_daily_chart, asyncio.Future()],
+            "minute_chart": [self.handle_minute_chart, asyncio.Future()],
             "send_order": [self.handle_send_order, asyncio.Future()],
         }
         self.eventList = ["login", "condition_load"]
@@ -72,6 +73,7 @@ class Server(Process):
         self.manager.notifyConditionInfo = self.notifyConditionInfo
         self.manager.notifyDailyChart = self.notifyDailyChart
         self.manager.notifyConditionInfoReal = self.notifyConditionInfoReal
+        self.manager.notifyMinuteChart = self.notifyMinuteChart
 
         """ `asyncio.create_task()`를 사용하여 여러 개의 태스크를 동시에 실행"""
         tasks = [
@@ -159,6 +161,10 @@ class Server(Process):
         # logger.debug(f"info:{info}")
         self.requestHandlerMap["daily_chart"][self.futureIndex].set_result(info)
 
+    def notifyMinuteChart(self, info):
+        # logger.debug(f"info:{info}")
+        self.requestHandlerMap["minute_chart"][self.futureIndex].set_result(info)
+
     def notifyConditionInfoReal(self, data):
         # logger.debug("")
         self.realDataQueue.put(("condition_info_real", data))
@@ -209,6 +215,10 @@ class Server(Process):
     async def handle_daily_chart(self, data):
         logger.debug("")
         await self.manager.getDailyChart(data)
+
+    async def handle_minute_chart(self, data):
+        logger.debug("")
+        await self.manager.getMinuteChart(data)
 
     async def handle_send_order(self, data):
         logger.debug("")

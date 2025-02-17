@@ -126,6 +126,23 @@ ApplicationWindow {
         }
 
         TextButton {
+            id: btnOpenMinuteChart
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "open minute chart"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            enabled: mainViewModel.login_completed
+            onBtnClicked: {
+                console.log('btnOpenMinuteChart clicked')
+
+                chartViewModel.loadMinuteChart()
+            }
+        }
+
+        TextButton {
             id: btnBuy
             width: 200
             height: 30

@@ -142,6 +142,13 @@ class Client(QObject):
 
         return result
 
+    def minute_chart(self, code, tick_range, screen_no):
+        logging.debug("")
+        self.requestQueue.put(("minute_chart", {"stock_no": code, "tick_range": tick_range, "screen_no": screen_no}))
+        request, result = self.responseQueue.get()
+
+        return result
+
     def send_order(self, account_no, order_type, stock_no, quantity, price, hoga, order_no, screen_no):
         logging.debug("")
         self.requestQueue.put(

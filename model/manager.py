@@ -18,6 +18,7 @@ class Manager(QObject):
         self.kw.trCallbacks["OPW00004"] = self.__onAccountInfo
         self.kw.trCallbacks["OPTKWFID"] = self.__onStocksInfo
         self.kw.trCallbacks["opt10081"] = self.__onDailyChart
+        self.kw.trCallbacks["opt10080"] = self.__onMinuteChart
         self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
         self.kw.conditionVerCallback = self.__onReceiveConditionVer
         self.kw.trConditionCallback = self.__onReceiveTrCondition
@@ -33,6 +34,7 @@ class Manager(QObject):
         self.notifyStocksInfo = None
         self.notifyConditionInfo = None
         self.notifyDailyChart = None
+        self.notifyMinuteChart = None
         self.notifyConditionInfoReal = None
 
         self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
@@ -126,6 +128,13 @@ class Manager(QObject):
         await self.coolDown.call()
         self.kw.CommRqData(rqname="주식일봉차트", trcode="opt10081", next=0, screen=data["screen_no"])
 
+    async def getMinuteChart(self, data):
+        logger.debug("")
+        self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
+        self.kw.SetInputValue(id="틱범위", value=data["tick_range"])
+        await self.coolDown.call()
+        self.kw.CommRqData(rqname="주식분봉차트", trcode="opt10080", next=0, screen=data["screen_no"])
+
     async def sendOrder(self, data):
         logger.debug(f"{data}")
         await self.coolDown.call()
@@ -188,6 +197,15 @@ class Manager(QObject):
             _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
 
             self.notifyDailyChart(outList)
+
+    def __onMinuteChart(self, screen, rqname, trcode, record, next):
+        logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}")
+        if rqname == "주식분봉차트":
+            single_data_keys = []
+            multi_data_keys = ['현재가', '거래량', '체결시간', '시가', '고가', '저가']
+            _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
+
+            self.notifyMinuteChart(outList)
 
     """
     real data callbacks

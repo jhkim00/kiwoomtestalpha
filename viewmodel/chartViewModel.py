@@ -1,7 +1,7 @@
 import logging
 from lightweight_charts import Chart
 import pandas as pd
-
+from datetime import datetime
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
 
 from client import Client
@@ -10,6 +10,7 @@ logger = logging.getLogger()
 
 class ChartViewModel(QObject):
     dailyChartModelChanged = pyqtSignal()
+    stockPriceRealReceived = pyqtSignal(tuple)
 
     def __init__(self, qmlContext, parent=None):
         super().__init__(parent)
@@ -24,7 +25,12 @@ class ChartViewModel(QObject):
         self.line_60 = None
         self.line_120 = None
 
+        self.mChart = None
+        self.mDf = None
+
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
+
+        self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
 
     """
     method for qml side
@@ -79,12 +85,44 @@ class ChartViewModel(QObject):
         self.df = df
         self.chart.show()
 
+    @pyqtSlot()
+    def loadMinuteChart(self):
+        logger.debug("")
+        if len(self.stockCode) == 0:
+            return
+
+        result = Client.getInstance().minute_chart(self.stockCode, 1, "1005")
+        logger.debug(f"{result}")
+        filtered_data = [{key: d[key] for key in ['현재가', '거래량', '체결시간', '시가', '고가', '저가']} for d in result]
+        df = pd.DataFrame(filtered_data)
+        logger.debug(f"df:{df}")
+        df.rename(
+            columns={"체결시간": "time", "시가": "open", "고가": "high", "저가": "low", "현재가": "close", "거래량": "volume"},
+            inplace=True
+        )
+        df["time"] = pd.to_datetime(df["time"], format="%Y%m%d%H%M%S").dt.strftime("%Y-%m-%d %H:%M")
+        df["open"] = abs(df["open"].astype(int))
+        df["high"] = abs(df["high"].astype(int))
+        df["low"] = abs(df["low"].astype(int))
+        df["close"] = abs(df["close"].astype(int))
+        df["volume"] = df["volume"].astype(int)
+        df = df.sort_values("time")
+        # logger.debug(f"df:{df}")
+        if self.mChart is None:
+            self.mChart = Chart(width=1920, height=1080, x=0, y=0, title='Minute Chart', toolbox=True)
+
+        self.mChart.set(df)
+
+        self.mDf = df
+        self.mChart.show()
+
     @pyqtSlot(str, str)
     def setStock(self, name, code):
         self.stockCode = code
-        if self.chart is None:
-            return
-        self.load()
+        if self.chart:
+            self.load()
+        if self.mChart:
+            self.loadMinuteChart()
 
     """
     client model event
@@ -93,24 +131,7 @@ class ChartViewModel(QObject):
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
         # logger.debug(f"data:{data}")
-        if self.df is None:
-            return
-        if data[0] == self.stockCode:
-            self.df.iloc[-1, self.df.columns.get_loc('close')] = abs(int(data[1]['10']))
-            self.df.iloc[-1, self.df.columns.get_loc('volume')] = abs(int(data[1]['13']))
-            self.df.iloc[-1, self.df.columns.get_loc('open')] = abs(int(data[1]['16']))
-            self.df.iloc[-1, self.df.columns.get_loc('high')] = abs(int(data[1]['17']))
-            self.df.iloc[-1, self.df.columns.get_loc('low')] = abs(int(data[1]['18']))
-            tick = pd.Series(
-                {
-                    'time': self.df.iloc[-1]['time'],
-                    'price': self.df.iloc[-1]['close'],
-                    'volume': self.df.iloc[-1]['volume'],
-                }
-            )
-
-            # logger.debug(f"tick:{self.df.iloc[-1]}")
-            self.chart.update_from_tick(tick)
+        self.stockPriceRealReceived.emit(data)
 
     """
     private method
@@ -121,3 +142,33 @@ class ChartViewModel(QObject):
             'time': df['time'],
             f'SMA {period}': df['close'].rolling(window=period).mean()
         }).dropna()
+
+    @pyqtSlot(tuple)
+    def __onStockPriceRealReceived(self, data):
+        # logger.debug(f"data:{data}")
+        if self.df:
+            if data[0] == self.stockCode:
+                tick = pd.Series(
+                    {
+                        'time': self.df.iloc[-1]['time'],
+                        'price': abs(int(data[1]['10'])),
+                        'volume': abs(int(data[1]['13'])),
+                    }
+                )
+
+                # logger.debug(f"tick:{self.df.iloc[-1]}")
+                self.chart.update_from_tick(tick)
+
+        if self.mDf is not None:
+            if data[0] == self.stockCode:
+
+                dateStr = datetime.strptime(self.mDf.iloc[-1]['time'], "%Y-%m-%d %H:%M").strftime("%Y-%m-%d")
+                timeStr = datetime.strptime(data[1]['20'], "%H%M%S").strftime("%H:%M")
+                tick = pd.Series(
+                    {
+                        'time': f"{dateStr} {timeStr}",
+                        'price': abs(int(data[1]['10'])),
+                        'volume': abs(int(data[1]['15'])),
+                    }
+                )
+                self.mChart.update_from_tick(tick, cumulative_volume=True)
