@@ -12,7 +12,7 @@ from model import Server
 from client import Client
 
 from viewmodel import (MainViewModel, AccountViewModel, MarketViewModel, FavoriteStockViewModel, ConditionViewModel,
-                       ChartViewModel, TradeViewModel)
+                       ChartViewModel, TradeViewModel, LogViewModel)
 
 logger = logging.getLogger()
 requestQueue = multiprocessing.Queue()
@@ -62,6 +62,7 @@ if __name__ == "__main__":
     conditionViewModel = ConditionViewModel(engine.rootContext(), app)
     chartViewModel = ChartViewModel(engine.rootContext(), app)
     tradeViewModel = TradeViewModel(engine.rootContext(), app)
+    logViewModel = LogViewModel(engine.rootContext(), app)
 
     marketViewModel.currentStockChanged.connect(chartViewModel.setStock)
     marketViewModel.currentStockChanged.connect(tradeViewModel.setCurrentStock)

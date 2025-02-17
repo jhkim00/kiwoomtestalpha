@@ -4,8 +4,6 @@ import "./component"
 
 ApplicationWindow {
     visible: true
-    x: 0
-    y: 480
     width: fixedWidth
     height: fixedHeight
     minimumWidth: fixedWidth

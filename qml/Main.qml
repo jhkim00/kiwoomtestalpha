@@ -5,6 +5,8 @@ import "./component"
 ApplicationWindow {
     id: root
     visible: true
+    x: 0
+    y: 0
     width: fixedWidth
     height: fixedHeight
     minimumWidth: fixedWidth
@@ -19,6 +21,7 @@ ApplicationWindow {
     property var accountWindow: null
     property var marketWindow: null
     property var conditionWindow: null
+    property var logWindow: null
 
     Column {
         width: parent.width
@@ -45,7 +48,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "open account info"
+            text: "account info"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -67,7 +70,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "open current price"
+            text: "current price"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -90,7 +93,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "open condition"
+            text: "condition"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -113,7 +116,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "open chart"
+            text: "daily chart"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -130,7 +133,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "open minute chart"
+            text: "minute chart"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -173,6 +176,28 @@ ApplicationWindow {
                 console.log('btnSell clicked')
 
                 tradeViewModel.sell()
+            }
+        }
+
+        TextButton {
+            id: btnLog
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "log"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            onBtnClicked: {
+                console.log('btnLog clicked')
+
+                if (root.logWindow === null) {
+                    var component = Qt.createComponent("Log.qml")
+                    if (component.status === Component.Ready) {
+                        root.logWindow = component.createObject()
+                    }
+                }
+                root.logWindow.show()
             }
         }
     }

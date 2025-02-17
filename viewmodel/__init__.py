@@ -5,3 +5,4 @@ from .favoriteStockViewModel import FavoriteStockViewModel
 from .conditionViewModel import ConditionViewModel
 from .chartViewModel import ChartViewModel
 from .tradeViewModel import TradeViewModel
+from .logViewModel import LogViewModel

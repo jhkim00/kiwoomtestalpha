@@ -6,8 +6,6 @@ import "./component"
 
 ApplicationWindow {
     visible: true
-    x: 0
-    y: 0
     width: fixedWidth
     height: fixedHeight
     minimumWidth: fixedWidth
@@ -17,7 +15,7 @@ ApplicationWindow {
     title: "Account"
 
     property var fixedWidth: 840
-    property var fixedHeight: 480
+    property var fixedHeight: 240
 
     Component.onCompleted: {
         console.log("account component completed")
@@ -25,6 +23,7 @@ ApplicationWindow {
     }
 
     ComboBox {
+        id: accountComboBox
         width: 200
         y: 10
         model: accountViewModel.accountList
@@ -38,9 +37,10 @@ ApplicationWindow {
 
     GridView {
         id: accountInfoGridView
-        y: 60
+        anchors.top: accountComboBox.bottom
+        anchors.topMargin: 10
         width: parent.width
-        height: 100
+        height: 50
         cellWidth: 120
         cellHeight: 50
         model: accountViewModel.currentAccountInfo
@@ -85,7 +85,7 @@ ApplicationWindow {
         anchors.top: accountInfoGridView.bottom
         anchors.topMargin: 10
         width: parent.width
-        height: 200
+        height: 120
 
         model: accountViewModel.currentAccountStockInfo
 
