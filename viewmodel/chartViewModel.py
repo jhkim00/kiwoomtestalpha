@@ -17,6 +17,7 @@ class ChartViewModel(QObject):
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty('chartViewModel', self)
 
+        self.stockName = ''
         self.stockCode = ''
         self.chart = None
         self.df = None
@@ -27,6 +28,7 @@ class ChartViewModel(QObject):
 
         self.mChart = None
         self.mDf = None
+        self.mMinute = 1
 
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
@@ -59,7 +61,9 @@ class ChartViewModel(QObject):
         # logger.debug(f"df:{df}")
         if self.chart is None:
             self.chart = Chart(width=1920, height=1080, x=0, y=0, title='Chart', toolbox=True, inner_height=0.5)
+            self.chart.topbar.textbox('symbol')
 
+        self.chart.topbar['symbol'].set(self.stockName)
         self.chart.set(df)
 
         # if self.line_5 is None:
@@ -93,7 +97,10 @@ class ChartViewModel(QObject):
         if len(self.stockCode) == 0:
             return
 
-        result = Client.getInstance().minute_chart(self.stockCode, 1, "1005")
+        if self.chart is None:
+            return
+
+        result = Client.getInstance().minute_chart(self.stockCode, self.mMinute, "1005")
         logger.debug(f"{result}")
         filtered_data = [{key: d[key] for key in ['현재가', '거래량', '체결시간', '시가', '고가', '저가']} for d in result]
         df = pd.DataFrame(filtered_data)
@@ -118,6 +125,7 @@ class ChartViewModel(QObject):
 
     @pyqtSlot(str, str)
     def setStock(self, name, code):
+        self.stockName = name
         self.stockCode = code
         if self.chart:
             self.load()
