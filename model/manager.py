@@ -174,7 +174,7 @@ class Manager(QObject):
         logger.debug("")
         if rqname == "주식기본정보":
             single_data_keys = ['신용비율', '시가총액', 'PER', 'PBR', '매출액', '영업이익', '당기순이익', '유통주식', '유통비율',
-                '시가', '고가', '저가', '현재가', '기준가', '대비기호', '전일대비', '등락율', '거래량', '거래대비']
+                                '시가', '고가', '저가', '현재가', '기준가', '대비기호', '전일대비', '등락율', '거래량', '거래대비']
             outList, _ = self.__getCommDataByKeys(trcode, rqname, single_data_keys)
             self.notifyStockBasicInfo(outList)
 
@@ -182,7 +182,8 @@ class Manager(QObject):
         logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}")
         if rqname == "복수종목정보요청":
             single_data_keys = []
-            multi_data_keys = ['종목명', '종목코드', '시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비']
+            multi_data_keys = ['종목명', '종목코드', '시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율',
+                               '거래량', '전일거래량대비', '거래대금']
             _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
 
             # logger.debug(f"outList{outList}")

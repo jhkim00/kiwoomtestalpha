@@ -24,7 +24,7 @@ ApplicationWindow {
 
     ConditionListView {
         id: conditionListView
-        width: 240
+        width: 200
         height: parent.height
         model: conditionViewModel.conditionList
 

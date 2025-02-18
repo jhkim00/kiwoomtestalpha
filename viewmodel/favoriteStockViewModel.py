@@ -9,7 +9,7 @@ logger = logging.getLogger()
 
 class FavoriteStockViewModel(QObject):
     stockListChanged = pyqtSignal()
-    priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비']
+    priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
 
     def __init__(self, qmlContext, parent=None):
         logger.debug("")
@@ -99,4 +99,5 @@ class FavoriteStockViewModel(QObject):
                 stock.lowPrice = data[1]['18']
                 stock.diffSign = data[1]['25']
                 stock.volumeRate = data[1]['30']
+                stock.tradingValue = data[1]['14']
                 break

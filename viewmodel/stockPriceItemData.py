@@ -17,6 +17,7 @@ class StockPriceItemData(QObject):
     diffRateChanged = pyqtSignal()
     volumeChanged = pyqtSignal()
     volumeRateChanged = pyqtSignal()
+    tradingValueChanged = pyqtSignal()
 
     def __init__(self, name: str, code: str, priceInfo: dict, fromSingleInfo=True):
         super().__init__()
@@ -33,9 +34,11 @@ class StockPriceItemData(QObject):
         if fromSingleInfo:
             self._diffSign = priceInfo["대비기호"]
             self._volumeRate = priceInfo["거래대비"]
+            self._tradingValue = ''
         else:
             self._diffSign = priceInfo["전일대비기호"]
             self._volumeRate = priceInfo["전일거래량대비"]
+            self._tradingValue = priceInfo["거래대금"]
 
     @pyqtProperty(str, notify=nameChanged)
     def name(self):
@@ -157,6 +160,16 @@ class StockPriceItemData(QObject):
             self._volumeRate = val
             self.volumeRateChanged.emit()
 
+    @pyqtProperty(str, notify=tradingValueChanged)
+    def tradingValue(self):
+        return self._tradingValue
+
+    @tradingValue.setter
+    def tradingValue(self, val: str):
+        if self._tradingValue != val:
+            self._tradingValue = val
+            self.tradingValueChanged.emit()
+
     def __repr__(self):
         str_ = "==StockPriceItemData==\n"
         str_ += f"name: {self._name}\n"
@@ -170,5 +183,6 @@ class StockPriceItemData(QObject):
         str_ += f"diffRate: {self._diffRate}\n"
         str_ += f"volume: {self._volume}\n"
         str_ += f"volumeRate: {self._volumeRate}\n"
+        str_ += f"tradingValue: {self._tradingValue}\n"
 
         return str_

@@ -53,28 +53,28 @@ Rectangle {
         property string diffRate: modelData.diffRate
         property string volume: modelData.volume
         property string volumeRate: modelData.volumeRate
+        property string tradingValue: modelData.tradingValue
         property string priceColor: getPriceColor(currentPrice, refPrice)
 
         function numberStrToNonAbsFormated(numberStr) {
-            var result = '';
-            var strLength = numberStr.length;
-            var commaIndex = strLength % 3;
+            // 소수점이 있는 경우 정수 부분과 소수 부분을 분리
+            var parts = numberStr.split('.');
+            var intPart = parts[0]; // 정수 부분
+            var decimalPart = parts.length > 1 ? '.' + parts[1] : ''; // 소수 부분 (있으면 추가)
 
-            // 소수점의 위치 파악
-            var decimalIndex = numberStr.indexOf('.');
-            if (decimalIndex === -1) {
-                decimalIndex = strLength; // 소수점이 없으면 문자열의 길이로 설정
-            }
+            // 정수 부분을 뒤집은 후, 3자리마다 쉼표 추가 후 다시 뒤집기
+            var formattedInt = intPart
+                .split('')
+                .reverse()
+                .join('')
+                .match(/.{1,3}/g)
+                .join(',')
+                .split('')
+                .reverse()
+                .join('');
 
-            for (var i = 0; i < strLength; i++) {
-                result += numberStr[i];
-                if (i === commaIndex - 1 && i !== strLength - 1 && i < decimalIndex - 1) {
-                    result += ',';
-                    commaIndex += 3;
-                }
-            }
-
-            return result;
+            // 최종 결과 반환
+            return formattedInt + decimalPart;
         }
 
         function numberStrToFormated(numberStr) {
@@ -172,6 +172,12 @@ Rectangle {
             valueText: priceRow.numberStrToFormated(priceRow.volumeRate) + ' %'
             keyColor: 'black'
             valueColor: priceRow.getPriceColor(priceRow.volumeRate, 100)
+        }
+        VerticalKeyValueLabel {
+            keyText: '거래대금'
+            valueText: priceRow.numberStrToFormated(priceRow.tradingValue)
+            keyColor: 'black'
+            valueColor: 'black'
         }
     }
     MouseArea {
