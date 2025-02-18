@@ -16,12 +16,11 @@ ApplicationWindow {
     title: "Log"
 
     property var fixedWidth: 480
-    property var fixedHeight: 1080
+    property var fixedHeight: 720
 
     property var accountWindow: null
     property var marketWindow: null
     property var conditionWindow: null
-
     Column {
         width: parent.width
         y: 10
@@ -41,13 +40,17 @@ ApplicationWindow {
                 border.width: 1
                 color: 'transparent'
                 Text {
-                    anchors.fill: parent
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: 5
                     text: model.display
                     color: 'black'
-                    font.pixelSize: 20
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignLeft
+                    font.pixelSize: 10
                 }
+            }
+
+            onCountChanged: {
+                positionViewAtEnd()
             }
         }
 
@@ -60,9 +63,13 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
+
+            property var cnt: 0
+
             onBtnClicked: {
                 console.trace()
-                logViewModel.log('test test test test test test test test test test test test')
+                btnTest.cnt++
+                logViewModel.log('test test test test test test test test test test test test %1'.arg(btnTest.cnt))
                 listView.update()
             }
         }

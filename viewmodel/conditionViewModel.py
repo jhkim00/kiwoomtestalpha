@@ -5,6 +5,7 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
 
 from client import Client
 from .stockPriceItemData import StockPriceItemData
+from .logViewModel import LogViewModel
 
 logger = logging.getLogger()
 
@@ -170,12 +171,16 @@ class ConditionViewModel(QObject):
         self.conditionStockListChanged.emit()
 
         formattedTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log = ''
         if data["id_type"] == 'I':
             for stock in stockPriceList:
                 if stock.code == data['code']:
                     stockName = stock.name
-            with open("실시간검색.txt", "a", encoding="utf-8") as f:
-                f.write(f"\n[{formattedTime}][종목편입]({data['cond_name']}:{data['code']}:{stockName})")
+            log = f"\n[{formattedTime}][종목편입]({data['cond_name']}:{data['code']}:{stockName})"
         elif data["id_type"] == 'D':
+            log = f"\n[{formattedTime}][종목이탈]({data['cond_name']}:{data['code']}:{stockName})"
+
+        if len(log) > 0:
             with open("실시간검색.txt", "a", encoding="utf-8") as f:
-                f.write(f"\n[{formattedTime}][종목이탈]({data['cond_name']}:{data['code']}:{stockName})")
+                f.write(log)
+            LogViewModel.getInstance().log(log)

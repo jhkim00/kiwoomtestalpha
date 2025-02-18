@@ -38,17 +38,19 @@ class LogModel(QAbstractListModel):
         self._data.append(item)
         self.endInsertRows()
 
-        logger.debug(f'{self._data}')
-
 class LogViewModel(QObject):
+    instance = None
     logModelChanged = pyqtSignal()
 
-    def __init__(self, qmlContext, parent=None):
-        super().__init__(parent)
-        self.qmlContext = qmlContext
-        self.qmlContext.setContextProperty('logViewModel', self)
-
+    def __init__(self):
+        super().__init__()
         self._logModel = LogModel()
+
+    @classmethod
+    def getInstance(cls):
+        if cls.instance is None:
+            cls.instance = LogViewModel()
+        return cls.instance
 
     @pyqtProperty(LogModel, notify=logModelChanged)
     def logModel(self):
@@ -60,13 +62,10 @@ class LogViewModel(QObject):
             self._logModel = val
             self.logModelChanged.emit()
 
-    def appendLog(self, log: str):
-        self._logModel.addItem(log)
-
     """
     method for qml side
     """
     @pyqtSlot(str)
     def log(self, log):
         logger.debug(f'{log}')
-        self.appendLog(log)
+        self._logModel.addItem(log)

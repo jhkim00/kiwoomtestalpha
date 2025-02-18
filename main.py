@@ -62,7 +62,8 @@ if __name__ == "__main__":
     conditionViewModel = ConditionViewModel(engine.rootContext(), app)
     chartViewModel = ChartViewModel(engine.rootContext(), app)
     tradeViewModel = TradeViewModel(engine.rootContext(), app)
-    logViewModel = LogViewModel(engine.rootContext(), app)
+    logViewModel = LogViewModel.getInstance()
+    engine.rootContext().setContextProperty('logViewModel', logViewModel)
 
     marketViewModel.currentStockChanged.connect(chartViewModel.setStock)
     marketViewModel.currentStockChanged.connect(tradeViewModel.setCurrentStock)
