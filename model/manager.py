@@ -39,7 +39,7 @@ class Manager(QObject):
 
         self.stock_price_real_data_fid_list = ['20', '10', '11', '12', '13', '14', '15', '16', '17', '18', '25', '30']
 
-        self.coolDown = CoolDown(limit=1, interval=0.3)
+        self.coolDown = CoolDown(limit=5)
 
     async def commConnect(self):
         logger.debug("")
