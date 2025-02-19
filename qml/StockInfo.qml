@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 import "./component"
 
 Rectangle {
@@ -195,102 +196,104 @@ Rectangle {
         }
     }
 
-    Row {
+    RowLayout {
         id: basicInfo
+        width: parent.width - stockNameAndCode.width
         height: parent.height * 0.5 - anchors.topMargin
         anchors.top: parent.top
         anchors.topMargin: 10
         anchors.left: stockNameAndCode.right
 
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '시가총액'
             valueText: numberStrToFormated(sichong)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: 'PER'
             valueText: per
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: 'PBR'
             valueText: pbr
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '매출액'
             valueText: numberStrToFormated(maechul)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '영업이익'
             valueText: numberStrToFormated(operatingProfit)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '당기순이익'
             valueText: numberStrToFormated(netProfit)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '유통주식'
             valueText: numberStrToFormated(yootongNumber)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '유통비율'
             valueText: yootongRate + ' %'
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '신용비율'
             valueText: numberStrToFormated(sinyongRate) + ' %'
         }
     }
 
-    Row {
+    RowLayout {
         id: priceInfo
+        width: parent.width - stockNameAndCode.width
         height: basicInfo.height
         anchors.top: basicInfo.bottom
         anchors.topMargin: 10
         anchors.left: basicInfo.left
 
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '시가'
             valueText: numberStrToFormated(startPrice)
             valueColor: getPriceColor(startPrice, refPrice)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '고가'
             valueText: numberStrToFormated(highPrice)
             valueColor: getPriceColor(highPrice, refPrice)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '저가'
             valueText: numberStrToFormated(lowPrice)
             valueColor: getPriceColor(lowPrice, refPrice)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '현재가'
             valueText: numberStrToFormated(currentPrice)
             valueColor: priceColor
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '기준가'
             valueText: numberStrToFormated(refPrice)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '대비기호'
             valueText: getDiffSignSymbol()
             valueColor: priceColor
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '전일대비'
             valueText: numberStrToFormated(diffPrice)
             valueColor: priceColor
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '등락률'
             valueText: numberStrToNonAbsFormated(diffRate) + ' %'
             valueColor: priceColor
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '거래량'
             valueText: numberStrToFormated(volume)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '거래대비'
             valueText: numberStrToFormated(volumeRate) + ' %'
             valueColor: getPriceColor(volumeRate, 100)
