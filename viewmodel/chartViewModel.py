@@ -26,9 +26,8 @@ class ChartViewModel(QObject):
         self.line_60 = None
         self.line_120 = None
 
-        self.mChart = None
-        self.mDf = None
-        self.mMinute = 1
+        self.mChart = [None, None]
+        self.mDf = [None, None]
 
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
@@ -46,7 +45,7 @@ class ChartViewModel(QObject):
         result = Client.getInstance().daily_chart(self.stockCode, "1005")
         filtered_data = [{key: d[key] for key in ["일자", "시가", "고가", "저가", "현재가", "거래량"]} for d in result]
         df = pd.DataFrame(filtered_data)
-        logger.debug(f"df:{df}")
+        # logger.debug(f"df:{df}")
         df.rename(
             columns={"일자": "time", "시가": "open", "고가": "high", "저가": "low", "현재가": "close", "거래량": "volume"},
             inplace=True
@@ -60,7 +59,7 @@ class ChartViewModel(QObject):
         df = df.sort_values("time")
         # logger.debug(f"df:{df}")
         if self.chart is None:
-            self.chart = Chart(width=1920, height=1080, x=0, y=0, title='Chart', toolbox=True, inner_height=0.5)
+            self.chart = Chart(width=1920, height=1080, x=0, y=0, title='Chart', toolbox=True, inner_width=1, inner_height=0.5)
             self.chart.topbar.textbox('symbol')
 
         self.chart.topbar['symbol'].set(self.stockName)
@@ -87,12 +86,12 @@ class ChartViewModel(QObject):
         # self.line_120.set(sma_data_120)
 
         self.df = df
-        self.loadMinuteChart()
+        self.loadMinuteChart([1, 5])
 
         self.chart.show()
 
     @pyqtSlot()
-    def loadMinuteChart(self):
+    def loadMinuteChart(self, minutes: list):
         logger.debug("")
         if len(self.stockCode) == 0:
             return
@@ -100,28 +99,33 @@ class ChartViewModel(QObject):
         if self.chart is None:
             return
 
-        result = Client.getInstance().minute_chart(self.stockCode, self.mMinute, "1005")
-        logger.debug(f"{result}")
-        filtered_data = [{key: d[key] for key in ['현재가', '거래량', '체결시간', '시가', '고가', '저가']} for d in result]
-        df = pd.DataFrame(filtered_data)
-        logger.debug(f"df:{df}")
-        df.rename(
-            columns={"체결시간": "time", "시가": "open", "고가": "high", "저가": "low", "현재가": "close", "거래량": "volume"},
-            inplace=True
-        )
-        df["time"] = pd.to_datetime(df["time"], format="%Y%m%d%H%M%S").dt.strftime("%Y-%m-%d %H:%M")
-        df["open"] = abs(df["open"].astype(int))
-        df["high"] = abs(df["high"].astype(int))
-        df["low"] = abs(df["low"].astype(int))
-        df["close"] = abs(df["close"].astype(int))
-        df["volume"] = df["volume"].astype(int)
-        df = df.sort_values("time")
-        # logger.debug(f"df:{df}")
-        if self.mChart is None:
-            self.mChart = self.chart.create_subchart(position='bottom', width=1, height=0.5)
+        i = 0
+        for minute in minutes:
+            result = Client.getInstance().minute_chart(self.stockCode, minute, "1005")
+            # logger.debug(f"{result}")
+            filtered_data = [{key: d[key] for key in ['현재가', '거래량', '체결시간', '시가', '고가', '저가']} for d in result]
+            df = pd.DataFrame(filtered_data)
+            # logger.debug(f"df:{df}")
+            df.rename(
+                columns={"체결시간": "time", "시가": "open", "고가": "high", "저가": "low", "현재가": "close", "거래량": "volume"},
+                inplace=True
+            )
+            df["time"] = pd.to_datetime(df["time"], format="%Y%m%d%H%M%S").dt.strftime("%Y-%m-%d %H:%M")
+            df["open"] = abs(df["open"].astype(int))
+            df["high"] = abs(df["high"].astype(int))
+            df["low"] = abs(df["low"].astype(int))
+            df["close"] = abs(df["close"].astype(int))
+            df["volume"] = df["volume"].astype(int)
+            df = df.sort_values("time")
+            # logger.debug(f"df:{df}")
+            if self.mChart[i] is None:
+                self.mChart[i] = self.chart.create_subchart(position='left', width=0.5, height=0.5)
+                self.mChart[i].topbar.textbox('symbol')
 
-        self.mChart.set(df)
-        self.mDf = df
+            self.mChart[i].topbar['symbol'].set(f'{minute} min')
+            self.mChart[i].set(df)
+            self.mDf[i] = df
+            i += 1
 
     @pyqtSlot(str, str)
     def setStock(self, name, code):
@@ -165,16 +169,18 @@ class ChartViewModel(QObject):
                 # logger.debug(f"tick:{self.df.iloc[-1]}")
                 self.chart.update_from_tick(tick)
 
-        if self.mDf is not None:
-            if data[0] == self.stockCode:
+        for i in range(0, len(self.mDf)):
+            df = self.mDf[i]
+            if df is not None:
+                if data[0] == self.stockCode:
 
-                dateStr = datetime.strptime(self.mDf.iloc[-1]['time'], "%Y-%m-%d %H:%M").strftime("%Y-%m-%d")
-                timeStr = datetime.strptime(data[1]['20'], "%H%M%S").strftime("%H:%M")
-                tick = pd.Series(
-                    {
-                        'time': f"{dateStr} {timeStr}",
-                        'price': abs(int(data[1]['10'])),
-                        'volume': abs(int(data[1]['15'])),
-                    }
-                )
-                self.mChart.update_from_tick(tick, cumulative_volume=True)
+                    dateStr = datetime.strptime(df.iloc[-1]['time'], "%Y-%m-%d %H:%M").strftime("%Y-%m-%d")
+                    timeStr = datetime.strptime(data[1]['20'], "%H%M%S").strftime("%H:%M")
+                    tick = pd.Series(
+                        {
+                            'time': f"{dateStr} {timeStr}",
+                            'price': abs(int(data[1]['10'])),
+                            'volume': abs(int(data[1]['15'])),
+                        }
+                    )
+                    self.mChart[i].update_from_tick(tick, cumulative_volume=True)
