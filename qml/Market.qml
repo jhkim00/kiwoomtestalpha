@@ -6,10 +6,10 @@ ApplicationWindow {
     visible: true
     width: fixedWidth
     height: fixedHeight
-    minimumWidth: fixedWidth
+    /*minimumWidth: fixedWidth
     maximumWidth: fixedWidth
     minimumHeight: fixedHeight
-    maximumHeight: fixedHeight
+    maximumHeight: fixedHeight*/
     title: "Market"
 
     property var fixedWidth: 1200
@@ -78,22 +78,6 @@ ApplicationWindow {
         onItemClicked: {
             console.log('Market.qml onItemClicked ' + itemData.name + ', '+ itemData.code)
             marketViewModel.setCurrentStock({'name': itemData.name, 'code': itemData.code})
-        }
-    }
-
-    TextButton {
-        id: btnTest
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        width: 200
-        height: 30
-        text: "test"
-        textSize: 20
-        normalColor: 'lightsteelblue'
-        radius: 4
-        onBtnClicked: {
-            console.log('btnTest clicked')
-            marketViewModel.test()
         }
     }
 }
