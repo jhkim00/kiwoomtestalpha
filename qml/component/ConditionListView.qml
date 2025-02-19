@@ -24,28 +24,18 @@ ListView {
         }
     }
 
-    Keys.onUpPressed: {
-        console.log("onUpPressed")
-        if (currentIndex > 0) {
-            --currentIndex
-        }
-        console.log(currentIndex)
-    }
-
-    Keys.onDownPressed: {
-        console.log("onDownPressed");
-        if (currentIndex < model.length - 1) {
-            ++currentIndex
-        }
-        console.log(currentIndex)
-    }
-
     delegate: Rectangle {
         id: listViewItem
         width: root.width
         height: 30
         border.color: 'black'
         border.width: 1
+
+        Rectangle {
+            anchors.fill: parent
+            opacity: 0.2
+            color: model.monitoring ? 'yellow' : 'transparent'
+        }
 
         Item {
             x: 10
@@ -54,7 +44,7 @@ ListView {
             Text {
                 id: listViewItemTextName
                 anchors.verticalCenter: parent.verticalCenter
-                text: modelData['name']
+                text: model.name
                 font.pixelSize: 16
                 color: 'white'
             }
@@ -63,7 +53,7 @@ ListView {
             id: listViewItemMouseArea
             anchors.fill: parent
             onClicked: {
-                root.itemClicked(modelData)
+                root.itemClicked(model)
 
                 root.currentIndex = index
             }

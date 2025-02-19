@@ -1,13 +1,82 @@
 import logging
 import time
 from datetime import datetime
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant, Qt, QAbstractListModel, QModelIndex
 
 from client import Client
 from .stockPriceItemData import StockPriceItemData
 from .logViewModel import LogViewModel
 
 logger = logging.getLogger()
+
+class ConditionModel(QAbstractListModel):
+    NameRole = Qt.UserRole + 1
+    CodeRole = Qt.UserRole + 2
+    MonitoringRole = Qt.UserRole + 3
+
+    def __init__(self, data=None):
+        super().__init__()
+        self.data = data or []
+        logger.debug(f"data:{data}")
+
+    def rowCount(self, parent=None):
+        return len(self.data)
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid() or index.row() >= len(self.data):
+            return QVariant()
+
+        item = self.data[index.row()]
+        if role == self.NameRole:
+            logger.debug(f"{item['name']}")
+            return item['name']
+        elif role == self.CodeRole:
+            logger.debug(f"{item['code']}")
+            return item['code']
+        elif role == self.MonitoringRole:
+            logger.debug(f"{item['monitoring']}")
+            return item['monitoring']
+
+        return QVariant()
+
+    def roleNames(self):
+        return {
+            self.NameRole: b"name",
+            self.CodeRole: b"code",
+            self.MonitoringRole: b"monitoring"
+        }
+
+    def addItem(self, item):
+        """ 리스트에 아이템을 추가하는 메서드 """
+        self.beginInsertRows(QModelIndex(), len(self.data), len(self.data))
+        self.data.append(item)
+        self.endInsertRows()
+
+    def removeItem(self, item):
+        """ 리스트에서 아이템을 찾아 삭제하는 메서드 """
+        if item in self.data:
+            index = self.data.index(item)
+            self.beginRemoveRows(QModelIndex(), index, index)
+            self.data.remove(item)
+            self.endRemoveRows()
+
+    def setItemValue(self, item, role, value):
+        """ 특정 아이템의 값을 설정하는 메서드 """
+        logger.debug(f"item:{item}, role:{role}, value:{value}")
+        if item in self.data:
+            index = self.data.index(item)
+            if role == self.NameRole:
+                item["name"] = value
+            elif role == self.CodeRole:
+                item["code"] = value
+            elif role == self.MonitoringRole:
+                item["monitoring"] = value
+            else:
+                return False  # 지원되지 않는 역할일 경우 False 반환
+
+            self.dataChanged.emit(self.index(index), self.index(index), [role])
+            return True
+        return False  # 아이템이 존재하지 않으면 False 반환
 
 class ConditionViewModel(QObject):
     conditionListChanged = pyqtSignal()
@@ -22,7 +91,7 @@ class ConditionViewModel(QObject):
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty('conditionViewModel', self)
 
-        self._conditionList = []
+        self._conditionList = ConditionModel()
         self._conditionInfoDict = {}
         self._currentConditionCode = -1
 
@@ -32,7 +101,7 @@ class ConditionViewModel(QObject):
 
         self.conditionRealReceived.connect(self.__onConditionInfoRealReceived)
 
-    @pyqtProperty(list, notify=conditionListChanged)
+    @pyqtProperty(ConditionModel, notify=conditionListChanged)
     def conditionList(self):
         return self._conditionList
 
@@ -59,14 +128,15 @@ class ConditionViewModel(QObject):
 
     @pyqtSlot(str, int)
     def conditionInfo(self, name, code):
-        logger.debug("")
-        found = False
-        for cond in self._conditionList:
+        logger.debug(f"name:{name}, code:{code}")
+        foundCond = None
+        for cond in self._conditionList.data:
             if code == cond["code"]:
                 found = True
+                foundCond = cond
                 break
-        if not found:
-            logger.error(f"condition is not found. name:{name}, code:{code}")
+        if foundCond is None:
+            logger.error(f"condition is not found.")
             return
 
         if code in self._conditionInfoDict:
@@ -75,20 +145,28 @@ class ConditionViewModel(QObject):
             return
 
         if len(self._conditionInfoDict) >= self.max_realtime_condition_count:
+            LogViewModel.getInstance().log(f'condition count reached max count({self.max_realtime_condition_count})')
             stop_cond_key = next(iter(self._conditionInfoDict))
-            stop_cond_name = ''
-            for cond in self._conditionList:
+
+            stopCond = None
+            for cond in self._conditionList.data:
                 if cond['code'] == stop_cond_key:
-                    stop_cond_name = cond['name']
+                    stopCond = cond
                     break
 
-            if len(stop_cond_name) == 0:
+            if stopCond is None or len(stopCond['name']) == 0:
                 logger.error(f"condition {code} name is not found.")
                 raise Exception
 
             del self._conditionInfoDict[stop_cond_key]
-            logger.debug(f"stop {stop_cond_key}:{stop_cond_name} condition info")
-            Client.getInstance().stop_condition_info(stop_cond_name, stop_cond_key, "1004")
+
+            self._conditionList.setItemValue(stopCond, ConditionModel.MonitoringRole, False)
+
+            logger.debug(f"stop {stop_cond_key}:{stopCond['name']} condition info")
+            LogViewModel.getInstance().log(f"stop condition:{stopCond['name']})")
+            Client.getInstance().stop_condition_info(stopCond['name'], stop_cond_key, "1004")
+
+        self._conditionList.setItemValue(foundCond, ConditionModel.MonitoringRole, True)
 
         result = Client.getInstance().condition_info(name, code, "1004")
         logger.debug(f"result:{result}")
@@ -109,8 +187,8 @@ class ConditionViewModel(QObject):
     """
     def onConditionList(self, result: list):
         logger.debug(f"result:{result}")
-        self.conditionList = [{'code': int(x[0]), 'name': x[1]} for x in result]
-        logger.debug(f"self.conditionList:{self.conditionList}")
+        self.conditionList = ConditionModel([{'code': int(x[0]), 'name': x[1], 'monitoring': False} for x in result])
+        logger.debug(f"self.conditionList:{self.conditionList.data}")
 
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
@@ -144,7 +222,7 @@ class ConditionViewModel(QObject):
         for info in result:
             priceInfo = {key: info[key] for key in self.priceInfoKeys_ if key in info}
             priceItemData = StockPriceItemData(info['종목명'], info['종목코드'], priceInfo, fromSingleInfo=False)
-            logger.debug(priceItemData)
+            # logger.debug(priceItemData)
             stockPriceList.append(priceItemData)
 
         return stockPriceList

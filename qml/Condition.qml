@@ -29,8 +29,8 @@ ApplicationWindow {
         model: conditionViewModel.conditionList
 
         onItemClicked: {
-            console.log('conditionListView onItemClicked ' + itemData['name'] + ', '+ itemData['code'])
-            conditionViewModel.conditionInfo(itemData['name'], itemData['code'])
+            console.log('conditionListView onItemClicked ' + itemData.name + ', '+ itemData.code)
+            conditionViewModel.conditionInfo(itemData.name, itemData.code)
         }
     }
 
