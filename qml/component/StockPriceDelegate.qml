@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
+import QtQuick.Layouts 1.15
 
 Rectangle {
     id: root
@@ -36,11 +37,12 @@ Rectangle {
             color: 'white'
         }
     }
-    Row {
+    RowLayout {
         id: priceRow
         x: 120
+        width: parent.width - x
         height: parent.height
-        anchors.verticalCenter: parent.verticalCenter
+        //anchors.verticalCenter: parent.verticalCenter
 
         property var code: modelData.code
         property string startPrice: modelData.startPrice
@@ -105,75 +107,75 @@ Rectangle {
             }
         }
 
-        VerticalKeyValueLabel {
-            width: 80
+        VerticalKeyValueLayoutLabel {
+            Layout.preferredWidth: 80
             keyText: '현재가'
             valueText: priceRow.numberStrToFormated(priceRow.currentPrice)
             keyColor: 'black'
             valueColor: priceRow.priceColor
         }
-        VerticalKeyValueLabel {
-            width: 40
+        VerticalKeyValueLayoutLabel {
+            Layout.preferredWidth: 40
             keyText: ''
             valueText: priceRow.getDiffSignSymbol()
             keyColor: 'black'
             valueColor: priceRow.priceColor
         }
-        VerticalKeyValueLabel {
-            width: 80
+        VerticalKeyValueLayoutLabel {
+            Layout.preferredWidth: 80
             keyText: '등락률'
             valueText: priceRow.numberStrToNonAbsFormated(priceRow.diffRate) + ' %'
             keyColor: 'black'
             valueColor: priceRow.priceColor
         }
-        VerticalKeyValueLabel {
-            width: 80
+        VerticalKeyValueLayoutLabel {
+            Layout.preferredWidth: 80
             keyText: '시가'
             valueText: priceRow.numberStrToFormated(priceRow.startPrice)
             keyColor: 'black'
             valueColor: priceRow.getPriceColor(priceRow.startPrice, priceRow.refPrice)
         }
-        VerticalKeyValueLabel {
-            width: 80
+        VerticalKeyValueLayoutLabel {
+            Layout.preferredWidth: 80
             keyText: '고가'
             valueText: priceRow.numberStrToFormated(priceRow.highPrice)
             keyColor: 'black'
             valueColor: priceRow.getPriceColor(priceRow.highPrice, priceRow.refPrice)
         }
-        VerticalKeyValueLabel {
-            width: 80
+        VerticalKeyValueLayoutLabel {
+            Layout.preferredWidth: 80
             keyText: '저가'
             valueText: priceRow.numberStrToFormated(priceRow.lowPrice)
             keyColor: 'black'
             valueColor: priceRow.getPriceColor(priceRow.lowPrice, priceRow.refPrice)
         }
-        VerticalKeyValueLabel {
-            width: 80
+        VerticalKeyValueLayoutLabel {
+            Layout.preferredWidth: 80
             keyText: '기준가'
             valueText: priceRow.numberStrToFormated(priceRow.refPrice)
             keyColor: 'black'
             valueColor: 'black'
         }
-        VerticalKeyValueLabel {
-            width: 80
+        VerticalKeyValueLayoutLabel {
+            Layout.preferredWidth: 80
             keyText: '전일대비'
             valueText: priceRow.numberStrToFormated(priceRow.diffPrice)
             keyColor: 'black'
             valueColor: priceRow.priceColor
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '거래량'
             valueText: priceRow.numberStrToFormated(priceRow.volume)
             keyColor: 'black'
             valueColor: 'black'
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '거래대비'
             valueText: priceRow.numberStrToFormated(priceRow.volumeRate) + ' %'
             keyColor: 'black'
             valueColor: priceRow.getPriceColor(priceRow.volumeRate, 100)
         }
-        VerticalKeyValueLabel {
+        VerticalKeyValueLayoutLabel {
             keyText: '거래대금'
             valueText: priceRow.numberStrToFormated(priceRow.tradingValue)
             keyColor: 'black'
