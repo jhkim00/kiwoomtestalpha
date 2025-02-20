@@ -1,5 +1,6 @@
 import sys
 import logging
+import asyncio
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from model.kiwoom import Kiwoom
@@ -58,7 +59,15 @@ class Manager(QObject):
         self.kw.SetInputValue(id="상장폐지조회구분", value="0")
         self.kw.SetInputValue(id="비밀번호입력매체구분", value="00")
         await self.coolDown.call()
-        self.kw.CommRqData(rqname="계좌평가현황요청", trcode="OPW00004", next=0, screen=data["screen_no"])
+        while True:
+            ret = self.kw.CommRqData(rqname="계좌평가현황요청", trcode="OPW00004", next=0, screen=data["screen_no"])
+            if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
+                break
+            if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
+                logger.error(f"error:{ret}")
+                raise Exception
+
+            await asyncio.sleep(1)
 
     async def getStockList(self):
         logger.debug("")
@@ -76,7 +85,15 @@ class Manager(QObject):
         logger.debug("")
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
         await self.coolDown.call()
-        self.kw.CommRqData(rqname="주식기본정보", trcode="opt10001", next=0, screen=data["screen_no"])
+        while True:
+            ret = self.kw.CommRqData(rqname="주식기본정보", trcode="opt10001", next=0, screen=data["screen_no"])
+            if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
+                break
+            if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
+                logger.error(f"error:{ret}")
+                raise Exception
+
+            await asyncio.sleep(1)
 
     async def getStockPriceRealData(self, data: dict):
         logger.debug("")
@@ -90,14 +107,22 @@ class Manager(QObject):
     async def getStocksInfo(self, data: dict):
         logger.debug("")
         await self.coolDown.call()
-        self.kw.CommKwRqData(
-            arr_code=";".join(data["code_list"]),
-            next=0,
-            code_count=len(data["code_list"]),
-            type=0,
-            rqname="복수종목정보요청",
-            screen=data["screen_no"]
-        )
+        while True:
+            ret = self.kw.CommKwRqData(
+                arr_code=";".join(data["code_list"]),
+                next=0,
+                code_count=len(data["code_list"]),
+                type=0,
+                rqname="복수종목정보요청",
+                screen=data["screen_no"]
+            )
+            if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
+                break
+            if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
+                logger.error(f"error:{ret}")
+                raise Exception
+
+            await asyncio.sleep(1)
 
     async def getConditionLoad(self):
         logger.debug("")
@@ -106,12 +131,20 @@ class Manager(QObject):
     async def sendCondition(self, data):
         logger.debug("")
         await self.coolDown.call()
-        self.kw.SendCondition(
-            screen=data["screen_no"],
-            cond_name=data["name"],
-            cond_index=data["code"],
-            search=1
-        )
+        while True:
+            ret = self.kw.SendCondition(
+                screen=data["screen_no"],
+                cond_name=data["name"],
+                cond_index=data["code"],
+                search=1
+            )
+            if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
+                break
+            if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
+                logger.error(f"error:{ret}")
+                raise Exception
+
+            await asyncio.sleep(1)
 
     async def sendConditionStop(self, data):
         logger.debug("")
@@ -126,14 +159,30 @@ class Manager(QObject):
         logger.debug("")
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
         await self.coolDown.call()
-        self.kw.CommRqData(rqname="주식일봉차트", trcode="opt10081", next=0, screen=data["screen_no"])
+        while True:
+            ret = self.kw.CommRqData(rqname="주식일봉차트", trcode="opt10081", next=0, screen=data["screen_no"])
+            if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
+                break
+            if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
+                logger.error(f"error:{ret}")
+                raise Exception
+
+            await asyncio.sleep(1)
 
     async def getMinuteChart(self, data):
         logger.debug("")
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
         self.kw.SetInputValue(id="틱범위", value=data["tick_range"])
         await self.coolDown.call()
-        self.kw.CommRqData(rqname="주식분봉차트", trcode="opt10080", next=0, screen=data["screen_no"])
+        while True:
+            ret = self.kw.CommRqData(rqname="주식분봉차트", trcode="opt10080", next=0, screen=data["screen_no"])
+            if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
+                break
+            if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
+                logger.error(f"error:{ret}")
+                raise Exception
+
+            await asyncio.sleep(1)
 
     async def sendOrder(self, data):
         logger.debug(f"{data}")

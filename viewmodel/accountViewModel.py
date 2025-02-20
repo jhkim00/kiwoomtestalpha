@@ -22,6 +22,8 @@ class AccountViewModel(QObject):
         self._currentAccountInfo = []
         self._currentAccountStockInfo = AccountStockInfoModel()
 
+        Client.getInstance().registerEventCallback("account_info", self.onAccountInfo)
+
     @pyqtProperty(list, notify=accountListChanged)
     def accountList(self):
         return self._accountList
@@ -75,7 +77,6 @@ class AccountViewModel(QObject):
     """
     method for qml side
     """
-
     @pyqtSlot()
     def login_info(self):
         logger.debug("")
@@ -84,8 +85,12 @@ class AccountViewModel(QObject):
     @pyqtSlot()
     def account_info(self):
         logger.debug("")
-        result = Client.getInstance().account_info(self.currentAccount, "1001")
+        Client.getInstance().account_info(self.currentAccount, "1001")
 
+    """
+    client model event
+    """
+    def onAccountInfo(self, result):
         if len(result) > 0:
             self.currentAccountInfo = [[key, result[0][key]] for key in self.currentAccountInfoKeys if key in result[0]]
             logger.debug(self.currentAccountInfo)

@@ -1,35 +1,68 @@
 import sys
 import logging
+import time
+from collections import OrderedDict, deque
 
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QThread
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QThread, QMutex, QMutexLocker, QWaitCondition
 
 logger = logging.getLogger()
 
+
+class QueueWorker(QThread):
+    def __init__(self, queue):
+        super().__init__()
+        logger.debug("")
+        self.queue = queue
+        self.callbackMap = {}
+
+    def run(self):
+        while True:
+            # logger.debug(f".")
+            request, result = self.queue.get()
+            # logger.debug(f"request: {request}")
+            # logger.debug(f"typeof result: {type(result)}")
+            # logger.debug(f"result: {result}")
+            if request == "finish":
+                logger.debug(f"finish received")
+                break
+            if request in self.callbackMap:
+                callbacks = self.callbackMap[request]
+                if callbacks and len(callbacks) > 0:
+                    for cb in callbacks:
+                        cb(result)
+
+class RequestQueueProxy(QThread):
+    def __init__(self, queue):
+        super().__init__()
+        logger.debug("")
+        self.queue = queue
+        self.buffer = deque()
+        self.mutex = QMutex()
+        self.condition = QWaitCondition()
+
+    def insert(self, data):
+        with QMutexLocker(self.mutex):
+            self.buffer.append(data)
+            self.condition.wakeOne()
+
+    def run(self):
+        while True:
+            with QMutexLocker(self.mutex):
+                if not self.buffer:
+                    self.condition.wait(self.mutex)
+
+                filtered_dict = OrderedDict(self.buffer)
+                self.buffer = deque(filtered_dict.items())
+                data = self.buffer.popleft()
+
+            self.queue.put(data)
+            if data == 'finish':
+                logger.debug(f"finish received")
+                return
+            time.sleep(0.01)
+
 class Client(QObject):
     instance = None
-
-    class QueueWorker(QThread):
-        def __init__(self, queue):
-            super().__init__()
-            logger.debug("")
-            self.queue = queue
-            self.callbackMap = {}
-
-        def run(self):
-            while True:
-                # logger.debug(f".")
-                request, result = self.queue.get()
-                # logger.debug(f"request: {request}")
-                # logger.debug(f"typeof result: {type(result)}")
-                # logger.debug(f"result: {result}")
-                if request == "finish":
-                    logger.debug(f"finish received")
-                    break
-                if request in self.callbackMap:
-                    callbacks = self.callbackMap[request]
-                    if callbacks and len(callbacks) > 0:
-                        for cb in callbacks:
-                            cb(result)
 
     def __init__(self):
         super().__init__()
@@ -42,6 +75,7 @@ class Client(QObject):
 
         self.eventQueueWorker = None
         self.realDataQueueWorker = None
+        self.requestQueueProxy = None
 
     @classmethod
     def getInstance(cls):
@@ -60,18 +94,20 @@ class Client(QObject):
         self.eventQueue = eventQueue
         self.realDataQueue = realDataQueue
 
-        self.eventQueueWorker = Client.QueueWorker(self.eventQueue)
+        self.eventQueueWorker = QueueWorker(self.eventQueue)
         self.eventQueueWorker.start()
-        self.realDataQueueWorker = Client.QueueWorker(self.realDataQueue)
+        self.realDataQueueWorker = QueueWorker(self.realDataQueue)
         self.realDataQueueWorker.start()
+        self.requestQueueProxy = RequestQueueProxy(self.requestQueue)
+        self.requestQueueProxy.start()
 
     def login(self):
         logging.debug("")
-        self.requestQueue.put(("login",))
+        self.requestQueueProxy.insert(("login", None))
 
     def login_info(self):
         logging.debug("")
-        self.requestQueue.put(("login_info",))
+        self.requestQueueProxy.insert(("login_info", None))
         request, result = self.responseQueue.get()
         logger.debug(f"request: {request}, result:{result}")
 
@@ -79,15 +115,11 @@ class Client(QObject):
 
     def account_info(self, account_no, screen_no):
         logging.debug("")
-        self.requestQueue.put(("account_info", {"account_no": account_no, "screen_no": screen_no}))
-        request, result = self.responseQueue.get()
-        logger.debug(f"request: {request}, result:{result}")
-
-        return result
+        self.requestQueueProxy.insert(("account_info", {"account_no": account_no, "screen_no": screen_no}))
 
     def stock_list(self):
         logging.debug("")
-        self.requestQueue.put(("stock_list",))
+        self.requestQueueProxy.insert(("stock_list", None))
         request, result = self.responseQueue.get()
         # logger.debug(f"request: {request}, result:{result}")
 
@@ -95,18 +127,14 @@ class Client(QObject):
 
     def stock_basic_info(self, stock_no, screen_no):
         logging.debug("")
-        self.requestQueue.put(("stock_basic_info", {"stock_no": stock_no, "screen_no": screen_no}))
-        request, result = self.responseQueue.get()
-        logger.debug(f"request: {request}, result:{result}")
-
-        return result
+        self.requestQueueProxy.insert(("stock_basic_info", {"stock_no": stock_no, "screen_no": screen_no}))
 
     def stock_price_real(self, code_list, screen_no, discard_old_stocks: bool):
         logging.debug("")
         opt_type = "1"
         if discard_old_stocks:
             opt_type = "0"
-        self.requestQueue.put(
+        self.requestQueueProxy.insert(
             ("stock_price_real",
              {"screen_no": screen_no,
               "code_list": code_list,
@@ -115,43 +143,37 @@ class Client(QObject):
 
     def condition_load(self):
         logging.debug("")
-        self.requestQueue.put(("condition_load",))
+        self.requestQueueProxy.insert(("condition_load", None))
 
     def stocks_info(self, code_list, screen_no):
         logging.debug(f"code_list:{code_list}")
-        self.requestQueue.put(("stocks_info", {"code_list": code_list, "screen_no": screen_no}))
+        self.requestQueueProxy.insert(("stocks_info", {"code_list": code_list, "screen_no": screen_no}))
         request, result = self.responseQueue.get()
 
         return result
 
     def condition_info(self, name, code: int, screen_no):
         logging.debug("")
-        self.requestQueue.put(("condition_info", {"name": name, "code": code, "screen_no": screen_no}))
+        self.requestQueueProxy.insert(("condition_info", {"name": name, "code": code, "screen_no": screen_no}))
         request, result = self.responseQueue.get()
 
         return result
 
     def stop_condition_info(self, name, code: int, screen_no):
         logging.debug("")
-        self.requestQueue.put(("stop_condition_info", {"name": name, "code": code, "screen_no": screen_no}))
+        self.requestQueueProxy.insert(("stop_condition_info", {"name": name, "code": code, "screen_no": screen_no}))
 
     def daily_chart(self, code, screen_no):
         logging.debug("")
-        self.requestQueue.put(("daily_chart", {"stock_no": code, "screen_no": screen_no}))
-        request, result = self.responseQueue.get()
-
-        return result
+        self.requestQueueProxy.insert(("daily_chart", {"stock_no": code, "screen_no": screen_no}))
 
     def minute_chart(self, code, tick_range, screen_no):
         logging.debug("")
-        self.requestQueue.put(("minute_chart", {"stock_no": code, "tick_range": tick_range, "screen_no": screen_no}))
-        request, result = self.responseQueue.get()
-
-        return result
+        self.requestQueueProxy.insert(("minute_chart", {"stock_no": code, "tick_range": tick_range, "screen_no": screen_no}))
 
     def send_order(self, account_no, order_type, stock_no, quantity, price, hoga, order_no, screen_no):
         logging.debug("")
-        self.requestQueue.put(
+        self.requestQueueProxy.insert(
             ("send_order",
              {"account_no": account_no,
               "order_type": order_type,

@@ -47,6 +47,7 @@ class MarketViewModel(QObject):
             '거래대비': ''
         }
 
+        Client.getInstance().registerEventCallback("stock_basic_info", self.onStockBasicInfo)
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
     @pyqtProperty(list, notify=stockListChanged)
@@ -137,7 +138,12 @@ class MarketViewModel(QObject):
     @pyqtSlot()
     def getStockBasicInfo(self):
         logger.debug("")
-        result = Client.getInstance().stock_basic_info(self.currentStock["code"], "1002")
+        Client.getInstance().stock_basic_info(self.currentStock["code"], "1002")
+
+    """
+    client model event
+    """
+    def onStockBasicInfo(self, result):
         if len(result) > 0:
             self.basicInfo = {key: result[key] for key in self.basicInfo if key in result}
             logger.debug(self.basicInfo)

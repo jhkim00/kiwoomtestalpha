@@ -10,6 +10,8 @@ logger = logging.getLogger()
 
 class ChartViewModel(QObject):
     dailyChartModelChanged = pyqtSignal()
+    dailyChartReceived = pyqtSignal(list)
+    minuteChartReceived = pyqtSignal(list)
     stockPriceRealReceived = pyqtSignal(tuple)
 
     def __init__(self, qmlContext, parent=None):
@@ -28,9 +30,17 @@ class ChartViewModel(QObject):
 
         self.mChart = [None, None]
         self.mDf = [None, None]
+        self.currentMinuteChartIndex = -1
+        self.currentMinute = 0
+        self.receiving = False
+        self.needUpdate = False
 
+        Client.getInstance().registerEventCallback("daily_chart", self.onDailyChart)
+        Client.getInstance().registerEventCallback("minute_chart", self.onMinuteChart)
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
+        self.dailyChartReceived.connect(self.__onDailyChartReceived)
+        self.minuteChartReceived.connect(self.__onMinuteChartReceived)
         self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
 
     """
@@ -42,8 +52,58 @@ class ChartViewModel(QObject):
         if len(self.stockCode) == 0:
             return
 
-        result = Client.getInstance().daily_chart(self.stockCode, "1005")
-        filtered_data = [{key: d[key] for key in ["일자", "시가", "고가", "저가", "현재가", "거래량"]} for d in result]
+        self.receiving = True
+        Client.getInstance().daily_chart(self.stockCode, "1005")
+
+    @pyqtSlot()
+    def loadMinuteChart(self, minute):
+        logger.debug("")
+        if len(self.stockCode) == 0:
+            return
+
+        if self.chart is None:
+            return
+
+        Client.getInstance().minute_chart(self.stockCode, minute, "1005")
+
+    @pyqtSlot(str, str)
+    def setStock(self, name, code):
+        logger.debug(f"name:{name}, code:{name}, receiving:{self.receiving}, needUpdate:{self.needUpdate}")
+        self.stockName = name
+        self.stockCode = code
+        if self.receiving:
+            self.needUpdate = True
+            return
+        if self.chart:
+            self.load()
+
+    """
+    client model event
+    """
+    def onDailyChart(self, result):
+        self.dailyChartReceived.emit(result)
+
+    def onMinuteChart(self, result):
+        self.minuteChartReceived.emit(result)
+
+    @pyqtSlot(tuple)
+    def __onStockPriceReal(self, data):
+        # logger.debug(f"data:{data}")
+        self.stockPriceRealReceived.emit(data)
+
+    """
+    private method
+    """
+    @classmethod
+    def __calculate_sma(cls, df, period: int = 50):
+        return pd.DataFrame({
+            'time': df['time'],
+            f'SMA {period}': df['close'].rolling(window=period).mean()
+        }).dropna()
+
+    @pyqtSlot(list)
+    def __onDailyChartReceived(self, data):
+        filtered_data = [{key: d[key] for key in ["일자", "시가", "고가", "저가", "현재가", "거래량"]} for d in data]
         df = pd.DataFrame(filtered_data)
         # logger.debug(f"df:{df}")
         df.rename(
@@ -86,72 +146,46 @@ class ChartViewModel(QObject):
         # self.line_120.set(sma_data_120)
 
         self.df = df
-        self.loadMinuteChart([1, 5])
+        self.currentMinuteChartIndex = 0
+        self.currentMinute = 1
+        self.loadMinuteChart(1)
 
-        self.chart.show()
+    @pyqtSlot(list)
+    def __onMinuteChartReceived(self, data):
+        filtered_data = [{key: d[key] for key in ['현재가', '거래량', '체결시간', '시가', '고가', '저가']} for d in data]
+        df = pd.DataFrame(filtered_data)
+        # logger.debug(f"df:{df}")
+        df.rename(
+            columns={"체결시간": "time", "시가": "open", "고가": "high", "저가": "low", "현재가": "close", "거래량": "volume"},
+            inplace=True
+        )
+        df["time"] = pd.to_datetime(df["time"], format="%Y%m%d%H%M%S").dt.strftime("%Y-%m-%d %H:%M")
+        df["open"] = abs(df["open"].astype(int))
+        df["high"] = abs(df["high"].astype(int))
+        df["low"] = abs(df["low"].astype(int))
+        df["close"] = abs(df["close"].astype(int))
+        df["volume"] = df["volume"].astype(int)
+        df = df.sort_values("time")
+        # logger.debug(f"df:{df}")
+        i = self.currentMinuteChartIndex
+        if self.mChart[i] is None:
+            self.mChart[i] = self.chart.create_subchart(position='left', width=0.5, height=0.5)
+            self.mChart[i].topbar.textbox('symbol')
 
-    @pyqtSlot()
-    def loadMinuteChart(self, minutes: list):
-        logger.debug("")
-        if len(self.stockCode) == 0:
-            return
+        self.mChart[i].topbar['symbol'].set(f'{self.currentMinute} min')
+        self.mChart[i].set(df)
+        self.mDf[i] = df
 
-        if self.chart is None:
-            return
-
-        i = 0
-        for minute in minutes:
-            result = Client.getInstance().minute_chart(self.stockCode, minute, "1005")
-            # logger.debug(f"{result}")
-            filtered_data = [{key: d[key] for key in ['현재가', '거래량', '체결시간', '시가', '고가', '저가']} for d in result]
-            df = pd.DataFrame(filtered_data)
-            # logger.debug(f"df:{df}")
-            df.rename(
-                columns={"체결시간": "time", "시가": "open", "고가": "high", "저가": "low", "현재가": "close", "거래량": "volume"},
-                inplace=True
-            )
-            df["time"] = pd.to_datetime(df["time"], format="%Y%m%d%H%M%S").dt.strftime("%Y-%m-%d %H:%M")
-            df["open"] = abs(df["open"].astype(int))
-            df["high"] = abs(df["high"].astype(int))
-            df["low"] = abs(df["low"].astype(int))
-            df["close"] = abs(df["close"].astype(int))
-            df["volume"] = df["volume"].astype(int)
-            df = df.sort_values("time")
-            # logger.debug(f"df:{df}")
-            if self.mChart[i] is None:
-                self.mChart[i] = self.chart.create_subchart(position='left', width=0.5, height=0.5)
-                self.mChart[i].topbar.textbox('symbol')
-
-            self.mChart[i].topbar['symbol'].set(f'{minute} min')
-            self.mChart[i].set(df)
-            self.mDf[i] = df
-            i += 1
-
-    @pyqtSlot(str, str)
-    def setStock(self, name, code):
-        self.stockName = name
-        self.stockCode = code
-        if self.chart:
-            self.load()
-
-    """
-    client model event
-    """
-
-    @pyqtSlot(tuple)
-    def __onStockPriceReal(self, data):
-        # logger.debug(f"data:{data}")
-        self.stockPriceRealReceived.emit(data)
-
-    """
-    private method
-    """
-    @classmethod
-    def __calculate_sma(cls, df, period: int = 50):
-        return pd.DataFrame({
-            'time': df['time'],
-            f'SMA {period}': df['close'].rolling(window=period).mean()
-        }).dropna()
+        if self.currentMinuteChartIndex == 0:
+            self.currentMinuteChartIndex = 1
+            self.currentMinute = 5
+            self.loadMinuteChart(5)
+        else:
+            self.chart.show()
+            self.receiving = False
+            if self.needUpdate:
+                self.needUpdate = False
+                self.load()
 
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):

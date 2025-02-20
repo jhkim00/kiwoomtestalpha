@@ -59,7 +59,7 @@ class Server(Process):
             "minute_chart": [self.handle_minute_chart, asyncio.Future()],
             "send_order": [self.handle_send_order, asyncio.Future()],
         }
-        self.eventList = ["login", "condition_load"]
+        self.eventList = ["login", "account_info", "stock_basic_info", "condition_load", "daily_chart", "minute_chart"]
         logger.debug("")
         self.manager = Manager()
         self.manager.notifyLoginCompleted = self.notifyLoginCompleted
@@ -172,11 +172,11 @@ class Server(Process):
     """
     request handler
     """
-    async def handle_login(self):
+    async def handle_login(self, _):
         logger.debug("")
         await self.manager.commConnect()
 
-    async def handle_login_info(self):
+    async def handle_login_info(self, _):
         logger.debug("")
         await self.manager.getLoginInfo()
 
@@ -184,7 +184,7 @@ class Server(Process):
         logger.debug(data)
         await self.manager.getAccountInfo(data)
 
-    async def handle_stock_list(self):
+    async def handle_stock_list(self, _):
         logger.debug("")
         await self.manager.getStockList()
 
@@ -196,7 +196,7 @@ class Server(Process):
         logger.debug(data)
         await self.manager.getStockPriceRealData(data)
 
-    async def handle_condition_load(self):
+    async def handle_condition_load(self, _):
         logger.debug("")
         await self.manager.getConditionLoad()
 

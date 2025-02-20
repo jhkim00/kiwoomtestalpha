@@ -15,7 +15,7 @@ from viewmodel import (MainViewModel, AccountViewModel, MarketViewModel, Favorit
                        ChartViewModel, TradeViewModel, LogViewModel)
 
 logger = logging.getLogger()
-requestQueue = multiprocessing.Queue()
+requestQueue = multiprocessing.Queue(maxsize=5)
 responseQueue = multiprocessing.Queue()
 eventQueue = multiprocessing.Queue()
 realDataQueue = multiprocessing.Queue()

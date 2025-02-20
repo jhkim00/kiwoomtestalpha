@@ -11,6 +11,9 @@ class Kiwoom(QObject):
     instance = None
     loginCompleted = pyqtSignal(bool)
 
+    ERROR_QUERY_RATE_LIMIT_EXCEEDED = -200
+    ERROR_QUERY_COUNT_EXCEEDED = -209
+
     def __init__(self):
         super().__init__()
         logger.debug("")
@@ -54,13 +57,15 @@ class Kiwoom(QObject):
     def OnReceiveTrData(self, screen, rqname, trcode, record, next):
         logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}, next:{next}")
         for key in self.trCallbacks:
-            cb = self.trCallbacks[key]
-            if cb:
-                logger.debug(f"key:{key}, cb:{cb}")
-                try:
-                    cb(screen, rqname, trcode, record, next)
-                except Exception as e:
-                    logger.error(f"Error while calling cb: {e}", exc_info=True)
+            if key == trcode:
+                cb = self.trCallbacks[key]
+                if cb:
+                    logger.debug(f"key:{key}, cb:{cb}")
+                    try:
+                        cb(screen, rqname, trcode, record, next)
+                    except Exception as e:
+                        logger.error(f"Error while calling cb: {e}", exc_info=True)
+                break
 
     def OnReceiveChejanData(self, gubun, item_cnt, fid_list):
         """주문접수, 체결, 잔고 변경시 이벤트가 발생
@@ -157,7 +162,9 @@ class Kiwoom(QObject):
         :return: None
         """
         logger.debug(f"rqname:{rqname}, trcode:{trcode}, next:{next}, screen:{screen}")
-        self.ocx.dynamicCall("CommRqData(QString, QString, int, QString)", rqname, trcode, next, screen)
+        ret = self.ocx.dynamicCall("CommRqData(QString, QString, int, QString)", rqname, trcode, next, screen)
+        logger.debug(f"ret:{ret}")
+        return ret
 
     def GetLoginInfo(self, tag):
         """
@@ -380,7 +387,7 @@ class Kiwoom(QObject):
         Returns:
             None: _description_
         """
-        self.ocx.dynamicCall("SendCondition(QString, QString, int, int)", screen, cond_name, cond_index, search)
+        return self.ocx.dynamicCall("SendCondition(QString, QString, int, int)", screen, cond_name, cond_index, search)
 
     def SendConditionStop(self, screen, cond_name, cond_index):
         self.ocx.dynamicCall("SendConditionStop(QString, QString, int)", screen, cond_name, cond_index)
