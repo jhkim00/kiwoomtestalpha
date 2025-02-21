@@ -353,6 +353,7 @@ class Kiwoom(QObject):
         :return:
         """
         ret = self.ocx.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen, code_list, fid_list, opt_type)
+        logger.debug(f"ret:{ret}")
         return ret
 
     def SetRealRemove(self, screen, del_code):

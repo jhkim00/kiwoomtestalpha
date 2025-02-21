@@ -28,6 +28,7 @@ class Manager(QObject):
         self.notifyLoginCompleted = None
         self.notifyLoginInfo = None
         self.notifyAccountInfo = None
+        self.notifyStockNameByCode = None
         self.notifyStockList = None
         self.notifyStockBasicInfo = None
         self.notifyStockPriceReal = None
@@ -69,6 +70,10 @@ class Manager(QObject):
 
             await asyncio.sleep(1)
 
+    async def getStockNameByCode(self, data: dict):
+        name = self.kw.GetMasterCodeName(data["stock_no"])
+        self.notifyStockNameByCode(name)
+
     async def getStockList(self):
         logger.debug("")
         kospi = self.kw.GetCodeListByMarket("0")
@@ -99,9 +104,16 @@ class Manager(QObject):
         logger.debug("")
         self.kw.SetRealReg(
             screen=data["screen_no"],
-            code_list=data["code_list"],
-            fid_list=self.stock_price_real_data_fid_list,
+            code_list=";".join(data["code_list"]),
+            fid_list=";".join(self.stock_price_real_data_fid_list),
             opt_type=data["opt_type"]
+        )
+
+    async def stopStockPriceRealData(self, data: dict):
+        logger.debug("")
+        self.kw.SetRealRemove(
+            screen=data["screen_no"],
+            del_code=data["code"]
         )
 
     async def getStocksInfo(self, data: dict):

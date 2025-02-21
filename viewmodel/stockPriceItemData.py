@@ -19,26 +19,39 @@ class StockPriceItemData(QObject):
     volumeRateChanged = pyqtSignal()
     tradingValueChanged = pyqtSignal()
 
-    def __init__(self, name: str, code: str, priceInfo: dict, fromSingleInfo=True):
+    def __init__(self, name: str, code: str, priceInfo=None, fromSingleInfo=True):
         super().__init__()
         self._name = name
         self._code = code
-        self._startPrice = priceInfo["시가"]
-        self._highPrice = priceInfo["고가"]
-        self._lowPrice = priceInfo["저가"]
-        self._currentPrice = priceInfo["현재가"]
-        self._refPrice = priceInfo["기준가"]
-        self._diffPrice = priceInfo["전일대비"]
-        self._diffRate = priceInfo["등락율"]
-        self._volume = priceInfo["거래량"]
-        if fromSingleInfo:
-            self._diffSign = priceInfo["대비기호"]
-            self._volumeRate = priceInfo["거래대비"]
-            self._tradingValue = ''
+        if priceInfo is not None:
+            self._startPrice = priceInfo["시가"]
+            self._highPrice = priceInfo["고가"]
+            self._lowPrice = priceInfo["저가"]
+            self._currentPrice = priceInfo["현재가"]
+            self._refPrice = priceInfo["기준가"]
+            self._diffPrice = priceInfo["전일대비"]
+            self._diffRate = priceInfo["등락율"]
+            self._volume = priceInfo["거래량"]
+            if fromSingleInfo:
+                self._diffSign = priceInfo["대비기호"]
+                self._volumeRate = priceInfo["거래대비"]
+                self._tradingValue = ''
+            else:
+                self._diffSign = priceInfo["전일대비기호"]
+                self._volumeRate = priceInfo["전일거래량대비"]
+                self._tradingValue = priceInfo["거래대금"]
         else:
-            self._diffSign = priceInfo["전일대비기호"]
-            self._volumeRate = priceInfo["전일거래량대비"]
-            self._tradingValue = priceInfo["거래대금"]
+            self._startPrice = ''
+            self._highPrice = ''
+            self._lowPrice = ''
+            self._currentPrice = ''
+            self._refPrice = ''
+            self._diffPrice = ''
+            self._diffRate = ''
+            self._volume = ''
+            self._diffSign = ''
+            self._volumeRate = ''
+            self._tradingValue = ''
 
     @pyqtProperty(str, notify=nameChanged)
     def name(self):

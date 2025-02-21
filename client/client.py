@@ -117,6 +117,13 @@ class Client(QObject):
         logging.debug("")
         self.requestQueueProxy.insert(("account_info", {"account_no": account_no, "screen_no": screen_no}))
 
+    def stock_name_by_code(self, stock_no):
+        logging.debug("")
+        self.requestQueueProxy.insert(("stock_name_by_code", {"stock_no": stock_no}))
+        request, result = self.responseQueue.get()
+
+        return result
+
     def stock_list(self):
         logging.debug("")
         self.requestQueueProxy.insert(("stock_list", None))
@@ -131,15 +138,18 @@ class Client(QObject):
 
     def stock_price_real(self, code_list, screen_no, discard_old_stocks: bool):
         logging.debug("")
-        opt_type = "1"
-        if discard_old_stocks:
-            opt_type = "0"
+        opt_type = "1" if discard_old_stocks else "0"
+
         self.requestQueueProxy.insert(
             ("stock_price_real",
              {"screen_no": screen_no,
               "code_list": code_list,
               "opt_type": opt_type})
         )
+
+    def stop_stock_price_real(self, code, screen_no):
+        logging.debug("")
+        self.requestQueueProxy.insert(("stop_stock_price_real", {"screen_no": screen_no, "code": code}))
 
     def condition_load(self):
         logging.debug("")

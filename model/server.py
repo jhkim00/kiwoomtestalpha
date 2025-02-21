@@ -48,9 +48,11 @@ class Server(Process):
             "login": [self.handle_login, asyncio.Future()],
             "login_info": [self.handle_login_info, asyncio.Future()],
             "account_info": [self.handle_account_info, asyncio.Future()],
+            "stock_name_by_code": [self.handle_stock_name_by_code, asyncio.Future()],
             "stock_list": [self.handle_stock_list, asyncio.Future()],
             "stock_basic_info": [self.handle_stock_basic_info, asyncio.Future()],
             "stock_price_real": [self.handle_stock_price_real, None],
+            "stop_stock_price_real": [self.handle_stop_stock_price_real, None],
             "condition_load": [self.handle_condition_load, asyncio.Future()],
             "stocks_info": [self.handle_stocks_info, asyncio.Future()],
             "condition_info": [self.handle_condition_info, asyncio.Future()],
@@ -65,6 +67,7 @@ class Server(Process):
         self.manager.notifyLoginCompleted = self.notifyLoginCompleted
         self.manager.notifyLoginInfo = self.notifyLoginInfo
         self.manager.notifyAccountInfo = self.notifyAccountInfo
+        self.manager.notifyStockNameByCode = self.notifyStockNameByCode
         self.manager.notifyStockList = self.notifyStockList
         self.manager.notifyStockBasicInfo = self.notifyStockBasicInfo
         self.manager.notifyStockPriceReal = self.notifyStockPriceReal
@@ -133,6 +136,10 @@ class Server(Process):
         logger.debug("")
         self.requestHandlerMap["account_info"][self.futureIndex].set_result(info)
 
+    def notifyStockNameByCode(self, name):
+        logger.debug("")
+        self.requestHandlerMap["stock_name_by_code"][self.futureIndex].set_result(name)
+
     def notifyStockList(self, stockList):
         logger.debug("")
         self.requestHandlerMap["stock_list"][self.futureIndex].set_result(stockList)
@@ -184,6 +191,10 @@ class Server(Process):
         logger.debug(data)
         await self.manager.getAccountInfo(data)
 
+    async def handle_stock_name_by_code(self, data):
+        logger.debug(data)
+        await self.manager.getStockNameByCode(data)
+
     async def handle_stock_list(self, _):
         logger.debug("")
         await self.manager.getStockList()
@@ -195,6 +206,10 @@ class Server(Process):
     async def handle_stock_price_real(self, data):
         logger.debug(data)
         await self.manager.getStockPriceRealData(data)
+
+    async def handle_stop_stock_price_real(self, data):
+        logger.debug(data)
+        await self.manager.stopStockPriceRealData(data)
 
     async def handle_condition_load(self, _):
         logger.debug("")

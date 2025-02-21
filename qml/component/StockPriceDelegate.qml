@@ -59,6 +59,10 @@ Rectangle {
         property string priceColor: getPriceColor(currentPrice, refPrice)
 
         function numberStrToNonAbsFormated(numberStr) {
+            if (numberStr === '') {
+                return ''
+            }
+
             // 소수점이 있는 경우 정수 부분과 소수 부분을 분리
             var parts = numberStr.split('.');
             var intPart = parts[0]; // 정수 부분

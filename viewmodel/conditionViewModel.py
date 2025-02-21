@@ -192,7 +192,7 @@ class ConditionViewModel(QObject):
 
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
-        # logger.debug(f"data:{data}")
+        logger.debug(f"data[0]:{data[0]}")
         for stock in self.conditionStockList:
             if data[0] == stock.code:
                 stock.currentPrice = data[1]['10']
@@ -239,22 +239,23 @@ class ConditionViewModel(QObject):
 
         if data["id_type"] == 'I':  # 종목편입
             codeList.append(data['code'])
+            stockName = Client.getInstance().stock_name_by_code(data['code'])
+            stockPriceList.append(StockPriceItemData(stockName, data['code']))
+            Client.getInstance().stock_price_real([data['code']], "1004", discard_old_stocks=False)
         elif data["id_type"] == 'D':  # 종목이탈
+            Client.getInstance().stop_stock_price_real(data['code'], "1004")
             codeList.remove(data['code'])
             for stock in stockPriceList:
                 if stock.code == data['code']:
                     stockName = stock.name
 
-        stockPriceList = self.__getStockPriceList(codeList)
         self._conditionInfoDict[cond_index] = stockPriceList
-        self.conditionStockListChanged.emit()
+        if cond_index == self._currentConditionCode:
+            self.conditionStockListChanged.emit()
 
         formattedTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log = ''
         if data["id_type"] == 'I':
-            for stock in stockPriceList:
-                if stock.code == data['code']:
-                    stockName = stock.name
             log = f"\n[{formattedTime}][종목편입]({data['cond_name']}:{data['code']}:{stockName})"
         elif data["id_type"] == 'D':
             log = f"\n[{formattedTime}][종목이탈]({data['cond_name']}:{data['code']}:{stockName})"
