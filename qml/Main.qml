@@ -22,6 +22,8 @@ ApplicationWindow {
     property var marketWindow: null
     property var conditionWindow: null
     property var logWindow: null
+    property var hogaWindow: null
+    property var chegyeolWindow: null
 
     onClosing: {
         console.log("Application is closing")
@@ -40,6 +42,14 @@ ApplicationWindow {
         if (logWindow) {
             logWindow.close()
             logWindow.destroy()
+        }
+        if (hogaWindow) {
+            hogaWindow.close()
+            hogaWindow.destroy()
+        }
+        if (chegyeolWindow) {
+            chegyeolWindow.close()
+            chegyeolWindow.destroy()
         }
     }
 
@@ -201,6 +211,50 @@ ApplicationWindow {
                     }
                 }
                 root.logWindow.show()
+            }
+        }
+
+        TextButton {
+            id: btnHoga
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "Hoga"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            onBtnClicked: {
+                console.log('btnHoga clicked')
+
+                if (root.hogaWindow === null) {
+                    var component = Qt.createComponent("HogaWindow.qml")
+                    if (component.status === Component.Ready) {
+                        root.hogaWindow = component.createObject()
+                    }
+                }
+                root.hogaWindow.show()
+            }
+        }
+
+        TextButton {
+            id: btnChegyeol
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "Chegyeol"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            onBtnClicked: {
+                console.log('btnChegyeol clicked')
+
+                if (root.chegyeolWindow === null) {
+                    var component = Qt.createComponent("Chegyeol.qml")
+                    if (component.status === Component.Ready) {
+                        root.chegyeolWindow = component.createObject()
+                    }
+                }
+                root.chegyeolWindow.show()
             }
         }
     }

@@ -128,8 +128,8 @@ class MarketViewModel(QObject):
     def load(self):
         logger.debug("")
         self.stockList = Client.getInstance().stock_list()
-        if len(self.stockList) > 0:
-            self.currentStock = self.stockList[0]
+        # if len(self.stockList) > 0:
+        #     self.currentStock = self.stockList[0]
 
         self._codeList = [stock['code'] for stock in self.stockList]
         self._codeList.sort()

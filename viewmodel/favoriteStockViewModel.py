@@ -4,6 +4,7 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
 from client import Client
 from .dbHelper import DbHelper
 from .stockPriceItemData import StockPriceItemData
+from .marketViewModel import MarketViewModel
 
 logger = logging.getLogger()
 
@@ -11,13 +12,15 @@ class FavoriteStockViewModel(QObject):
     stockListChanged = pyqtSignal()
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
 
-    def __init__(self, qmlContext, parent=None):
+    def __init__(self, marketViewModel, qmlContext, parent=None):
         logger.debug("")
         super().__init__(parent)
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty("favoriteStockViewModel", self)
 
         self._stockList = []
+
+        self.marketViewModel = marketViewModel
 
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
@@ -45,6 +48,9 @@ class FavoriteStockViewModel(QObject):
         logger.debug(stockList)
 
         self.__updateStockList([x["code"] for x in stockList])
+
+        if len(stockList) > 0 and self.marketViewModel.currentStock is None:
+            self.marketViewModel.currentStock = {"code": self.stockList[0].code, "name": self.stockList[0].name}
 
     @pyqtSlot(str, str)
     def add(self, name: str, code: str):

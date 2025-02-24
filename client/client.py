@@ -196,6 +196,10 @@ class Client(QObject):
              )
         )
 
+    def get_hoga(self, stock_no, screen_no):
+        logging.debug("")
+        self.requestQueueProxy.insert(("hoga", {"stock_no": stock_no, "screen_no": screen_no}))
+
     def registerEventCallback(self, event: str, callback):
         self.registerCallback(self.eventQueueWorker, event, callback)
 

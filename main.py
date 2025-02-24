@@ -12,7 +12,7 @@ from model import Server
 from client import Client
 
 from viewmodel import (MainViewModel, AccountViewModel, MarketViewModel, FavoriteStockViewModel, ConditionViewModel,
-                       ChartViewModel, TradeViewModel, LogViewModel)
+                       ChartViewModel, TradeViewModel, LogViewModel, HogaViewModel, ChegyeolViewModel)
 
 logger = logging.getLogger()
 requestQueue = multiprocessing.Queue(maxsize=5)
@@ -58,10 +58,12 @@ if __name__ == "__main__":
     mainViewModel = MainViewModel(engine.rootContext(), app)
     accountViewModel = AccountViewModel(engine.rootContext(), app)
     marketViewModel = MarketViewModel(engine.rootContext(), app)
-    favoriteStockViewModel = FavoriteStockViewModel(engine.rootContext(), app)
+    favoriteStockViewModel = FavoriteStockViewModel(marketViewModel, engine.rootContext(), app)
     conditionViewModel = ConditionViewModel(marketViewModel, engine.rootContext(), app)
     chartViewModel = ChartViewModel(engine.rootContext(), app)
     tradeViewModel = TradeViewModel(engine.rootContext(), app)
+    hogaViewModel = HogaViewModel(marketViewModel, engine.rootContext(), app)
+    chegyeolViewModel = ChegyeolViewModel(marketViewModel, engine.rootContext(), app)
     logViewModel = LogViewModel.getInstance()
     engine.rootContext().setContextProperty('logViewModel', logViewModel)
 

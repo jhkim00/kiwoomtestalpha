@@ -18,9 +18,6 @@ ApplicationWindow {
     property var fixedWidth: 480
     property var fixedHeight: 720
 
-    property var accountWindow: null
-    property var marketWindow: null
-    property var conditionWindow: null
     Column {
         width: parent.width
         y: 10

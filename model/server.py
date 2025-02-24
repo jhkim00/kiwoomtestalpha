@@ -60,8 +60,10 @@ class Server(Process):
             "daily_chart": [self.handle_daily_chart, asyncio.Future()],
             "minute_chart": [self.handle_minute_chart, asyncio.Future()],
             "send_order": [self.handle_send_order, asyncio.Future()],
+            "hoga": [self.handle_hoga, asyncio.Future()],
         }
-        self.eventList = ["login", "account_info", "stock_basic_info", "condition_load", "daily_chart", "minute_chart"]
+        self.eventList = ["login", "account_info", "stock_basic_info", "condition_load", "daily_chart", "minute_chart",
+                          "hoga"]
         logger.debug("")
         self.manager = Manager()
         self.manager.notifyLoginCompleted = self.notifyLoginCompleted
@@ -77,6 +79,8 @@ class Server(Process):
         self.manager.notifyDailyChart = self.notifyDailyChart
         self.manager.notifyConditionInfoReal = self.notifyConditionInfoReal
         self.manager.notifyMinuteChart = self.notifyMinuteChart
+        self.manager.notifyHogaRemainsReal = self.notifyHogaRemainsReal
+        self.manager.notifyHoga = self.notifyHoga
 
         """ `asyncio.create_task()`를 사용하여 여러 개의 태스크를 동시에 실행"""
         tasks = [
@@ -176,6 +180,12 @@ class Server(Process):
         # logger.debug("")
         self.realDataQueue.put(("condition_info_real", data))
 
+    def notifyHogaRemainsReal(self, data):
+        self.realDataQueue.put(("hoga_remains_real", data))
+
+    def notifyHoga(self, data):
+        self.requestHandlerMap["hoga"][self.futureIndex].set_result(data)
+
     """
     request handler
     """
@@ -238,3 +248,7 @@ class Server(Process):
     async def handle_send_order(self, data):
         logger.debug("")
         await self.manager.sendOrder(data)
+
+    async def handle_hoga(self, data):
+        logger.debug("")
+        await self.manager.getHoga(data)

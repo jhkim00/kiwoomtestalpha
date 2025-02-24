@@ -6,3 +6,5 @@ from .conditionViewModel import ConditionViewModel
 from .chartViewModel import ChartViewModel
 from .tradeViewModel import TradeViewModel
 from .logViewModel import LogViewModel
+from .hogaViewModel import HogaViewModel
+from .chegyeolViewModel import ChegyeolViewModel
