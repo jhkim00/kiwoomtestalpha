@@ -234,7 +234,7 @@ class Manager(QObject):
     def __onStockBasicInfo(self, screen, rqname, trcode, record, next):
         logger.debug("")
         if rqname == "주식기본정보":
-            single_data_keys = ['신용비율', '시가총액', 'PER', 'PBR', '매출액', '영업이익', '당기순이익', '유통주식', '유통비율',
+            single_data_keys = ['종목코드', '신용비율', '시가총액', 'PER', 'PBR', '매출액', '영업이익', '당기순이익', '유통주식', '유통비율',
                                 '시가', '고가', '저가', '현재가', '기준가', '대비기호', '전일대비', '등락율', '거래량', '거래대비']
             outList, _ = self.__getCommDataByKeys(trcode, rqname, single_data_keys)
             self.notifyStockBasicInfo(outList)

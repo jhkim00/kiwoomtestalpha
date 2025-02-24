@@ -1,15 +1,19 @@
+import bisect
 import logging
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
 from PyQt5.QtQml import QJSValue
 from client import Client
+from .stockPriceItemData import StockPriceItemData
 
 logger = logging.getLogger()
 
 class MarketViewModel(QObject):
     stockListChanged = pyqtSignal()
+    stockPriceListChanged = pyqtSignal()
     searchedStockListChanged = pyqtSignal()
     currentStockChanged = pyqtSignal(str, str)
+    stockPriceInfoChanged = pyqtSignal(str, dict)
     basicInfoChanged = pyqtSignal()
     priceInfoChanged = pyqtSignal()
 
@@ -19,7 +23,9 @@ class MarketViewModel(QObject):
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty('marketViewModel', self)
 
+        self._codeList = []
         self._stockList = []
+        self._stockPriceList = []
         self._searchedStockList = []
         self._currentStock = None
 
@@ -58,6 +64,15 @@ class MarketViewModel(QObject):
     def stockList(self, val: list):
         self._stockList = val
         self.stockListChanged.emit()
+
+    @pyqtProperty(list, notify=stockPriceListChanged)
+    def stockPriceList(self):
+        return self._stockPriceList
+
+    @stockPriceList.setter
+    def stockPriceList(self, val: list):
+        self._stockPriceList = val
+        self.stockPriceListChanged.emit()
 
     @pyqtProperty(list, notify=searchedStockListChanged)
     def searchedStockList(self):
@@ -116,6 +131,14 @@ class MarketViewModel(QObject):
         if len(self.stockList) > 0:
             self.currentStock = self.stockList[0]
 
+        self._codeList = [stock['code'] for stock in self.stockList]
+        self._codeList.sort()
+
+        stockPriceList = [StockPriceItemData(stock['name'], stock['code']) for stock in self.stockList]
+        stockPriceList.sort(key=lambda x: x.code)
+        self.stockPriceList = stockPriceList
+        # logger.debug(f"self.stockPriceList:{self.stockPriceList}")
+
     @pyqtSlot(QVariant)
     def setCurrentStock(self, val):
         if isinstance(val, dict):
@@ -140,16 +163,30 @@ class MarketViewModel(QObject):
         logger.debug("")
         Client.getInstance().stock_basic_info(self.currentStock["code"], "1002")
 
+    def getStockPriceItemDataByCode(self, code):
+        index = bisect.bisect_left(self._codeList, code)
+        stock = self._stockPriceList[index]
+        return stock
+
     """
     client model event
     """
     def onStockBasicInfo(self, result):
         if len(result) > 0:
-            self.basicInfo = {key: result[key] for key in self.basicInfo if key in result}
-            logger.debug(self.basicInfo)
+            basicInfo = {key: result[key] for key in self.basicInfo if key in result}
+            logger.debug(basicInfo)
 
-            self.priceInfo = {key: result[key] for key in self.priceInfo if key in result}
-            logger.debug(self.priceInfo)
+            priceInfo = {key: result[key] for key in self.priceInfo if key in result}
+            logger.debug(priceInfo)
+
+            if result['종목코드'] == self.currentStock['code']:
+                self.basicInfo = basicInfo
+                self.priceInfo = priceInfo
+
+            stock = self.getStockPriceItemDataByCode(result['종목코드'])
+            stock.setPriceInfo(priceInfo)
+            self.stockPriceInfoChanged.emit(stock.code, priceInfo)
+            logger.debug(stock)
 
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):

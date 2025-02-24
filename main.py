@@ -59,7 +59,7 @@ if __name__ == "__main__":
     accountViewModel = AccountViewModel(engine.rootContext(), app)
     marketViewModel = MarketViewModel(engine.rootContext(), app)
     favoriteStockViewModel = FavoriteStockViewModel(engine.rootContext(), app)
-    conditionViewModel = ConditionViewModel(engine.rootContext(), app)
+    conditionViewModel = ConditionViewModel(marketViewModel, engine.rootContext(), app)
     chartViewModel = ChartViewModel(engine.rootContext(), app)
     tradeViewModel = TradeViewModel(engine.rootContext(), app)
     logViewModel = LogViewModel.getInstance()

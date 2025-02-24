@@ -8,10 +8,6 @@ ApplicationWindow {
     y: 480
     width: fixedWidth
     height: fixedHeight
-    minimumWidth: fixedWidth
-    maximumWidth: fixedWidth
-    minimumHeight: fixedHeight
-    maximumHeight: fixedHeight
     title: "Condition"
 
     property var fixedWidth: 1200

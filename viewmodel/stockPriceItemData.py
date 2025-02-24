@@ -40,6 +40,8 @@ class StockPriceItemData(QObject):
                 self._diffSign = priceInfo["전일대비기호"]
                 self._volumeRate = priceInfo["전일거래량대비"]
                 self._tradingValue = priceInfo["거래대금"]
+
+            self.priceInfoReceived = True
         else:
             self._startPrice = ''
             self._highPrice = ''
@@ -52,6 +54,8 @@ class StockPriceItemData(QObject):
             self._diffSign = ''
             self._volumeRate = ''
             self._tradingValue = ''
+
+            self.priceInfoReceived = False
 
     @pyqtProperty(str, notify=nameChanged)
     def name(self):
@@ -182,6 +186,25 @@ class StockPriceItemData(QObject):
         if self._tradingValue != val:
             self._tradingValue = val
             self.tradingValueChanged.emit()
+
+    def setPriceInfo(self, priceInfo: dict, fromSingleInfo=True):
+        if priceInfo is not None:
+            self.startPrice = priceInfo["시가"]
+            self.highPrice = priceInfo["고가"]
+            self.lowPrice = priceInfo["저가"]
+            self.currentPrice = priceInfo["현재가"]
+            self.refPrice = priceInfo["기준가"]
+            self.diffPrice = priceInfo["전일대비"]
+            self.diffRate = priceInfo["등락율"]
+            self.volume = priceInfo["거래량"]
+            if fromSingleInfo:
+                self.diffSign = priceInfo["대비기호"]
+                self.volumeRate = priceInfo["거래대비"]
+                self.tradingValue = ''
+            else:
+                self.diffSign = priceInfo["전일대비기호"]
+                self.volumeRate = priceInfo["전일거래량대비"]
+                self.tradingValue = priceInfo["거래대금"]
 
     def __repr__(self):
         str_ = "==StockPriceItemData==\n"

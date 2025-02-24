@@ -63,6 +63,13 @@ Rectangle {
                 return ''
             }
 
+            // 기호(+,-) 추출
+            var sign = '';
+            if (numberStr[0] === '+' || numberStr[0] === '-') {
+                sign = numberStr[0];
+                numberStr = numberStr.slice(1); // 기호를 제외한 숫자만 처리
+            }
+
             // 소수점이 있는 경우 정수 부분과 소수 부분을 분리
             var parts = numberStr.split('.');
             var intPart = parts[0]; // 정수 부분
@@ -79,8 +86,8 @@ Rectangle {
                 .reverse()
                 .join('');
 
-            // 최종 결과 반환
-            return formattedInt + decimalPart;
+            // 최종 결과 반환 (기호 유지)
+            return sign + formattedInt + decimalPart;
         }
 
         function numberStrToFormated(numberStr) {

@@ -6,6 +6,7 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant, 
 from client import Client
 from .stockPriceItemData import StockPriceItemData
 from .logViewModel import LogViewModel
+from .marketViewModel import MarketViewModel
 
 logger = logging.getLogger()
 
@@ -86,7 +87,7 @@ class ConditionViewModel(QObject):
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
     max_realtime_condition_count = 5
 
-    def __init__(self, qmlContext, parent=None):
+    def __init__(self, marketViewModel, qmlContext, parent=None):
         super().__init__(parent)
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty('conditionViewModel', self)
@@ -95,11 +96,15 @@ class ConditionViewModel(QObject):
         self._conditionInfoDict = {}
         self._currentConditionCode = -1
 
+        self.marketViewModel = marketViewModel
+
         Client.getInstance().registerEventCallback("condition_load", self.onConditionList)
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
         Client.getInstance().registerRealDataCallback("condition_info_real", self.__onConditionInfoReal)
 
         self.conditionRealReceived.connect(self.__onConditionInfoRealReceived)
+
+        self.marketViewModel.stockPriceInfoChanged.connect(self.__stockPriceInfoChanged)
 
     @pyqtProperty(ConditionModel, notify=conditionListChanged)
     def conditionList(self):
@@ -132,7 +137,6 @@ class ConditionViewModel(QObject):
         foundCond = None
         for cond in self._conditionList.data:
             if code == cond["code"]:
-                found = True
                 foundCond = cond
                 break
         if foundCond is None:
@@ -192,20 +196,22 @@ class ConditionViewModel(QObject):
 
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
-        logger.debug(f"data[0]:{data[0]}")
-        for stock in self.conditionStockList:
-            if data[0] == stock.code:
-                stock.currentPrice = data[1]['10']
-                stock.diffPrice = data[1]['11']
-                stock.diffRate = data[1]['12']
-                stock.volume = data[1]['13']
-                stock.startPrice = data[1]['16']
-                stock.highPrice = data[1]['17']
-                stock.lowPrice = data[1]['18']
-                stock.diffSign = data[1]['25']
-                stock.volumeRate = data[1]['30']
-                stock.tradingValue = data[1]['14']
-                break
+        # logger.debug(f"data[0]:{data[0]}")
+        for key in self._conditionInfoDict:
+            stockPriceList = self._conditionInfoDict[key]
+            for stock in stockPriceList:
+                if data[0] == stock.code:
+                    stock.currentPrice = data[1]['10']
+                    stock.diffPrice = data[1]['11']
+                    stock.diffRate = data[1]['12']
+                    stock.volume = data[1]['13']
+                    stock.startPrice = data[1]['16']
+                    stock.highPrice = data[1]['17']
+                    stock.lowPrice = data[1]['18']
+                    stock.diffSign = data[1]['25']
+                    stock.volumeRate = data[1]['30']
+                    stock.tradingValue = data[1]['14']
+                    break
 
     @pyqtSlot(dict)
     def __onConditionInfoReal(self, data):
@@ -239,15 +245,22 @@ class ConditionViewModel(QObject):
 
         if data["id_type"] == 'I':  # 종목편입
             codeList.append(data['code'])
-            stockName = Client.getInstance().stock_name_by_code(data['code'])
-            stockPriceList.append(StockPriceItemData(stockName, data['code']))
-            Client.getInstance().stock_price_real([data['code']], "1004", discard_old_stocks=False)
+            stock = self.marketViewModel.getStockPriceItemDataByCode(data['code'])
+            stockName = stock.name
+            stockPriceList.append(stock)
+            if stock.priceInfoReceived:
+                Client.getInstance().stock_price_real([stock.code], "1004", discard_old_stocks=False)
+            else:
+                Client.getInstance().stock_basic_info(stock.code, "1004")
+
         elif data["id_type"] == 'D':  # 종목이탈
             Client.getInstance().stop_stock_price_real(data['code'], "1004")
             codeList.remove(data['code'])
             for stock in stockPriceList:
                 if stock.code == data['code']:
                     stockName = stock.name
+                    stockPriceList.remove(stock)
+                    break
 
         self._conditionInfoDict[cond_index] = stockPriceList
         if cond_index == self._currentConditionCode:
@@ -264,3 +277,12 @@ class ConditionViewModel(QObject):
             with open("실시간검색.txt", "a", encoding="utf-8") as f:
                 f.write(log)
             LogViewModel.getInstance().log(log)
+
+    @pyqtSlot(str, dict)
+    def __stockPriceInfoChanged(self, stockCode, priceInfo):
+        changedStock = self.marketViewModel.getStockPriceItemDataByCode(stockCode)
+        for key in self._conditionInfoDict:
+            stockPriceList = self._conditionInfoDict[key]
+            for stock in stockPriceList:
+                if stock.code == changedStock:
+                    stock.setPriceInfo(priceInfo, True)
