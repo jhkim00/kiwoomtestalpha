@@ -6,7 +6,9 @@ import multiprocessing
 from PyQt5.QtCore import QUrl, QT_VERSION_STR
 from PyQt5.QtWidgets import *
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QCoreApplication, Qt
+
+QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
 
 from model import Server
 from client import Client

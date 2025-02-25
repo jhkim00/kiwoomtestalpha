@@ -1,8 +1,12 @@
 import logging
-from lightweight_charts import Chart
+
 import pandas as pd
 from datetime import datetime
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+
+from lightweight_charts.widgets import QtChart
 
 from client import Client
 
@@ -27,6 +31,14 @@ class ChartViewModel(QObject):
         self.line_20 = None
         self.line_60 = None
         self.line_120 = None
+
+        self.window = QMainWindow()
+        self.layout = QVBoxLayout()
+        self.widget = QWidget()
+        self.widget.setLayout(self.layout)
+
+        self.window.resize(1920, 1080)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.mChart = [None, None]
         self.mDf = [None, None]
@@ -119,8 +131,11 @@ class ChartViewModel(QObject):
         df = df.sort_values("time")
         # logger.debug(f"df:{df}")
         if self.chart is None:
-            self.chart = Chart(width=1920, height=1080, x=0, y=0, title='Chart', toolbox=True, inner_width=1, inner_height=0.5)
+            self.chart = QtChart(self.widget, toolbox=True, inner_width=1, inner_height=0.5)
             self.chart.topbar.textbox('symbol')
+
+            self.layout.addWidget(self.chart.get_webview())
+            self.window.setCentralWidget(self.widget)
 
         self.chart.topbar['symbol'].set(self.stockName)
         self.chart.set(df)
@@ -181,7 +196,8 @@ class ChartViewModel(QObject):
             self.currentMinute = 5
             self.loadMinuteChart(5)
         else:
-            self.chart.show()
+            # self.chart.show()
+            self.window.show()
             self.receiving = False
             if self.needUpdate:
                 self.needUpdate = False
