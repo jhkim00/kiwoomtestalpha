@@ -190,7 +190,7 @@ class ChegyeolViewModel(QObject):
             
             self.currentPrice = data[1]['10']
             self.upDownType = data[1]['25']
-            self.changeRateType = data[1]['12']
+            self.changeRate = data[1]['12']
             self.volume = data[1]['13']
             self.tradingValue = data[1]['14']
             self.openPrice = data[1]['16']
