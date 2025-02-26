@@ -180,6 +180,7 @@ class ConditionViewModel(QObject):
 
         codeList = result["code_list"]
         stockPriceList = self.__getStockPriceList(codeList)
+        stockPriceList.sort(reverse=True, key=lambda x: float(x.diffRate))
         # logger.debug(f"stockPriceList:{stockPriceList}")
         self._conditionInfoDict[code] = stockPriceList
         self._currentConditionCode = code
@@ -261,6 +262,8 @@ class ConditionViewModel(QObject):
                     stockName = stock.name
                     stockPriceList.remove(stock)
                     break
+
+        stockPriceList.sort(reverse=True, key=lambda x: float(x.diffRate))
 
         self._conditionInfoDict[cond_index] = stockPriceList
         if cond_index == self._currentConditionCode:
