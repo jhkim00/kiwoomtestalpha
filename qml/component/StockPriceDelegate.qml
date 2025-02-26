@@ -10,6 +10,7 @@ Rectangle {
     border.width: 1
 
     property var listView
+    property bool simpleVersion: false
 
     Item {
         x: 10
@@ -118,6 +119,15 @@ Rectangle {
             }
         }
 
+        CandleStick {
+            height: 40
+            Layout.fillWidth: true
+            Layout.preferredWidth: 20
+            open: Math.abs(parseInt(priceRow.startPrice))
+            high: Math.abs(parseInt(priceRow.highPrice))
+            low: Math.abs(parseInt(priceRow.lowPrice))
+            close: Math.abs(parseInt(priceRow.currentPrice))
+        }
         VerticalKeyValueLayoutLabel {
             Layout.preferredWidth: 80
             keyText: '현재가'
@@ -166,6 +176,7 @@ Rectangle {
             valueText: priceRow.numberStrToFormated(priceRow.refPrice)
             keyColor: 'black'
             valueColor: 'black'
+            visible: !root.simpleVersion
         }
         VerticalKeyValueLayoutLabel {
             Layout.preferredWidth: 80
@@ -173,12 +184,14 @@ Rectangle {
             valueText: priceRow.numberStrToFormated(priceRow.diffPrice)
             keyColor: 'black'
             valueColor: priceRow.priceColor
+            visible: !root.simpleVersion
         }
         VerticalKeyValueLayoutLabel {
             keyText: '거래량'
             valueText: priceRow.numberStrToFormated(priceRow.volume)
             keyColor: 'black'
             valueColor: 'black'
+            visible: !root.simpleVersion
         }
         VerticalKeyValueLayoutLabel {
             keyText: '거래대비'

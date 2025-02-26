@@ -45,6 +45,7 @@ ApplicationWindow {
         delegate: StockPriceDelegate {
             listView: stockPriceListView
             width: stockPriceListView.width
+            simpleVersion: true
         }
 
         onItemClicked: {

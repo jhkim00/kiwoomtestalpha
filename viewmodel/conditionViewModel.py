@@ -29,13 +29,13 @@ class ConditionModel(QAbstractListModel):
 
         item = self.data[index.row()]
         if role == self.NameRole:
-            logger.debug(f"{item['name']}")
+            # logger.debug(f"{item['name']}")
             return item['name']
         elif role == self.CodeRole:
-            logger.debug(f"{item['code']}")
+            # logger.debug(f"{item['code']}")
             return item['code']
         elif role == self.MonitoringRole:
-            logger.debug(f"{item['monitoring']}")
+            # logger.debug(f"{item['monitoring']}")
             return item['monitoring']
 
         return QVariant()
