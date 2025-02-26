@@ -76,5 +76,5 @@ function convertToPercentage(value) {
     var cleaned = value.replace(/[-]/g, '');
 
     // 숫자를 100으로 나누고 소수점 두 자리로 포맷 후 % 기호 추가
-    return (cleaned / 100).toFixed(2) + " %";
+    return parseFloat(cleaned).toFixed(2) + " %";
 }
