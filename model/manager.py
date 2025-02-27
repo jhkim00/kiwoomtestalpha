@@ -187,6 +187,7 @@ class Manager(QObject):
     async def getDailyChart(self, data):
         logger.debug("")
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
+        self.kw.SetInputValue(id="수정주가구분", value="1")
         await self.coolDown.call()
         while True:
             ret = self.kw.CommRqData(rqname="주식일봉차트", trcode="opt10081", next=0, screen=data["screen_no"])
