@@ -18,6 +18,7 @@ class Manager(QObject):
         self.kw.trCallbacks["opt10001"] = self.__onStockBasicInfo
         self.kw.trCallbacks["OPW00004"] = self.__onAccountInfo
         self.kw.trCallbacks["OPTKWFID"] = self.__onStocksInfo
+        self.kw.trCallbacks["opt10082"] = self.__onWeeklyChart
         self.kw.trCallbacks["opt10081"] = self.__onDailyChart
         self.kw.trCallbacks["opt10080"] = self.__onMinuteChart
         self.kw.trCallbacks["opt10004"] = self.__onHoga
@@ -37,6 +38,7 @@ class Manager(QObject):
         self.notifyConditionList = None
         self.notifyStocksInfo = None
         self.notifyConditionInfo = None
+        self.notifyWeeklyChart = None
         self.notifyDailyChart = None
         self.notifyMinuteChart = None
         self.notifyConditionInfoReal = None
@@ -184,6 +186,23 @@ class Manager(QObject):
             cond_index=data["code"]
         )
 
+    async def getWeeklyChart(self, data):
+        logger.debug("")
+        self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
+        self.kw.SetInputValue(id="기준일자", value=data["ref_day"])
+        self.kw.SetInputValue(id="끝일자", value="")
+        self.kw.SetInputValue(id="수정주가구분", value="1")
+        await self.coolDown.call()
+        while True:
+            ret = self.kw.CommRqData(rqname="주식주봉차트", trcode="opt10082", next=0, screen=data["screen_no"])
+            if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
+                break
+            if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
+                logger.error(f"error:{ret}")
+                raise Exception
+
+            await asyncio.sleep(1)
+
     async def getDailyChart(self, data):
         logger.debug("")
         self.kw.SetInputValue(id="종목코드", value=data["stock_no"])
@@ -282,12 +301,22 @@ class Manager(QObject):
             # logger.debug(f"outList{outList}")
             self.notifyStocksInfo(outList)
 
+    def __onWeeklyChart(self, screen, rqname, trcode, record, next):
+        logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}")
+        if rqname == "주식주봉차트":
+            single_data_keys = ['종목코드']
+            multi_data_keys = ['현재가', '거래량', '거래대금', '일자', '시가', '고가', '저가', '수정주가구분', '수정비율',
+                               '수정주가이벤트', '전일종가']
+            code, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
+
+            self.notifyWeeklyChart((code, outList))
+
     def __onDailyChart(self, screen, rqname, trcode, record, next):
         logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}")
         if rqname == "주식일봉차트":
             single_data_keys = []
-            multi_data_keys = ['종목코드', '현재가', '거래량', '거래대금', '일자', '시가', '고가', '저가', '수정주가구분', '수정비율', '대업종구분',
-                       '소업종구분', '종목정보', '수정주가이벤트', '전일종가']
+            multi_data_keys = ['종목코드', '현재가', '거래량', '거래대금', '일자', '시가', '고가', '저가', '수정주가구분',
+                               '수정비율', '수정주가이벤트', '전일종가']
             _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
 
             self.notifyDailyChart(outList)

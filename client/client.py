@@ -173,6 +173,10 @@ class Client(QObject):
         logging.debug("")
         self.requestQueueProxy.insert(("stop_condition_info", {"name": name, "code": code, "screen_no": screen_no}))
 
+    def weekly_chart(self, code, ref_day, screen_no):
+        logging.debug("")
+        self.requestQueueProxy.insert(("weekly_chart", {"stock_no": code, "ref_day": ref_day, "screen_no": screen_no}))
+
     def daily_chart(self, code, screen_no):
         logging.debug("")
         self.requestQueueProxy.insert(("daily_chart", {"stock_no": code, "screen_no": screen_no}))

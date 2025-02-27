@@ -57,13 +57,14 @@ class Server(Process):
             "stocks_info": [self.handle_stocks_info, asyncio.Future()],
             "condition_info": [self.handle_condition_info, asyncio.Future()],
             "stop_condition_info": [self.handle_stop_condition_info, None],
+            "weekly_chart": [self.handle_weekly_chart, asyncio.Future()],
             "daily_chart": [self.handle_daily_chart, asyncio.Future()],
             "minute_chart": [self.handle_minute_chart, asyncio.Future()],
             "send_order": [self.handle_send_order, asyncio.Future()],
             "hoga": [self.handle_hoga, asyncio.Future()],
         }
-        self.eventList = ["login", "account_info", "stock_basic_info", "condition_load", "daily_chart", "minute_chart",
-                          "hoga"]
+        self.eventList = ["login", "account_info", "stock_basic_info", "condition_load", "weekly_chart", "daily_chart",
+                          "minute_chart", "hoga"]
         logger.debug("")
         self.manager = Manager()
         self.manager.notifyLoginCompleted = self.notifyLoginCompleted
@@ -76,6 +77,7 @@ class Server(Process):
         self.manager.notifyConditionList = self.notifyConditionList
         self.manager.notifyStocksInfo = self.notifyStocksInfo
         self.manager.notifyConditionInfo = self.notifyConditionInfo
+        self.manager.notifyWeeklyChart = self.notifyWeeklyChart
         self.manager.notifyDailyChart = self.notifyDailyChart
         self.manager.notifyConditionInfoReal = self.notifyConditionInfoReal
         self.manager.notifyMinuteChart = self.notifyMinuteChart
@@ -168,6 +170,10 @@ class Server(Process):
         logger.debug("")
         self.requestHandlerMap["condition_info"][self.futureIndex].set_result(info)
 
+    def notifyWeeklyChart(self, info):
+        # logger.debug(f"info:{info}")
+        self.requestHandlerMap["weekly_chart"][self.futureIndex].set_result(info)
+
     def notifyDailyChart(self, info):
         # logger.debug(f"info:{info}")
         self.requestHandlerMap["daily_chart"][self.futureIndex].set_result(info)
@@ -236,6 +242,10 @@ class Server(Process):
     async def handle_stop_condition_info(self, data):
         logger.debug("")
         await self.manager.sendConditionStop(data)
+
+    async def handle_weekly_chart(self, data):
+        logger.debug("")
+        await self.manager.getWeeklyChart(data)
 
     async def handle_daily_chart(self, data):
         logger.debug("")
