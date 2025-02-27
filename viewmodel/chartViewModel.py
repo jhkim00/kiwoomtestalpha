@@ -37,7 +37,7 @@ class ChartViewModel(QObject):
         self.widget = QWidget()
         self.widget.setLayout(self.layout)
 
-        self.window.resize(1920, 1080)
+        self.window.resize(1920, 720)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.mChart = [None, None]
@@ -133,6 +133,8 @@ class ChartViewModel(QObject):
         if self.chart is None:
             self.chart = QtChart(self.widget, toolbox=True, inner_width=1, inner_height=0.5)
             self.chart.topbar.textbox('symbol')
+            self.chart.candle_style(up_color='#ff0000', down_color='#0000ff')
+            self.chart.legend(visible=True)
 
             self.layout.addWidget(self.chart.get_webview())
             self.window.setCentralWidget(self.widget)
@@ -186,6 +188,8 @@ class ChartViewModel(QObject):
         if self.mChart[i] is None:
             self.mChart[i] = self.chart.create_subchart(position='left', width=0.5, height=0.5)
             self.mChart[i].topbar.textbox('symbol')
+            self.mChart[i].candle_style(up_color='#ff0000', down_color='#0000ff')
+            self.mChart[i].legend(visible=True)
 
         self.mChart[i].topbar['symbol'].set(f'{self.currentMinute} min')
         self.mChart[i].set(df)
