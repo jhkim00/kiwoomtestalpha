@@ -20,7 +20,11 @@ Item {
 
     // y축 기준점 계산 (정규화)
     function normalize(value) {
-        return height - ((value - low) / (high - low) * height);
+        var range = high - low;
+        if (range === 0) {
+            return height / 2;  // high와 low가 같다면 중간값 위치로 설정
+        }
+        return height - ((value - low) / range * height);
     }
 
     // 심지 (Wick)
