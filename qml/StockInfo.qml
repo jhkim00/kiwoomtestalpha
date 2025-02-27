@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import "./component"
+import "../Globals.js" as Globals
 
 Rectangle {
     id: root
@@ -59,13 +60,6 @@ Rectangle {
         }
 
         return result;
-    }
-
-    function numberStrToFormated(numberStr) {
-        // 숫자 문자열에서 '+' 또는 '-' 기호 제거
-        numberStr = numberStr.replace(/^[-+]/, '');
-
-        return numberStrToNonAbsFormated(numberStr)
     }
 
     function getPriceColor(price, refPrice) {
@@ -206,7 +200,7 @@ Rectangle {
 
         VerticalKeyValueLayoutLabel {
             keyText: '시가총액'
-            valueText: numberStrToFormated(sichong)
+            valueText: Globals.formatStringPrice(sichong)
         }
         VerticalKeyValueLayoutLabel {
             keyText: 'PER'
@@ -218,19 +212,19 @@ Rectangle {
         }
         VerticalKeyValueLayoutLabel {
             keyText: '매출액'
-            valueText: numberStrToFormated(maechul)
+            valueText: Globals.formatStringPrice(maechul)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '영업이익'
-            valueText: numberStrToFormated(operatingProfit)
+            valueText: Globals.formatStringPrice(operatingProfit)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '당기순이익'
-            valueText: numberStrToFormated(netProfit)
+            valueText: Globals.formatStringPrice(netProfit)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '유통주식'
-            valueText: numberStrToFormated(yootongNumber)
+            valueText: Globals.formatStringPrice(yootongNumber)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '유통비율'
@@ -238,7 +232,7 @@ Rectangle {
         }
         VerticalKeyValueLayoutLabel {
             keyText: '신용비율'
-            valueText: numberStrToFormated(sinyongRate) + ' %'
+            valueText: Globals.formatStringPrice(sinyongRate) + ' %'
         }
     }
 
@@ -252,27 +246,27 @@ Rectangle {
 
         VerticalKeyValueLayoutLabel {
             keyText: '시가'
-            valueText: numberStrToFormated(startPrice)
+            valueText: Globals.formatStringPrice(startPrice)
             valueColor: getPriceColor(startPrice, refPrice)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '고가'
-            valueText: numberStrToFormated(highPrice)
+            valueText: Globals.formatStringPrice(highPrice)
             valueColor: getPriceColor(highPrice, refPrice)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '저가'
-            valueText: numberStrToFormated(lowPrice)
+            valueText: Globals.formatStringPrice(lowPrice)
             valueColor: getPriceColor(lowPrice, refPrice)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '현재가'
-            valueText: numberStrToFormated(currentPrice)
+            valueText: Globals.formatStringPrice(currentPrice)
             valueColor: priceColor
         }
         VerticalKeyValueLayoutLabel {
             keyText: '기준가'
-            valueText: numberStrToFormated(refPrice)
+            valueText: Globals.formatStringPrice(refPrice)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '대비기호'
@@ -281,7 +275,7 @@ Rectangle {
         }
         VerticalKeyValueLayoutLabel {
             keyText: '전일대비'
-            valueText: numberStrToFormated(diffPrice)
+            valueText: Globals.formatStringPrice(diffPrice)
             valueColor: priceColor
         }
         VerticalKeyValueLayoutLabel {
@@ -291,11 +285,11 @@ Rectangle {
         }
         VerticalKeyValueLayoutLabel {
             keyText: '거래량'
-            valueText: numberStrToFormated(volume)
+            valueText: Globals.formatStringPrice(volume)
         }
         VerticalKeyValueLayoutLabel {
             keyText: '거래대비'
-            valueText: numberStrToFormated(volumeRate) + ' %'
+            valueText: Globals.formatStringPrice(volumeRate) + ' %'
             valueColor: getPriceColor(volumeRate, 100)
         }
     }
