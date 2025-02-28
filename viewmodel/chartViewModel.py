@@ -13,7 +13,7 @@ from client import Client
 logger = logging.getLogger()
 
 class ChartViewModel(QObject):
-    dailyChartModelChanged = pyqtSignal()
+    weeklyChartReceived = pyqtSignal(tuple)
     dailyChartReceived = pyqtSignal(list)
     minuteChartReceived = pyqtSignal(list)
     stockPriceRealReceived = pyqtSignal(tuple)
@@ -25,32 +25,39 @@ class ChartViewModel(QObject):
 
         self.stockName = ''
         self.stockCode = ''
+        self.currentTimeSelection = 'day'
+
         self.chart = None
+
+        self.window = QMainWindow()
+        self.layout = QVBoxLayout()
+        self.widget = QWidget()
+        self.widget.setLayout(self.layout)
+        self.window.resize(1920, 720)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+        self.mChart = [None, None]
+
         self.df = None
         self.line_5 = None
         self.line_20 = None
         self.line_60 = None
         self.line_120 = None
 
-        self.window = QMainWindow()
-        self.layout = QVBoxLayout()
-        self.widget = QWidget()
-        self.widget.setLayout(self.layout)
-
-        self.window.resize(1920, 720)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-
-        self.mChart = [None, None]
         self.mDf = [None, None]
-        self.currentMinuteChartIndex = -1
+        self.currentMinuteChartIndex = 0
         self.currentMinute = 0
+
+        self.loadWholeChart = True
         self.receiving = False
         self.needUpdate = False
 
+        Client.getInstance().registerEventCallback("weekly_chart", self.onWeeklyChart)
         Client.getInstance().registerEventCallback("daily_chart", self.onDailyChart)
         Client.getInstance().registerEventCallback("minute_chart", self.onMinuteChart)
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
+        self.weeklyChartReceived.connect(self.__onWeeklyChartReceived)
         self.dailyChartReceived.connect(self.__onDailyChartReceived)
         self.minuteChartReceived.connect(self.__onMinuteChartReceived)
         self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
@@ -59,13 +66,18 @@ class ChartViewModel(QObject):
     method for qml side
     """
     @pyqtSlot()
-    def load(self):
+    def load(self, loadWholeChart=True):
         logger.debug("")
         if len(self.stockCode) == 0:
             return
 
         self.receiving = True
-        Client.getInstance().daily_chart(self.stockCode, "1005")
+        self.loadWholeChart = loadWholeChart
+
+        if self.currentTimeSelection == 'week':
+            Client.getInstance().weekly_chart(self.stockCode, datetime.today().strftime("%Y%m%d"), "1005")
+        elif self.currentTimeSelection == 'day':
+            Client.getInstance().daily_chart(self.stockCode, "1005")
 
     @pyqtSlot()
     def loadMinuteChart(self, minute):
@@ -92,6 +104,9 @@ class ChartViewModel(QObject):
     """
     client model event
     """
+    def onWeeklyChart(self, result):
+        self.weeklyChartReceived.emit(result)
+
     def onDailyChart(self, result):
         self.dailyChartReceived.emit(result)
 
@@ -106,12 +121,73 @@ class ChartViewModel(QObject):
     """
     private method
     """
+    def createChart(self):
+        if self.chart is None:
+            self.chart = QtChart(self.widget, toolbox=True, inner_width=1, inner_height=0.5)
+            self.chart.topbar.textbox('symbol')
+            self.chart.topbar.switcher('timeframe', ('day', 'week', 'month'), default='day',
+                                       func=self.onTimeframeSelection)
+            self.chart.candle_style(up_color='#ff0000', down_color='#0000ff')
+            self.chart.legend(visible=True)
+
+            self.layout.addWidget(self.chart.get_webview())
+            self.window.setCentralWidget(self.widget)
+
+        for i in range(2):
+            chart = self.mChart[i]
+            if chart is None:
+                chart = self.chart.create_subchart(position='left', width=0.5, height=0.5)
+                chart.topbar.textbox('symbol')
+                chart.candle_style(up_color='#ff0000', down_color='#0000ff')
+                chart.legend(visible=True)
+                self.mChart[i] = chart
+
     @classmethod
     def __calculate_sma(cls, df, period: int = 50):
         return pd.DataFrame({
             'time': df['time'],
             f'SMA {period}': df['close'].rolling(window=period).mean()
         }).dropna()
+
+    def onTimeframeSelection(self, chart):
+        logger.debug(f"{chart.topbar['symbol'].value}:{chart.topbar['timeframe'].value}")
+        self.currentTimeSelection = chart.topbar['timeframe'].value
+        self.load(loadWholeChart=False)
+
+    @pyqtSlot(tuple)
+    def __onWeeklyChartReceived(self, data):
+        filtered_data = [{key: d[key] for key in ["일자", "시가", "고가", "저가", "현재가", "거래량"]} for d in data[1]]
+        df = pd.DataFrame(filtered_data)
+        # logger.debug(f"df:{df}")
+        df.rename(
+            columns={"일자": "time", "시가": "open", "고가": "high", "저가": "low", "현재가": "close", "거래량": "volume"},
+            inplace=True
+        )
+        df["time"] = pd.to_datetime(df["time"], format="%Y%m%d").dt.strftime("%Y-%m-%d")
+        df["open"] = df["open"].astype(int)
+        df["high"] = df["high"].astype(int)
+        df["low"] = df["low"].astype(int)
+        df["close"] = df["close"].astype(int)
+        df["volume"] = df["volume"].astype(int)
+        df = df.sort_values("time")
+        # logger.debug(f"df:{df}")
+
+        self.createChart()
+
+        self.chart.topbar['symbol'].set(self.stockName)
+        self.chart.set(df)
+
+        self.df = df
+
+        if self.loadWholeChart:
+            self.currentMinuteChartIndex = 0
+            self.currentMinute = 1
+            self.loadMinuteChart(1)
+        else:
+            self.receiving = False
+            if self.needUpdate:
+                self.needUpdate = False
+                self.load()
 
     @pyqtSlot(list)
     def __onDailyChartReceived(self, data):
@@ -130,14 +206,8 @@ class ChartViewModel(QObject):
         df["volume"] = df["volume"].astype(int)
         df = df.sort_values("time")
         # logger.debug(f"df:{df}")
-        if self.chart is None:
-            self.chart = QtChart(self.widget, toolbox=True, inner_width=1, inner_height=0.5)
-            self.chart.topbar.textbox('symbol')
-            self.chart.candle_style(up_color='#ff0000', down_color='#0000ff')
-            self.chart.legend(visible=True)
 
-            self.layout.addWidget(self.chart.get_webview())
-            self.window.setCentralWidget(self.widget)
+        self.createChart()
 
         self.chart.topbar['symbol'].set(self.stockName)
         self.chart.set(df)
@@ -163,9 +233,11 @@ class ChartViewModel(QObject):
         # self.line_120.set(sma_data_120)
 
         self.df = df
-        self.currentMinuteChartIndex = 0
-        self.currentMinute = 1
-        self.loadMinuteChart(1)
+
+        if self.loadWholeChart:
+            self.currentMinuteChartIndex = 0
+            self.currentMinute = 1
+            self.loadMinuteChart(1)
 
     @pyqtSlot(list)
     def __onMinuteChartReceived(self, data):
@@ -185,12 +257,6 @@ class ChartViewModel(QObject):
         df = df.sort_values("time")
         # logger.debug(f"df:{df}")
         i = self.currentMinuteChartIndex
-        if self.mChart[i] is None:
-            self.mChart[i] = self.chart.create_subchart(position='left', width=0.5, height=0.5)
-            self.mChart[i].topbar.textbox('symbol')
-            self.mChart[i].candle_style(up_color='#ff0000', down_color='#0000ff')
-            self.mChart[i].legend(visible=True)
-
         self.mChart[i].topbar['symbol'].set(f'{self.currentMinute} min')
         self.mChart[i].set(df)
         self.mDf[i] = df
@@ -210,7 +276,7 @@ class ChartViewModel(QObject):
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):
         # logger.debug(f"data:{data}")
-        if self.df is not None:
+        if self.currentTimeSelection == 'day' and self.df is not None:
             if data[0] == self.stockCode:
                 tick = pd.Series(
                     {
@@ -220,7 +286,7 @@ class ChartViewModel(QObject):
                     }
                 )
 
-                # logger.debug(f"tick:{self.df.iloc[-1]}")
+                # print(f"{self.df.iloc[-1]}")
                 self.chart.update_from_tick(tick)
 
         for i in range(0, len(self.mDf)):
