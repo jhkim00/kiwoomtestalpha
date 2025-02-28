@@ -13,6 +13,12 @@ Rectangle {
     property var listView
     property bool simpleVersion: false
 
+    Rectangle {
+        anchors.fill: parent
+        color: listView.currentIndex === index ? "lightsteelblue" : "transparent"
+        opacity: 0.5
+    }
+
     Item {
         x: 10
         width: parent.width - x
@@ -204,8 +210,7 @@ Rectangle {
         id: listViewItemMouseArea
         anchors.fill: parent
         onClicked: {
-            console.log('StockPriceDelegate.qml onClicked %1'.arg(root.color))
-            listView.itemClicked(modelData)
+            listView.itemClicked(index)
         }
     }
 

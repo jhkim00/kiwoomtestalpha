@@ -37,10 +37,11 @@ ApplicationWindow {
         width: parent.width - conditionListView.width
         height: parent.height
         clip: true
+        focus: true
         boundsBehavior: Flickable.StopAtBounds
         model: conditionViewModel.conditionStockList
 
-        signal itemClicked(variant itemData)
+        signal itemClicked(real index)
 
         delegate: StockPriceDelegate {
             listView: stockPriceListView
@@ -49,8 +50,23 @@ ApplicationWindow {
         }
 
         onItemClicked: {
-            console.log('Market.qml onItemClicked ' + itemData.name + ', '+ itemData.code)
-            marketViewModel.setCurrentStock({'name': itemData.name, 'code': itemData.code})
+            console.trace()
+            forceActiveFocus()
+            currentIndex = index
+            if (currentIndex !== -1) {
+                var item = model[currentIndex]
+                console.log('Market.qml name ' + item.name + ', '+ item.code)
+                marketViewModel.setCurrentStock({'name': item.name, 'code': item.code})
+            }
+        }
+
+        Keys.onReturnPressed: {
+            console.trace()
+            if (currentIndex !== -1) {
+                var item = model[currentIndex]
+                console.log('Market.qml name ' + item.name + ', '+ item.code)
+                marketViewModel.setCurrentStock({'name': item.name, 'code': item.code})
+            }
         }
     }
 }
