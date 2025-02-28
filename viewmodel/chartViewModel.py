@@ -276,6 +276,9 @@ class ChartViewModel(QObject):
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):
         # logger.debug(f"data:{data}")
+        if self.receiving:
+            return
+
         if self.currentTimeSelection == 'day' and self.df is not None:
             if data[0] == self.stockCode:
                 tick = pd.Series(
@@ -293,7 +296,6 @@ class ChartViewModel(QObject):
             df = self.mDf[i]
             if df is not None:
                 if data[0] == self.stockCode:
-
                     dateStr = datetime.strptime(df.iloc[-1]['time'], "%Y-%m-%d %H:%M").strftime("%Y-%m-%d")
                     timeStr = datetime.strptime(data[1]['20'], "%H%M%S").strftime("%H:%M")
                     tick = pd.Series(
