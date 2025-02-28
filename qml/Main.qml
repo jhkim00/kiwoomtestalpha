@@ -51,6 +51,7 @@ ApplicationWindow {
             chegyeolWindow.close()
             chegyeolWindow.destroy()
         }
+        chartViewModel.closeChart()
     }
 
     Column {

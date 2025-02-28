@@ -66,6 +66,12 @@ class ChartViewModel(QObject):
     method for qml side
     """
     @pyqtSlot()
+    def closeChart(self):
+        logger.debug("")
+        if self.window:
+            self.window.close()
+
+    @pyqtSlot()
     def load(self, loadWholeChart=True):
         logger.debug("")
         if len(self.stockCode) == 0:
