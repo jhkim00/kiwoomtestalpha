@@ -47,6 +47,8 @@ ApplicationWindow {
             console.log('stockInputField onDisplayTextChanged ' + displayText)
             marketViewModel.setInputText(displayText)
         }
+
+        Keys.onTabPressed: favoriteListView.forceActiveFocus()
     }
 
     StockListView {
@@ -94,5 +96,9 @@ ApplicationWindow {
                 marketViewModel.setCurrentStock({'name': item.name, 'code': item.code})
             }
         }
+
+        Keys.onTabPressed: stockInputField.forceActiveFocus()
+
+        FocusIndicator {}
     }
 }

@@ -20,28 +20,26 @@ TextField {
         }
     }
     Keys.onUpPressed: {
-        console.log("onUpPressed")
+        console.trace()
         if (typeof(stockListView) === 'undefined') {
             return
         }
         if (stockListView.currentIndex > 0) {
             --stockListView.currentIndex
         }
-        console.log(stockListView.currentIndex)
     }
 
     Keys.onDownPressed: {
-        console.log("onDownPressed");
+        console.trace()
         if (typeof(stockListView) === 'undefined') {
             return
         }
         if (stockListView.currentIndex < stockListView.model.length - 1) {
             ++stockListView.currentIndex
         }
-        console.log(stockListView.currentIndex)
     }
     Keys.onReturnPressed: {
-        console.log("onReturnPressed")
+        console.trace()
         if (typeof(stockListView) === 'undefined') {
             return
         }
@@ -63,4 +61,6 @@ TextField {
             root.text = ''
         }
     }
+
+    FocusIndicator {}
 }
