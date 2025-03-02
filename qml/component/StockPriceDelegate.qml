@@ -209,4 +209,35 @@ Rectangle {
             PropertyChanges { target: listViewItemTextCode; color: "white" }
         }
     ]
+
+    TextButton {
+        id: favoriteBtn
+        width: 20
+        height: 20
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.verticalCenter: parent.verticalCenter
+        text:  root.isFavorite ? '-' : '+'
+        textSize: 20
+        normalColor: 'grey'
+        radius: 10
+
+        property bool isFavorite: favoriteStockViewModel.isFavoriteStock(modelData.code)
+
+        onBtnClicked: {
+            console.trace()
+
+            isFavorite ? favoriteStockViewModel.delete(modelData.code)
+                       : favoriteStockViewModel.add(modelData.name, modelData.code)
+
+            root.favoriteBtnClicked(index)
+        }
+
+        Connections {
+            target: favoriteStockViewModel
+            function onStockListChanged() {
+                favoriteBtn.isFavorite = favoriteStockViewModel.isFavoriteStock(modelData.code)
+            }
+        }
+    }
 }
