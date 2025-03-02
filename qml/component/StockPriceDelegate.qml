@@ -120,90 +120,69 @@ Rectangle {
         }
 
         CandleStick {
-            height: 40
             Layout.fillWidth: true
             Layout.preferredWidth: 20
+            height: parent.height - 4
+            Layout.alignment: Qt.AlignVCenter
             open: Math.abs(parseInt(priceRow.startPrice))
             high: Math.abs(parseInt(priceRow.highPrice))
             low: Math.abs(parseInt(priceRow.lowPrice))
             close: Math.abs(parseInt(priceRow.currentPrice))
         }
-        VerticalKeyValueLayoutLabel {
+        TextLabelLayout {
             Layout.preferredWidth: 80
-            keyText: '현재가'
-            valueText: Globals.formatStringPrice(priceRow.currentPrice)
-            keyColor: 'black'
-            valueColor: priceRow.priceColor
+            text: Globals.formatStringPrice(priceRow.currentPrice)
+            fontColor: priceRow.priceColor
         }
-        VerticalKeyValueLayoutLabel {
+        TextLabelLayout {
             Layout.preferredWidth: 40
-            keyText: ''
-            valueText: priceRow.getDiffSignSymbol()
-            keyColor: 'black'
-            valueColor: priceRow.priceColor
+            text: priceRow.getDiffSignSymbol()
+            fontColor: priceRow.priceColor
         }
-        VerticalKeyValueLayoutLabel {
+        TextLabelLayout {
             Layout.preferredWidth: 80
-            keyText: '등락률'
-            valueText: priceRow.numberStrToNonAbsFormated(priceRow.diffRate) + ' %'
-            keyColor: 'black'
-            valueColor: priceRow.priceColor
+            text: priceRow.numberStrToNonAbsFormated(priceRow.diffRate) + ' %'
+            fontColor: priceRow.priceColor
         }
-        VerticalKeyValueLayoutLabel {
+        TextLabelLayout {
             Layout.preferredWidth: 80
-            keyText: '시가'
-            valueText: Globals.formatStringPrice(priceRow.startPrice)
-            keyColor: 'black'
-            valueColor: priceRow.getPriceColor(priceRow.startPrice, priceRow.refPrice)
+            text: Globals.formatStringPrice(priceRow.startPrice)
+            fontColor: priceRow.getPriceColor(priceRow.startPrice, priceRow.refPrice)
         }
-        VerticalKeyValueLayoutLabel {
+        TextLabelLayout {
             Layout.preferredWidth: 80
-            keyText: '고가'
-            valueText: Globals.formatStringPrice(priceRow.highPrice)
-            keyColor: 'black'
-            valueColor: priceRow.getPriceColor(priceRow.highPrice, priceRow.refPrice)
+            text: Globals.formatStringPrice(priceRow.highPrice)
+            fontColor: priceRow.getPriceColor(priceRow.highPrice, priceRow.refPrice)
         }
-        VerticalKeyValueLayoutLabel {
+        TextLabelLayout {
             Layout.preferredWidth: 80
-            keyText: '저가'
-            valueText: Globals.formatStringPrice(priceRow.lowPrice)
-            keyColor: 'black'
-            valueColor: priceRow.getPriceColor(priceRow.lowPrice, priceRow.refPrice)
+            text: Globals.formatStringPrice(priceRow.lowPrice)
+            fontColor: priceRow.getPriceColor(priceRow.lowPrice, priceRow.refPrice)
         }
-        VerticalKeyValueLayoutLabel {
+        TextLabelLayout {
             Layout.preferredWidth: 80
-            keyText: '기준가'
-            valueText: Globals.formatStringPrice(priceRow.refPrice)
-            keyColor: 'black'
-            valueColor: 'black'
+            text: Globals.formatStringPrice(priceRow.refPrice)
+            fontColor: 'black'
             visible: !root.simpleVersion
         }
-        VerticalKeyValueLayoutLabel {
+        TextLabelLayout {
             Layout.preferredWidth: 80
-            keyText: '전일대비'
-            valueText: Globals.formatStringPrice(priceRow.diffPrice)
-            keyColor: 'black'
-            valueColor: priceRow.priceColor
+            text: Globals.formatStringPrice(priceRow.diffPrice)
+            fontColor: priceRow.priceColor
             visible: !root.simpleVersion
         }
-        VerticalKeyValueLayoutLabel {
-            keyText: '거래량'
-            valueText: Globals.formatStringPrice(priceRow.volume)
-            keyColor: 'black'
-            valueColor: 'black'
+        TextLabelLayout {
+            text: Globals.formatStringPrice(priceRow.volume)
+            fontColor: 'black'
             visible: !root.simpleVersion
         }
-        VerticalKeyValueLayoutLabel {
-            keyText: '거래대비'
-            valueText: Globals.formatStringPrice(priceRow.volumeRate) + ' %'
-            keyColor: 'black'
-            valueColor: priceRow.getPriceColor(priceRow.volumeRate, 100)
+        TextLabelLayout {
+            text: Globals.formatStringPrice(priceRow.volumeRate) + ' %'
+            fontColor: priceRow.getPriceColor(priceRow.volumeRate, 100)
         }
-        VerticalKeyValueLayoutLabel {
-            keyText: '거래대금'
-            valueText: Globals.formatStringPrice(priceRow.tradingValue)
-            keyColor: 'black'
-            valueColor: 'black'
+        TextLabelLayout {
+            text: Globals.formatStringPrice(priceRow.tradingValue)
+            fontColor: 'black'
         }
     }
     MouseArea {

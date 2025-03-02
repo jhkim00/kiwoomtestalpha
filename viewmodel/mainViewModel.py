@@ -16,7 +16,7 @@ class MainViewModel(QObject):
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty('mainViewModel', self)
 
-        self._testFlag = True
+        self._testFlag = False
         self._login_completed = False
 
         self.loginResultSignal.connect(self.__loginResult)

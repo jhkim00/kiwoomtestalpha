@@ -43,9 +43,16 @@ ApplicationWindow {
 
         signal itemClicked(real index)
 
+        header: StockPriceHeader {
+            width: stockPriceListView.width
+            height: 20
+            simpleVersion: true
+        }
+
         delegate: StockPriceDelegate {
             listView: stockPriceListView
             width: stockPriceListView.width
+            height: 40
             simpleVersion: true
         }
 

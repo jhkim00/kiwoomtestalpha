@@ -61,17 +61,20 @@ Rectangle {
             Layout.preferredWidth: 80
             text: '기준가'
             fontSize: root.fontSize
+            visible: !root.simpleVersion
         }
         TextLabelLayout {
             height: parent.height
             Layout.preferredWidth: 80
             text: '전일대비'
             fontSize: root.fontSize
+            visible: !root.simpleVersion
         }
         TextLabelLayout {
             height: parent.height
             text: '거래량'
             fontSize: root.fontSize
+            visible: !root.simpleVersion
         }
         TextLabelLayout {
             height: parent.height

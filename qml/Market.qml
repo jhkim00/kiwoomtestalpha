@@ -80,6 +80,7 @@ ApplicationWindow {
         delegate: StockPriceDelegate {
             listView: favoriteListView
             width: favoriteListView.width
+            height: 40
         }
 
         onItemClicked: {
