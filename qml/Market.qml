@@ -72,6 +72,11 @@ ApplicationWindow {
 
         signal itemClicked(real index)
 
+        header: StockPriceHeader {
+            width: favoriteListView.width
+            height: 20
+        }
+
         delegate: StockPriceDelegate {
             listView: favoriteListView
             width: favoriteListView.width
