@@ -83,7 +83,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
-            enabled: mainViewModel.login_completed
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnOpenAccountInfo clicked')
                 if (root.accountWindow === null) {
@@ -105,7 +105,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
-            enabled: mainViewModel.login_completed
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnOpenCurrentPrice clicked')
 
@@ -128,7 +128,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
-            enabled: mainViewModel.login_completed
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnOpenCondition clicked')
 
@@ -151,7 +151,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
-            enabled: mainViewModel.login_completed
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnOpenChart clicked')
 
@@ -168,7 +168,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
-            enabled: mainViewModel.login_completed
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnBuy clicked')
 
@@ -185,7 +185,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
-            enabled: mainViewModel.login_completed
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnSell clicked')
 
@@ -224,6 +224,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnHoga clicked')
 
@@ -246,6 +247,7 @@ ApplicationWindow {
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
             onBtnClicked: {
                 console.log('btnChegyeol clicked')
 
@@ -256,6 +258,15 @@ ApplicationWindow {
                     }
                 }
                 root.chegyeolWindow.show()
+            }
+        }
+
+        CheckBox {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "test mode"
+            checked: mainViewModel.testFlag
+            onCheckedChanged: {
+                mainViewModel.testFlag = checked
             }
         }
     }

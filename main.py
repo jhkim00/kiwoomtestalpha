@@ -59,8 +59,8 @@ if __name__ == "__main__":
 
     mainViewModel = MainViewModel(engine.rootContext(), app)
     accountViewModel = AccountViewModel(engine.rootContext(), app)
-    marketViewModel = MarketViewModel(engine.rootContext(), app)
-    favoriteStockViewModel = FavoriteStockViewModel(marketViewModel, engine.rootContext(), app)
+    marketViewModel = MarketViewModel(mainViewModel, engine.rootContext(), app)
+    favoriteStockViewModel = FavoriteStockViewModel(mainViewModel, marketViewModel, engine.rootContext(), app)
     conditionViewModel = ConditionViewModel(marketViewModel, engine.rootContext(), app)
     chartViewModel = ChartViewModel(engine.rootContext(), app)
     tradeViewModel = TradeViewModel(engine.rootContext(), app)

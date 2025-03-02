@@ -9,17 +9,29 @@ logger = logging.getLogger()
 class MainViewModel(QObject):
     loginResultSignal = pyqtSignal(bool)
     login_completedChanged = pyqtSignal()
+    testFlagChanged = pyqtSignal()
 
     def __init__(self, qmlContext, parent=None):
         super().__init__(parent)
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty('mainViewModel', self)
 
+        self._testFlag = True
         self._login_completed = False
 
         self.loginResultSignal.connect(self.__loginResult)
 
         Client.getInstance().registerEventCallback("login", self.onLoginResult)
+
+    @pyqtProperty(bool, notify=testFlagChanged)
+    def testFlag(self):
+        return self._testFlag
+
+    @testFlag.setter
+    def testFlag(self, val):
+        if self._testFlag != val:
+            self._testFlag = val
+            self.testFlagChanged.emit()
 
     @pyqtProperty(bool, notify=login_completedChanged)
     def login_completed(self):

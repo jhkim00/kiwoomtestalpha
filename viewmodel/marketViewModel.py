@@ -17,11 +17,13 @@ class MarketViewModel(QObject):
     basicInfoChanged = pyqtSignal()
     priceInfoChanged = pyqtSignal()
 
-    def __init__(self, qmlContext, parent=None):
+    def __init__(self, mainViewModel, qmlContext, parent=None):
         logger.debug("")
         super().__init__(parent)
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty('marketViewModel', self)
+
+        self.mainViewModel = mainViewModel
 
         self._codeList = []
         self._stockList = []
@@ -127,9 +129,10 @@ class MarketViewModel(QObject):
     @pyqtSlot()
     def load(self):
         logger.debug("")
+        if self.mainViewModel.testFlag:
+            return
+
         self.stockList = Client.getInstance().stock_list()
-        # if len(self.stockList) > 0:
-        #     self.currentStock = self.stockList[0]
 
         self._codeList = [stock['code'] for stock in self.stockList]
         self._codeList.sort()

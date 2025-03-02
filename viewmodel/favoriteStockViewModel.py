@@ -12,7 +12,7 @@ class FavoriteStockViewModel(QObject):
     stockListChanged = pyqtSignal()
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
 
-    def __init__(self, marketViewModel, qmlContext, parent=None):
+    def __init__(self, mainViewModel, marketViewModel, qmlContext, parent=None):
         logger.debug("")
         super().__init__(parent)
         self.qmlContext = qmlContext
@@ -20,6 +20,7 @@ class FavoriteStockViewModel(QObject):
 
         self._stockList = []
 
+        self.mainViewModel = mainViewModel
         self.marketViewModel = marketViewModel
 
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
@@ -80,14 +81,21 @@ class FavoriteStockViewModel(QObject):
         return False
 
     def __updateStockList(self, codeList):
-        result = Client.getInstance().stocks_info(codeList, "1003")
-        logger.debug(f"result:{result}")
         stockPriceList = []
-        for info in result:
-            priceInfo = {key: info[key] for key in self.priceInfoKeys_ if key in info}
-            priceItemData = StockPriceItemData(info['종목명'], info['종목코드'], priceInfo, fromSingleInfo=False)
-            logger.debug(priceItemData)
-            stockPriceList.append(priceItemData)
+
+        if self.mainViewModel.testFlag:
+            for code in codeList:
+                priceItemData = StockPriceItemData('', code)
+                stockPriceList.append(priceItemData)
+        else:
+            result = Client.getInstance().stocks_info(codeList, "1003")
+            logger.debug(f"result:{result}")
+
+            for info in result:
+                priceInfo = {key: info[key] for key in self.priceInfoKeys_ if key in info}
+                priceItemData = StockPriceItemData(info['종목명'], info['종목코드'], priceInfo, fromSingleInfo=False)
+                logger.debug(priceItemData)
+                stockPriceList.append(priceItemData)
 
         self.stockList = stockPriceList
 
