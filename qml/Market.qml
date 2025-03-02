@@ -12,7 +12,7 @@ ApplicationWindow {
     maximumHeight: fixedHeight*/
     title: "Market"
 
-    property var fixedWidth: 1200
+    property var fixedWidth: 1600
     property var fixedHeight: 480
 
     Component.onCompleted: {

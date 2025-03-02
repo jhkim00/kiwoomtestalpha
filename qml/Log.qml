@@ -16,7 +16,7 @@ ApplicationWindow {
     title: "Log"
 
     property var fixedWidth: 480
-    property var fixedHeight: 720
+    property var fixedHeight: 800
 
     Column {
         width: parent.width

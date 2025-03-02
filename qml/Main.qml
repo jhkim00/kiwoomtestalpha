@@ -24,6 +24,7 @@ ApplicationWindow {
     property var logWindow: null
     property var hogaWindow: null
     property var chegyeolWindow: null
+    property var monitoringWindow: null
 
     onClosing: {
         console.log("Application is closing")
@@ -50,6 +51,10 @@ ApplicationWindow {
         if (chegyeolWindow) {
             chegyeolWindow.close()
             chegyeolWindow.destroy()
+        }
+        if (monitoringWindow) {
+            monitoringWindow.close()
+            monitoringWindow.destroy()
         }
         chartViewModel.closeChart()
     }
@@ -258,6 +263,29 @@ ApplicationWindow {
                     }
                 }
                 root.chegyeolWindow.show()
+            }
+        }
+
+        TextButton {
+            id: btnMonitoring
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "Monitoring Stocks"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
+            onBtnClicked: {
+                console.log('btnMonitoring clicked')
+
+                if (root.monitoringWindow === null) {
+                    var component = Qt.createComponent("MonitoringStocks.qml")
+                    if (component.status === Component.Ready) {
+                        root.monitoringWindow = component.createObject()
+                    }
+                }
+                root.monitoringWindow.show()
             }
         }
 

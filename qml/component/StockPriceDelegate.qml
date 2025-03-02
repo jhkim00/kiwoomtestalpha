@@ -212,15 +212,16 @@ Rectangle {
 
     TextButton {
         id: favoriteBtn
-        width: 20
-        height: 20
+        width: 16
+        height: 16
         anchors.right: parent.right
         anchors.rightMargin: 10
-        anchors.verticalCenter: parent.verticalCenter
-        text:  root.isFavorite ? '-' : '+'
-        textSize: 20
-        normalColor: 'grey'
-        radius: 10
+        anchors.top: parent.top
+        anchors.topMargin: 2
+        text:  isFavorite ? '-' : 'F'
+        textSize: 16
+        normalColor: 'lightgrey'
+        radius: 4
 
         property bool isFavorite: favoriteStockViewModel.isFavoriteStock(modelData.code)
 
@@ -229,14 +230,56 @@ Rectangle {
 
             isFavorite ? favoriteStockViewModel.delete(modelData.code)
                        : favoriteStockViewModel.add(modelData.name, modelData.code)
-
-            root.favoriteBtnClicked(index)
         }
 
         Connections {
             target: favoriteStockViewModel
             function onStockListChanged() {
                 favoriteBtn.isFavorite = favoriteStockViewModel.isFavoriteStock(modelData.code)
+            }
+        }
+    }
+
+    TextButton {
+        id: monitoringBtn
+        width: 16
+        height: 16
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.top: parent.verticalCenter
+        anchors.topMargin: 2
+        text:  isMonitoring ? '-' : 'M'
+        textSize: 16
+        normalColor: 'lightgrey'
+        radius: 4
+
+        property bool isMonitoring: monitoringStockViewModel.isMonitoringStock(modelData.code)
+
+        onBtnClicked: {
+            console.trace()
+
+            isMonitoring ? monitoringStockViewModel.delete(modelData.code)
+                         : monitoringStockViewModel.add(modelData.name, modelData.code)
+        }
+
+        Connections {
+            target: monitoringStockViewModel
+            function onStockListChanged() {
+                monitoringBtn.isMonitoring = monitoringStockViewModel.isMonitoringStock(modelData.code)
+            }
+        }
+    }
+
+    Keys.onPressed: (event) => {
+        if (ListView.isCurrentItem) { // 현재 선택된 아이템인지 확인
+            if (event.key === Qt.Key_Space) {
+                monitoringBtn.isMonitoring ? monitoringStockViewModel.delete(modelData.code)
+                                           : monitoringStockViewModel.add(modelData.name, modelData.code)
+                event.accepted = true // 이벤트가 처리됨을 명시
+            } else if (event.key === Qt.Key_F) {
+                favoriteBtn.isFavorite ? favoriteStockViewModel.delete(modelData.code)
+                                       : favoriteStockViewModel.add(modelData.name, modelData.code)
+                event.accepted = true // 이벤트가 처리됨을 명시
             }
         }
     }
