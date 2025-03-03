@@ -10,14 +10,27 @@ ApplicationWindow {
     y: 0
     width: fixedWidth
     height: fixedHeight
-    minimumWidth: fixedWidth
-    maximumWidth: fixedWidth
-    minimumHeight: fixedHeight
-    maximumHeight: fixedHeight
     title: "Monitoring Stocks"
 
     property var fixedWidth: 1200
     property var fixedHeight: 480
+
+    function getColorByTrandingValue(value) {
+        var intVal = parseInt(value)
+        if (intVal > 1000000) {
+            return "darkred"
+        }
+        if (intVal > 500000) {
+            return "firebrick"
+        }
+        if (intVal > 100000) {
+            return "red"
+        }
+        if (intVal > 50000) {
+            return "salmon"
+        }
+        return "orange"
+    }
 
     Canvas {
         id: canvas
@@ -28,7 +41,6 @@ ApplicationWindow {
             ctx.fillStyle = "lightgrey"
             ctx.fillRect(0, 0, width, height)
             ctx.font = "14px sans-serif"
-            ctx.fillStyle = "red"
 
             var stockList = monitoringStockViewModel.stockList
             var tradingValueList = monitoringStockViewModel.tradingValueList
@@ -37,11 +49,26 @@ ApplicationWindow {
             for (var i = 0; i < stockList.length; i++) {
                 var barWidth = (tradingValueList[i] * width) * 0.9
                 var y = i * barHeight
+                ctx.fillStyle = root.getColorByTrandingValue(stockList[i].tradingValue)
                 ctx.fillRect(0, y, barWidth, barHeight - 5)
 
                 ctx.fillStyle = "black"
                 ctx.fillText("%1 %2".arg(stockList[i].name).arg(Globals.formatStringPrice(stockList[i].tradingValue)), 10, y + barHeight / 2)
-                ctx.fillStyle = "red"
+            }
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: (mouse) => {
+            var stockList = monitoringStockViewModel.stockList
+            var barHeight = canvas.height / stockList.length
+
+            var index = Math.floor(mouse.y / barHeight)
+            if (index >= 0 && index < stockList.length) {
+                var selectedStock = stockList[index]
+                console.log("Clicked stock:", selectedStock.name, selectedStock.tradingValue)
+                marketViewModel.setCurrentStock({'code': selectedStock.code, 'name': selectedStock.name})
             }
         }
     }
