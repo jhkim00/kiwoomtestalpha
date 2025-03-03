@@ -19,6 +19,12 @@ ApplicationWindow {
         console.trace()
     }
 
+    onVisibleChanged: {
+        if (visible) {
+            marketViewModel.getStockBasicInfo()
+        }
+    }
+
     StockInfo {
         id: stockInfo
         width: parent.width

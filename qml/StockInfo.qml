@@ -10,8 +10,8 @@ Rectangle {
     color: "#dd333333"
     clip: true
 
-    property string stockName
-    property string stockCode
+    property string stockName: marketViewModel.currentStock ? marketViewModel.currentStock['name'] : ''
+    property string stockCode: marketViewModel.currentStock ? marketViewModel.currentStock['code'] : ''
 
     property string sichong: ''
     property string per: ''
