@@ -16,7 +16,7 @@ ApplicationWindow {
     property var fixedHeight: 480
 
     Component.onCompleted: {
-        console.log("market component completed")
+        console.trace()
     }
 
     StockInfo {

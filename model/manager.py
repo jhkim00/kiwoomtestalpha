@@ -78,6 +78,7 @@ class Manager(QObject):
         self.kw.SetInputValue(id="비밀번호", value="")
         self.kw.SetInputValue(id="상장폐지조회구분", value="0")
         self.kw.SetInputValue(id="비밀번호입력매체구분", value="00")
+        self.kw.SetInputValue(id="거래소구분", value="")     # 거래소구분 = KRX:한국거래소 시세 데이터, NXT:대체거래소 시세 데이터, 공백시 한국거래소 시세 데이터
         await self.coolDown.call()
         while True:
             ret = self.kw.CommRqData(rqname="계좌평가현황요청", trcode="OPW00004", next=0, screen=data["screen_no"])

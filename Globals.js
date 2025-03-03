@@ -25,6 +25,16 @@ function getPriceTextColorByUpDownSign(uDownSign) {
     }
 }
 
+function formatStringSignedPrice(input) {
+    // 음수 여부 확인
+    var isNegative = input.trim().startsWith("-");
+    var formatted = formatStringPrice(input, true);
+    if (isNegative) {
+        formatted = '-' + formatted;
+    }
+    return formatted
+}
+
 function formatStringPrice(input, showZero) {
     // '+' 또는 '-' 기호 제거
     var cleaned = input.replace(/[+-]/g, '');
@@ -75,6 +85,20 @@ function convertToPercentage(value) {
     // '-' 기호 제거
     var cleaned = value.replace(/[-]/g, '');
 
-    // 숫자를 100으로 나누고 소수점 두 자리로 포맷 후 % 기호 추가
+    // 소수점 두 자리로 포맷 후 % 기호 추가
     return parseFloat(cleaned).toFixed(2) + " %";
+}
+
+function formatStringProfitRatio(input, decimalPlaces) {
+    // 음수 여부 확인
+    var isNegative = input.trim().startsWith("-");
+    // '-' 기호 제거
+    var cleaned = input.replace(/[-]/g, '');
+
+    var num = parseFloat(cleaned) / Math.pow(10, decimalPlaces);
+    var numStr = num.toString();
+    if (isNegative) {
+        numStr = '-' + numStr;
+    }
+    return numStr + " %";
 }
