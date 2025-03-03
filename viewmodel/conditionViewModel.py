@@ -228,9 +228,10 @@ class ConditionViewModel(QObject):
         stockPriceList = []
         for info in result:
             priceInfo = {key: info[key] for key in self.priceInfoKeys_ if key in info}
-            priceItemData = StockPriceItemData(info['종목명'], info['종목코드'], priceInfo, fromSingleInfo=False)
+            stockPriceItemData = self.marketViewModel.getStockPriceItemDataByCode(info['종목코드'])
+            stockPriceItemData.setPriceInfo(priceInfo, fromSingleInfo=False)
             # logger.debug(priceItemData)
-            stockPriceList.append(priceItemData)
+            stockPriceList.append(stockPriceItemData)
 
         return stockPriceList
 

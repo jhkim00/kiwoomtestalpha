@@ -95,9 +95,9 @@ class FavoriteStockViewModel(QObject):
 
             for info in result:
                 priceInfo = {key: info[key] for key in self.priceInfoKeys_ if key in info}
-                priceItemData = StockPriceItemData(info['종목명'], info['종목코드'], priceInfo, fromSingleInfo=False)
-                logger.debug(priceItemData)
-                stockPriceList.append(priceItemData)
+                stockPriceItemData = self.marketViewModel.getStockPriceItemDataByCode(info['종목코드'])
+                stockPriceItemData.setPriceInfo(priceInfo, fromSingleInfo=False)
+                stockPriceList.append(stockPriceItemData)
 
         self.stockList = stockPriceList
 

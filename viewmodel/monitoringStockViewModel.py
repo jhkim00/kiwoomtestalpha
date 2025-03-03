@@ -99,14 +99,9 @@ class MonitoringStockViewModel(QObject):
                 priceItemData = StockPriceItemData('', code)
                 stockPriceList.append(priceItemData)
         else:
-            result = Client.getInstance().stocks_info(codeList, "1007")
-            logger.debug(f"result:{result}")
-
-            for info in result:
-                priceInfo = {key: info[key] for key in self.priceInfoKeys_ if key in info}
-                priceItemData = StockPriceItemData(info['종목명'], info['종목코드'], priceInfo, fromSingleInfo=False)
-                logger.debug(priceItemData)
-                stockPriceList.append(priceItemData)
+            for code in codeList:
+                stockPriceItemData = self.marketViewModel.getStockPriceItemDataByCode(code)
+                stockPriceList.append(stockPriceItemData)
 
         self.stockList = stockPriceList
 

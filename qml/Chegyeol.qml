@@ -23,7 +23,6 @@ ApplicationWindow {
         width: parent.width - 20
         height: root.height
         anchors.horizontalCenter: parent.horizontalCenter
-        //verticalLayoutDirection: ListView.BottomToTop
         clip: true
 
         property var itemHeight: 20
