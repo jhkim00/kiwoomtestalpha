@@ -13,7 +13,7 @@ class Manager(QObject):
     def __init__(self):
         super().__init__()
         self.kw = Kiwoom.getInstance()
-        self.kw.loginCompleted.connect(self.onLoginCompleted)
+        self.kw.loginResult.connect(self.onLoginResult)
 
         self.kw.trCallbacks["opt10001"] = self.__onStockBasicInfo
         self.kw.trCallbacks["OPW00004"] = self.__onAccountInfo
@@ -28,7 +28,7 @@ class Manager(QObject):
         self.kw.trConditionCallback = self.__onReceiveTrCondition
         self.kw.realConditionCallback = self.__onReceiveRealCondition
 
-        self.notifyLoginCompleted = None
+        self.notifyLoginResult = None
         self.notifyLoginInfo = None
         self.notifyAccountInfo = None
         self.notifyStockNameByCode = None
@@ -265,10 +265,10 @@ class Manager(QObject):
     """
     slot for kiwoom
     """
-    @pyqtSlot(bool)
-    def onLoginCompleted(self, result):
+    @pyqtSlot(int)
+    def onLoginResult(self, result):
         logger.debug(f"result:{result}")
-        self.notifyLoginCompleted(result)
+        self.notifyLoginResult(result)
 
     """
     tr callbacks

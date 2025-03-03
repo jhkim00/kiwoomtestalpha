@@ -9,7 +9,7 @@ logger = logging.getLogger()
 
 class Kiwoom(QObject):
     instance = None
-    loginCompleted = pyqtSignal(bool)
+    loginResult = pyqtSignal(int)
 
     ERROR_QUERY_RATE_LIMIT_EXCEEDED = -200
     ERROR_QUERY_COUNT_EXCEEDED = -209
@@ -19,7 +19,7 @@ class Kiwoom(QObject):
         logger.debug("")
         self.ocx = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
 
-        self.loginState = 0
+        self.loginState = 0     # 0: not connected, 1: connecting, 2: connected
 
         self.ocx.OnEventConnect.connect(self.OnEventConnect)
         self.ocx.OnReceiveTrData.connect(self.OnReceiveTrData)
@@ -49,10 +49,10 @@ class Kiwoom(QObject):
         logger.debug(f"err_code: {err_code}")
         if err_code == 0:
             self.loginState = 2
-            self.loginCompleted.emit(True)
+            self.loginResult.emit(2)
         else:
             self.loginState = 0
-            self.loginCompleted.emit(False)
+            self.loginResult.emit(0)
 
     def OnReceiveTrData(self, screen, rqname, trcode, record, next):
         logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}, next:{next}")
@@ -147,7 +147,7 @@ class Kiwoom(QObject):
     def CommConnect(self):
         logger.debug(f"loginState:{self.loginState}")
         if self.loginState != 0:
-            self.loginCompleted.emit(False)
+            self.loginResult.emit(self.loginState)
             return
         self.loginState = 1
         self.ocx.dynamicCall("CommConnect()")

@@ -7,7 +7,7 @@ from client import Client
 logger = logging.getLogger()
 
 class MainViewModel(QObject):
-    loginResultSignal = pyqtSignal(bool)
+    loginResultSignal = pyqtSignal(int)
     login_completedChanged = pyqtSignal()
     testFlagChanged = pyqtSignal()
 
@@ -54,9 +54,9 @@ class MainViewModel(QObject):
     """
     client model event
     """
-    def onLoginResult(self, result):
+    def onLoginResult(self, result: int):
         logger.debug(f"result:{result}")
         self.loginResultSignal.emit(result)
 
-    def __loginResult(self, result):
-        self.login_completed = result
+    def __loginResult(self, result: int):
+        self.login_completed = True if result == 2 else False

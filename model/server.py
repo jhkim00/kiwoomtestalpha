@@ -67,7 +67,7 @@ class Server(Process):
                           "minute_chart", "hoga"]
         logger.debug("")
         self.manager = Manager()
-        self.manager.notifyLoginCompleted = self.notifyLoginCompleted
+        self.manager.notifyLoginResult = self.notifyLoginResult
         self.manager.notifyLoginInfo = self.notifyLoginInfo
         self.manager.notifyAccountInfo = self.notifyAccountInfo
         self.manager.notifyStockNameByCode = self.notifyStockNameByCode
@@ -130,7 +130,7 @@ class Server(Process):
                         self.requestHandlerMap[key][self.futureIndex] = asyncio.Future()
                         break
 
-    def notifyLoginCompleted(self, result: bool):
+    def notifyLoginResult(self, result: int):
         logger.debug("")
         self.requestHandlerMap["login"][self.futureIndex].set_result(result)
 
