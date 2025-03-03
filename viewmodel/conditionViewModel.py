@@ -83,6 +83,7 @@ class ConditionViewModel(QObject):
     conditionListChanged = pyqtSignal()
     conditionStockListChanged = pyqtSignal()
     conditionRealReceived = pyqtSignal(dict)
+    stockPriceRealReceived = pyqtSignal(tuple)
 
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
     max_realtime_condition_count = 5
@@ -103,8 +104,8 @@ class ConditionViewModel(QObject):
         Client.getInstance().registerRealDataCallback("condition_info_real", self.__onConditionInfoReal)
 
         self.conditionRealReceived.connect(self.__onConditionInfoRealReceived)
-
         self.marketViewModel.stockPriceInfoChanged.connect(self.__stockPriceInfoChanged)
+        self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
 
     @pyqtProperty(ConditionModel, notify=conditionListChanged)
     def conditionList(self):
@@ -195,27 +196,11 @@ class ConditionViewModel(QObject):
         self.conditionList = ConditionModel([{'code': int(x[0]), 'name': x[1], 'monitoring': False} for x in result])
         logger.debug(f"self.conditionList:{self.conditionList.data}")
 
-    @pyqtSlot(tuple)
-    def __onStockPriceReal(self, data):
+    def __onStockPriceReal(self, data: tuple):
         # logger.debug(f"data[0]:{data[0]}")
-        for key in self._conditionInfoDict:
-            stockPriceList = self._conditionInfoDict[key]
-            for stock in stockPriceList:
-                if data[0] == stock.code:
-                    stock.currentPrice = data[1]['10']
-                    stock.diffPrice = data[1]['11']
-                    stock.diffRate = data[1]['12']
-                    stock.volume = data[1]['13']
-                    stock.startPrice = data[1]['16']
-                    stock.highPrice = data[1]['17']
-                    stock.lowPrice = data[1]['18']
-                    stock.diffSign = data[1]['25']
-                    stock.volumeRate = data[1]['30']
-                    stock.tradingValue = data[1]['14']
-                    break
+        self.stockPriceRealReceived.emit(data)
 
-    @pyqtSlot(dict)
-    def __onConditionInfoReal(self, data):
+    def __onConditionInfoReal(self, data: dict):
         logger.debug("")
         self.conditionRealReceived.emit(data)
 
@@ -290,3 +275,21 @@ class ConditionViewModel(QObject):
             for stock in stockPriceList:
                 if stock.code == changedStock:
                     stock.setPriceInfo(priceInfo, True)
+
+    @pyqtSlot(tuple)
+    def __onStockPriceRealReceived(self, data):
+        for key in self._conditionInfoDict:
+            stockPriceList = self._conditionInfoDict[key]
+            for stock in stockPriceList:
+                if data[0] == stock.code:
+                    stock.currentPrice = data[1]['10']
+                    stock.diffPrice = data[1]['11']
+                    stock.diffRate = data[1]['12']
+                    stock.volume = data[1]['13']
+                    stock.startPrice = data[1]['16']
+                    stock.highPrice = data[1]['17']
+                    stock.lowPrice = data[1]['18']
+                    stock.diffSign = data[1]['25']
+                    stock.volumeRate = data[1]['30']
+                    stock.tradingValue = data[1]['14']
+                    break

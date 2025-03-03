@@ -17,6 +17,7 @@ class MarketViewModel(QObject):
     stockPriceInfoChanged = pyqtSignal(str, dict)
     basicInfoChanged = pyqtSignal()
     priceInfoChanged = pyqtSignal()
+    stockPriceRealReceived = pyqtSignal(tuple)
 
     def __init__(self, mainViewModel, qmlContext, parent=None):
         logger.debug("")
@@ -61,6 +62,7 @@ class MarketViewModel(QObject):
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
         mainViewModel.login_completedChanged.connect(self.__onLoginCompleted)
+        self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
 
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
@@ -199,9 +201,21 @@ class MarketViewModel(QObject):
             self.stockPriceInfoChanged.emit(stock.code, priceInfo)
             logger.debug(stock)
 
-    @pyqtSlot(tuple)
-    def __onStockPriceReal(self, data):
+    def __onStockPriceReal(self, data: tuple):
         # logger.debug(f"data:{data}")
+        self.stockPriceRealReceived.emit(data)
+
+    """
+    private method
+    """
+    @pyqtSlot()
+    def __onLoginCompleted(self):
+        logger.debug("")
+        if self.mainViewModel.login_completed:
+            self.load()
+
+    @pyqtSlot(tuple)
+    def __onStockPriceRealReceived(self, data):
         if self.currentStock is None:
             return
         if data[0] == self.currentStock["code"]:
@@ -216,12 +230,3 @@ class MarketViewModel(QObject):
             self._priceInfo['거래대비'] = data[1]['30']
 
             self.priceInfoChanged.emit()
-
-    """
-    private method
-    """
-    @pyqtSlot()
-    def __onLoginCompleted(self):
-        logger.debug("")
-        if self.mainViewModel.login_completed:
-            self.load()

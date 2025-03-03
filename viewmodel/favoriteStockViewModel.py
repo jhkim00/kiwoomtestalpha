@@ -10,6 +10,7 @@ logger = logging.getLogger()
 
 class FavoriteStockViewModel(QObject):
     stockListChanged = pyqtSignal()
+    stockPriceRealReceived = pyqtSignal(tuple)
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
 
     def __init__(self, mainViewModel, marketViewModel, qmlContext, parent=None):
@@ -26,6 +27,7 @@ class FavoriteStockViewModel(QObject):
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
         marketViewModel.loadCompleted.connect(self.__onMarketViewModelLoadCompleted)
+        self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
 
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
@@ -82,6 +84,16 @@ class FavoriteStockViewModel(QObject):
                 return True
         return False
 
+    """
+    client model event
+    """
+    def __onStockPriceReal(self, data: tuple):
+        # logger.debug(f"data:{data}")
+        self.stockPriceRealReceived.emit(data)
+
+    """
+    private method
+    """
     def __updateStockList(self, codeList):
         stockPriceList = []
 
@@ -101,9 +113,13 @@ class FavoriteStockViewModel(QObject):
 
         self.stockList = stockPriceList
 
+    @pyqtSlot()
+    def __onMarketViewModelLoadCompleted(self):
+        logger.debug("")
+        self.load()
+
     @pyqtSlot(tuple)
-    def __onStockPriceReal(self, data):
-        # logger.debug(f"data:{data}")
+    def __onStockPriceRealReceived(self, data):
         for stock in self._stockList:
             if data[0] == stock.code:
                 stock.currentPrice = data[1]['10']
@@ -117,11 +133,3 @@ class FavoriteStockViewModel(QObject):
                 stock.volumeRate = data[1]['30']
                 stock.tradingValue = data[1]['14']
                 break
-
-    """
-    private method
-    """
-    @pyqtSlot()
-    def __onMarketViewModelLoadCompleted(self):
-        logger.debug("")
-        self.load()

@@ -11,6 +11,7 @@ class MonitoringStockViewModel(QObject):
     stockListChanged = pyqtSignal()
     tradingValueListChanged = pyqtSignal()
     maxTradingValueChanged = pyqtSignal()
+    stockPriceRealReceived = pyqtSignal(tuple)
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
     maxCount = 10
 
@@ -28,6 +29,8 @@ class MonitoringStockViewModel(QObject):
         self.marketViewModel = marketViewModel
 
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
+
+        self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
 
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
@@ -91,6 +94,16 @@ class MonitoringStockViewModel(QObject):
                 return True
         return False
 
+    """
+    client model event
+    """
+    def __onStockPriceReal(self, data: tuple):
+        # logger.debug(f"data:{data}")
+        self.stockPriceRealReceived.emit(data)
+
+    """
+    private method
+    """
     def __updateStockList(self, codeList):
         stockPriceList = []
 
@@ -124,8 +137,7 @@ class MonitoringStockViewModel(QObject):
         self.tradingValueList = tradingValueRatioList
 
     @pyqtSlot(tuple)
-    def __onStockPriceReal(self, data):
-        # logger.debug(f"data:{data}")
+    def __onStockPriceRealReceived(self, data):
         for stock in self._stockList:
             if data[0] == stock.code:
                 stock.currentPrice = data[1]['10']

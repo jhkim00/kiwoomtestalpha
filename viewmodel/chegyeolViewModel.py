@@ -75,7 +75,8 @@ class ChegyeolViewModel(QObject):
     openPriceChanged = pyqtSignal()
     highPriceChanged = pyqtSignal()
     lowPriceChanged = pyqtSignal()
-    
+    stockPriceRealReceived = pyqtSignal(tuple)
+
     def __init__(self, marketViewModel, qmlContext, parent=None):
         super().__init__(parent)
         self.qmlContext = qmlContext
@@ -91,9 +92,11 @@ class ChegyeolViewModel(QObject):
         self._highPrice = ''
         self._lowPrice = ''
 
-        self.marketViewModel = marketViewModel        
+        self.marketViewModel = marketViewModel
 
-        Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)        
+        Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
+
+        self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
 
     @pyqtProperty(list, notify=chegyeolModelChanged)
     def chegyeolModel(self):
@@ -174,8 +177,15 @@ class ChegyeolViewModel(QObject):
     """
     client model event
     """
-    def __onStockPriceReal(self, data):
+    def __onStockPriceReal(self, data: tuple):
         # logger.debug(f"{data}")
+        self.stockPriceRealReceived.emit(data)
+
+    """
+    private method
+    """
+    @pyqtSlot(tuple)
+    def __onStockPriceRealReceived(self, data):
         if self.marketViewModel.currentStock and data[0] == self.marketViewModel.currentStock['code']:
             timeStr = data[1]['20']
             timeStr = f"{timeStr[:2]}:{timeStr[2:4]}:{timeStr[4:]}"
@@ -187,7 +197,7 @@ class ChegyeolViewModel(QObject):
                 "upDownType": data[1]['25']
             })
             self.chegyeolModelChanged.emit()
-            
+
             self.currentPrice = data[1]['10']
             self.upDownType = data[1]['25']
             self.changeRate = data[1]['12']
