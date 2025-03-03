@@ -87,7 +87,7 @@ class ChartViewModel(QObject):
 
     @pyqtSlot()
     def loadMinuteChart(self, minute):
-        logger.debug("")
+        logger.debug(f"minute:{minute}")
         if len(self.stockCode) == 0:
             return
 
@@ -128,6 +128,7 @@ class ChartViewModel(QObject):
     private method
     """
     def createChart(self):
+        logger.debug("")
         if self.chart is None:
             self.chart = QtChart(self.widget, toolbox=True, inner_width=1, inner_height=0.5)
             self.chart.topbar.textbox('symbol')
@@ -136,17 +137,18 @@ class ChartViewModel(QObject):
             self.chart.candle_style(up_color='#ff0000', down_color='#0000ff')
             self.chart.legend(visible=True)
 
+            for i in range(2):
+                chart = self.mChart[i]
+                if chart is None:
+                    chart = self.chart.create_subchart(position='left', width=0.5, height=0.5)
+                    chart.topbar.textbox('symbol')
+                    chart.candle_style(up_color='#ff0000', down_color='#0000ff')
+                    chart.legend(visible=True)
+                    self.mChart[i] = chart
+
             self.layout.addWidget(self.chart.get_webview())
             self.window.setCentralWidget(self.widget)
-
-        for i in range(2):
-            chart = self.mChart[i]
-            if chart is None:
-                chart = self.chart.create_subchart(position='left', width=0.5, height=0.5)
-                chart.topbar.textbox('symbol')
-                chart.candle_style(up_color='#ff0000', down_color='#0000ff')
-                chart.legend(visible=True)
-                self.mChart[i] = chart
+            self.window.show()
 
     @classmethod
     def __calculate_sma(cls, df, period: int = 50):
@@ -272,8 +274,6 @@ class ChartViewModel(QObject):
             self.currentMinute = 5
             self.loadMinuteChart(5)
         else:
-            # self.chart.show()
-            self.window.show()
             self.receiving = False
             if self.needUpdate:
                 self.needUpdate = False

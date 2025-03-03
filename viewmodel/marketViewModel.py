@@ -9,6 +9,7 @@ from .stockPriceItemData import StockPriceItemData
 logger = logging.getLogger()
 
 class MarketViewModel(QObject):
+    loadCompleted = pyqtSignal()
     stockListChanged = pyqtSignal()
     stockPriceListChanged = pyqtSignal()
     searchedStockListChanged = pyqtSignal()
@@ -24,6 +25,7 @@ class MarketViewModel(QObject):
         self.qmlContext.setContextProperty('marketViewModel', self)
 
         self.mainViewModel = mainViewModel
+        self.loaded = False
 
         self._codeList = []
         self._stockList = []
@@ -57,6 +59,8 @@ class MarketViewModel(QObject):
 
         Client.getInstance().registerEventCallback("stock_basic_info", self.onStockBasicInfo)
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
+
+        mainViewModel.login_completedChanged.connect(self.__onLoginCompleted)
 
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
@@ -129,6 +133,8 @@ class MarketViewModel(QObject):
     @pyqtSlot()
     def load(self):
         logger.debug("")
+        if self.loaded:
+            return
         if self.mainViewModel.testFlag:
             return
 
@@ -140,6 +146,8 @@ class MarketViewModel(QObject):
         stockPriceList = [StockPriceItemData(stock['name'], stock['code']) for stock in self.stockList]
         stockPriceList.sort(key=lambda x: x.code)
         self.stockPriceList = stockPriceList
+        self.loaded = True
+        self.loadCompleted.emit()
         # logger.debug(f"self.stockPriceList:{self.stockPriceList}")
 
     @pyqtSlot(QVariant)
@@ -208,3 +216,12 @@ class MarketViewModel(QObject):
             self._priceInfo['거래대비'] = data[1]['30']
 
             self.priceInfoChanged.emit()
+
+    """
+    private method
+    """
+    @pyqtSlot()
+    def __onLoginCompleted(self):
+        logger.debug("")
+        if self.mainViewModel.login_completed:
+            self.load()

@@ -31,12 +31,6 @@ ListView {
         border.color: 'black'
         border.width: 1
 
-        Rectangle {
-            anchors.fill: parent
-            opacity: 0.2
-            color: model.monitoring ? 'yellow' : 'transparent'
-        }
-
         Item {
             x: 10
             width: parent.width - x
@@ -44,7 +38,7 @@ ListView {
             Text {
                 id: listViewItemTextName
                 anchors.verticalCenter: parent.verticalCenter
-                text: model.name
+                text: "%1%2".arg(model.monitoring ? "* " : "").arg(model.name)
                 font.pixelSize: 16
                 color: 'white'
             }

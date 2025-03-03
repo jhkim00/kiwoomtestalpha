@@ -25,6 +25,8 @@ class FavoriteStockViewModel(QObject):
 
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
+        marketViewModel.loadCompleted.connect(self.__onMarketViewModelLoadCompleted)
+
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
         return self._stockList
@@ -115,3 +117,11 @@ class FavoriteStockViewModel(QObject):
                 stock.volumeRate = data[1]['30']
                 stock.tradingValue = data[1]['14']
                 break
+
+    """
+    private method
+    """
+    @pyqtSlot()
+    def __onMarketViewModelLoadCompleted(self):
+        logger.debug("")
+        self.load()

@@ -17,8 +17,6 @@ ApplicationWindow {
 
     Component.onCompleted: {
         console.log("market component completed")
-        marketViewModel.load()
-        favoriteStockViewModel.load()
     }
 
     StockInfo {
