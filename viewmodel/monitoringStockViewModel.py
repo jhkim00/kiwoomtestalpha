@@ -6,6 +6,7 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
 from client import Client
 from .stockPriceItemData import StockPriceItemData
 from .marketViewModel import MarketViewModel
+from .logViewModel import LogViewModel
 
 logger = logging.getLogger()
 
@@ -202,7 +203,12 @@ class MonitoringStockViewModel(QObject):
                 chegyeolTradingValue = abs(int(stock.currentPrice)) * int(stock.chegyeolVolume)
                 item[1].append((stock.chegyeolTime, tradingValue, chegyeolTradingValue))
 
-                # 가장 오래된 데이터가 1분 이상 차이나면 삭제 (최적화된 while 루프)
+                # 3천만원 이상 매수체결을 로그창에 출력
+                if chegyeolTradingValue > 30000000:
+                    formattedTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    log = f"\n[{formattedTime}][대량매수체결]({stock.name}:{chegyeolTradingValue})"
+
+                # 가장 오래된 데이터가 1분 이상 차이 나면 삭제 (최적화된 while 루프)
                 new_chegyeol_time = datetime.strptime(stock.chegyeolTime, "%H%M%S")
                 while item[1]:
                     first_time = datetime.strptime(item[1][0][0], "%H%M%S")
