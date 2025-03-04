@@ -158,6 +158,7 @@ class MarketViewModel(QObject):
             self.currentStock = val
         elif isinstance(val, QJSValue):
             self.currentStock = val.toVariant()
+        self.searchedStockList = []
 
     @pyqtSlot(str)
     def setInputText(self, inputText):
