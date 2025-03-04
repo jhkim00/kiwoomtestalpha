@@ -134,4 +134,5 @@ class FavoriteStockViewModel(QObject):
                     stock.volumeRate = data[1]['30']
                     stock.tradingValue = data[1]['14']
                     stock.chegyeolTime = data[1]['20']
+                    stock.chegyeolVolume = data[1]['15']
                 break
