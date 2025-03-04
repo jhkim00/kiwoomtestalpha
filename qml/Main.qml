@@ -16,7 +16,7 @@ ApplicationWindow {
     title: "kiwoomtestalpha"
 
     property var fixedWidth: 240
-    property var fixedHeight: 480
+    property var fixedHeight: 600
 
     property var accountWindow: null
     property var marketWindow: null
@@ -25,6 +25,7 @@ ApplicationWindow {
     property var hogaWindow: null
     property var chegyeolWindow: null
     property var monitoringWindow: null
+    property var monitoringChegyeolGraphWindow: null
 
     onClosing: {
         console.log("Application is closing")
@@ -55,6 +56,10 @@ ApplicationWindow {
         if (monitoringWindow) {
             monitoringWindow.close()
             monitoringWindow.destroy()
+        }
+        if (monitoringChegyeolGraphWindow) {
+            monitoringChegyeolGraphWindow.close()
+            monitoringChegyeolGraphWindow.destroy()
         }
         chartViewModel.closeChart()
     }
@@ -286,6 +291,27 @@ ApplicationWindow {
                     }
                 }
                 root.monitoringWindow.show()
+            }
+        }
+
+        TextButton {
+            id: btnMonitoringChegyeol
+            width: 200
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "Monitoring Chegyeol"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            enabled: mainViewModel.testFlag || mainViewModel.login_completed
+            onBtnClicked: {
+                if (root.monitoringChegyeolGraphWindow === null) {
+                    var component = Qt.createComponent("MonitoringStocksChegyeolGraph.qml")
+                    if (component.status === Component.Ready) {
+                        root.monitoringChegyeolGraphWindow = component.createObject()
+                    }
+                }
+                root.monitoringChegyeolGraphWindow.show()
             }
         }
 
