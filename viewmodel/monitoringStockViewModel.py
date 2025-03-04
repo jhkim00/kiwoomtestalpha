@@ -15,8 +15,6 @@ class MonitoringStockViewModel(QObject):
     tradingValueListChanged = pyqtSignal()
     maxTradingValueChanged = pyqtSignal()
     tradingValueInTimeListChanged = pyqtSignal()
-    chegyeolBuyTradingValueInTimeListChanged = pyqtSignal()
-    chegyeolSellTradingValueInTimeListChanged = pyqtSignal()
     stockPriceRealReceived = pyqtSignal(tuple)
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
     maxCount = 10
@@ -72,25 +70,13 @@ class MonitoringStockViewModel(QObject):
             self._tradingValueInTimeList = val
             self.tradingValueInTimeListChanged.emit()
 
-    @pyqtProperty(list, notify=chegyeolBuyTradingValueInTimeListChanged)
+    @pyqtProperty(list)
     def chegyeolBuyTradingValueInTimeList(self):
         return self._chegyeolBuyTradingValueInTimeList
 
-    @chegyeolBuyTradingValueInTimeList.setter
-    def chegyeolBuyTradingValueInTimeList(self, val):
-        if self._chegyeolBuyTradingValueInTimeList != val:
-            self._chegyeolBuyTradingValueInTimeList = val
-            self.chegyeolBuyTradingValueInTimeListChanged.emit()
-
-    @pyqtProperty(list, notify=chegyeolSellTradingValueInTimeListChanged)
+    @pyqtProperty(list)
     def chegyeolSellTradingValueInTimeList(self):
         return self._chegyeolSellTradingValueInTimeList
-
-    @chegyeolSellTradingValueInTimeList.setter
-    def chegyeolSellTradingValueInTimeList(self, val):
-        if self._chegyeolSellTradingValueInTimeList != val:
-            self._chegyeolSellTradingValueInTimeList = val
-            self.chegyeolSellTradingValueInTimeListChanged.emit()
 
     @pyqtProperty(str, notify=maxTradingValueChanged)
     def maxTradingValue(self):
@@ -197,7 +183,13 @@ class MonitoringStockViewModel(QObject):
         self.tradingValueList = tradingValueRatioList
 
     def __updateTradingValueInTimeList(self, stock: StockPriceItemData):
-        for item in self._tradingValueInTimeDataList:
+        # tradingValueInTimeList, chegyeolBuyTradingValueInTimeList, chegyeolSellTradingValueInTimeList는 종목 순서가 일치
+        tradingValueInTimeList = self._tradingValueInTimeList
+        chegyeolBuyTradingValueInTimeList = self._chegyeolBuyTradingValueInTimeList
+        chegyeolSellTradingValueInTimeList = self._chegyeolSellTradingValueInTimeList
+
+        for i in range(len(self._tradingValueInTimeDataList)):
+            item = self._tradingValueInTimeDataList[i]
             if item[0] == stock.code:
                 tradingValue = 0 if stock.tradingValue == '' else int(stock.tradingValue)
                 chegyeolTradingValue = abs(int(stock.currentPrice)) * int(stock.chegyeolVolume)
@@ -207,44 +199,37 @@ class MonitoringStockViewModel(QObject):
                 if chegyeolTradingValue > 30000000:
                     formattedTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     log = f"\n[{formattedTime}][대량매수체결]({stock.name}:{chegyeolTradingValue})"
+                    LogViewModel.getInstance().log(log)
 
                 # 가장 오래된 데이터가 1분 이상 차이 나면 삭제 (최적화된 while 루프)
-                new_chegyeol_time = datetime.strptime(stock.chegyeolTime, "%H%M%S")
+                newChegyeolTime = self.timeToSeconds(stock.chegyeolTime)
                 while item[1]:
-                    first_time = datetime.strptime(item[1][0][0], "%H%M%S")
-                    if (new_chegyeol_time - first_time) > timedelta(minutes=1):
+                    firsTime = self.timeToSeconds(item[1][0][0])
+                    if (newChegyeolTime - firsTime) > 60:
                         item[1].popleft()
                     else:
                         break
+
+                tradingValueInTime = item[1][-1][1] - item[1][0][1] if len(item[1]) > 0 else 0
+                tradingValueInTimeList[i] = tradingValueInTime
+
+                buySum = 0
+                sellSum = 0
+                # tradingValueInTimeData의 deque 전체를 순회하며 매수거래대금과 매도거래대금을 합하여 1분간 매수거래대금 및 매도거래대금을 계산한다.
+                for t in item[1]:  # item[1]: tradingValueInTimeData의 deque, t: deque 내의 아이템
+                    if t[2] > 0:  # t[0]: 체결시각(str), t[1]: 누적거래대금(int), t[2]: 체결거래대금(int)
+                        buySum += t[2]
+                    elif t[2] < 0:
+                        sellSum += t[2]
+
+                chegyeolBuyTradingValueInTimeList[i] = buySum
+                chegyeolSellTradingValueInTimeList[i] = sellSum
                 break
-
-        tradingValueInTimeList = []
-        chegyeolBuyTradingValueInTimeList = []
-        chegyeolSellTradingValueInTimeList = []
-        for item in self._tradingValueInTimeDataList:
-            # logger.debug(f'code:{item[0]}')
-            # logger.debug(f'tradingValueInTimeData:{item[1]}')
-            tradingValueInTime = item[1][-1][1] - item[1][0][1] if len(item[1]) > 0 else 0
-            tradingValueInTimeList.append(str(tradingValueInTime))
-
-            buySum = 0
-            sellSum = 0
-            # tradingValueInTimeData의 deque 전체를 순회하며 매수거래대금과 매도거래대금을 합하여 1분간 매수거래대금 및 매도거래대금을 계산한다.
-            for t in item[1]:  # item[1]: tradingValueInTimeData의 deque, t: deque 내의 아이템
-                if t[2] > 0:  # t[0]: 체결시각(str), t[1]: 누적거래대금(int), t[2]: 체결거래대금(int)
-                    buySum += t[2]
-                elif t[2] < 0:
-                    sellSum += t[2]
-
-            chegyeolBuyTradingValueInTimeList.append(buySum)
-            chegyeolSellTradingValueInTimeList.append(sellSum)
 
         logger.debug(f"chegyeolBuyTradingValueInTimeList:{chegyeolBuyTradingValueInTimeList}")
         logger.debug(f"chegyeolSellTradingValueInTimeList:{chegyeolSellTradingValueInTimeList}")
 
-        self.tradingValueInTimeList = tradingValueInTimeList
-        self.chegyeolBuyTradingValueInTimeList = chegyeolBuyTradingValueInTimeList
-        self.chegyeolSellTradingValueInTimeList = chegyeolSellTradingValueInTimeList
+        self.tradingValueInTimeListChanged.emit()
 
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):
@@ -267,3 +252,8 @@ class MonitoringStockViewModel(QObject):
                 self.__updateTradingValueList()
                 self.__updateTradingValueInTimeList(stock)
                 break
+
+    @staticmethod
+    def timeToSeconds(timeStr: str) -> int:
+        # "HHMMSS" 형식의 문자열을 시간, 분, 초로 변환하여 초 단위로 반환
+        return int(timeStr[:2]) * 3600 + int(timeStr[2:4]) * 60 + int(timeStr[4:6])

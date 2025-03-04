@@ -94,10 +94,7 @@ ApplicationWindow {
         function onStockListChanged() {
             canvas.requestPaint()
         }
-        function onChegyeolBuyTradingValueInTimeListChanged() {
-            canvas.requestPaint()
-        }
-        function onChegyeolSellTradingValueInTimeListChanged() {
+        function onTradingValueInTimeListChanged() {
             canvas.requestPaint()
         }
     }

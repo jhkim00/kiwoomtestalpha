@@ -45,8 +45,6 @@ ApplicationWindow {
             var stockList = monitoringStockViewModel.stockList
             var tradingValueList = monitoringStockViewModel.tradingValueList
             var tradingValueInTimeList = monitoringStockViewModel.tradingValueInTimeList
-            var chegyeolBuyTradingValueInTimeList = monitoringStockViewModel.chegyeolBuyTradingValueInTimeList
-            var chegyeolSellTradingValueInTimeList = monitoringStockViewModel.chegyeolSellTradingValueInTimeList
             var barHeight = height / stockList.length
 
             for (var i = 0; i < stockList.length; i++) {
@@ -61,14 +59,12 @@ ApplicationWindow {
 
                 ctx.fillStyle = "black"
                 ctx.fillText(
-                    "%1 %2 (%3)    |    %4 (%5, %6, %7)"
+                    "%1 %2 (%3)    |    %4 (%5)"
                     .arg(stock.name)
                     .arg(Globals.formatStringPrice(stock.currentPrice))
                     .arg(Globals.convertToPercentage(stock.diffRate, true))
                     .arg(Globals.formatStringPrice(stock.tradingValue))
-                    .arg(Globals.formatStringPrice(tradingValueInTimeList[i], true))
-                    .arg(Globals.formatStringPrice(chegyeolBuyTradingValueInTimeList[i], true))
-                    .arg(Globals.formatStringPrice(chegyeolSellTradingValueInTimeList[i], true)),
+                    .arg(Globals.formatStringPrice(tradingValueInTimeList[i], true)),
                     10, y + barHeight / 2
                 )
             }
