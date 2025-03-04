@@ -53,7 +53,7 @@ ApplicationWindow {
                 ctx.fillStyle = root.getColorByTrandingValue(stockList[i].tradingValue)
                 ctx.fillRect(0, y, barWidth, barHeight - 5)
 
-                console.log("%1 %2".arg(stockList[i].name).arg(tradingValueInTimeList[i]))
+                //console.log("%1 %2".arg(stockList[i].name).arg(tradingValueInTimeList[i]))
 
                 ctx.fillStyle = "black"
                 ctx.fillText(

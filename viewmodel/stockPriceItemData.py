@@ -213,7 +213,6 @@ class StockPriceItemData(QObject):
             if fromSingleInfo:
                 self.diffSign = priceInfo["대비기호"]
                 self.volumeRate = priceInfo["거래대비"]
-                self.tradingValue = ''
             else:
                 self.diffSign = priceInfo["전일대비기호"]
                 self.volumeRate = priceInfo["전일거래량대비"]
