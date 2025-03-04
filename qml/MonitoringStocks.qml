@@ -44,6 +44,7 @@ ApplicationWindow {
 
             var stockList = monitoringStockViewModel.stockList
             var tradingValueList = monitoringStockViewModel.tradingValueList
+            var tradingValueInTimeList = monitoringStockViewModel.tradingValueInTimeList
             var barHeight = height / stockList.length
 
             for (var i = 0; i < stockList.length; i++) {
@@ -52,8 +53,16 @@ ApplicationWindow {
                 ctx.fillStyle = root.getColorByTrandingValue(stockList[i].tradingValue)
                 ctx.fillRect(0, y, barWidth, barHeight - 5)
 
+                console.log("%1 %2".arg(stockList[i].name).arg(tradingValueInTimeList[i]))
+
                 ctx.fillStyle = "black"
-                ctx.fillText("%1 %2".arg(stockList[i].name).arg(Globals.formatStringPrice(stockList[i].tradingValue)), 10, y + barHeight / 2)
+                ctx.fillText(
+                    "%1 %2 (%3)"
+                    .arg(stockList[i].name)
+                    .arg(Globals.formatStringPrice(stockList[i].tradingValue))
+                    .arg(Globals.formatStringPrice(tradingValueInTimeList[i], true)),
+                    10, y + barHeight / 2
+                )
             }
         }
     }

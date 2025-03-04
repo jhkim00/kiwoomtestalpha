@@ -1,4 +1,6 @@
 import logging
+from collections import deque
+from datetime import datetime, timedelta
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
 from client import Client
@@ -25,6 +27,7 @@ class MonitoringStockViewModel(QObject):
         self._stockList = []
         self._tradingValueList = []
         self._maxTradingValue = '0'
+        self._tradingValueInTimeDataList = []
         self._tradingValueInTimeList = []
 
         self.mainViewModel = mainViewModel
@@ -86,15 +89,14 @@ class MonitoringStockViewModel(QObject):
             if stock.code == code:
                 return
         Client.getInstance().stock_price_real(code, "1007", discard_old_stocks=False)
-        self.__updateStockList([x.code for x in self._stockList] + [code])
+        self.__addStock(code)
         self.__updateTradingValueList()
 
         logger.debug(f"{self.stockList}")
 
     @pyqtSlot(str)
     def delete(self, code: str):
-        codeList = [x.code for x in self._stockList]
-        self.__updateStockList([x for x in codeList if x not in [code]])
+        self.__deleteStock(code)
         self.__updateTradingValueList()
         Client.getInstance().stop_stock_price_real(code, "1007")
 
@@ -117,6 +119,22 @@ class MonitoringStockViewModel(QObject):
     """
     private method
     """
+    def __addStock(self, code):
+        codeList = [x.code for x in self._stockList] + [code]
+        self._tradingValueInTimeDataList.append((code, deque()))
+        self._tradingValueInTimeList.append('0')
+        self.__updateStockList(codeList)
+
+    def __deleteStock(self, code):
+        codeList = [x.code for x in self._stockList]
+        codeList_ = [x for x in codeList if x not in [code]]
+        self.__updateStockList(codeList_)
+        for i in range(len(self._tradingValueInTimeDataList)):
+            if self._tradingValueInTimeDataList[i][0] == code:
+                del self._tradingValueInTimeDataList[i]
+                del self._tradingValueInTimeList[i]
+                break
+
     def __updateStockList(self, codeList):
         stockPriceList = []
 
@@ -149,6 +167,22 @@ class MonitoringStockViewModel(QObject):
         self.maxTradingValue = str(maxTradingValue)
         self.tradingValueList = tradingValueRatioList
 
+    def __updateTradingValueInTimeList(self, stock: StockPriceItemData):
+        for item in self._tradingValueInTimeDataList:
+            if item[0] == stock.code:
+                item[1].append((stock.chegyeolTime, 0 if stock.tradingValue == '' else int(stock.tradingValue)))
+                while item[1] and (datetime.strptime(item[1][-1][0], "%H%M%S") - datetime.strptime(item[1][0][0], "%H%M%S")) > timedelta(minutes=1):
+                    item[1].popleft()
+                # logger.debug(f'{item[0]}:{item[1][-1][1] - item[1][0][1]}')
+                break
+        tradingValueInTimeList = []
+        for item in self._tradingValueInTimeDataList:
+            # logger.debug(f'code:{item[0]}')
+            # logger.debug(f'tradingValueInTimeData:{item[1]}')
+            tradingValueInTime = item[1][-1][1] - item[1][0][1] if len(item[1]) > 0 else 0
+            tradingValueInTimeList.append(str(tradingValueInTime))
+        self.tradingValueInTimeList = tradingValueInTimeList
+
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):
         for stock in self._stockList:
@@ -167,4 +201,5 @@ class MonitoringStockViewModel(QObject):
                     stock.chegyeolTime = data[1]['20']
 
                 self.__updateTradingValueList()
+                self.__updateTradingValueInTimeList(stock)
                 break

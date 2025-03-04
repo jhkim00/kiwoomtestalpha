@@ -286,7 +286,7 @@ class ChartViewModel(QObject):
 
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):
-        logger.debug(f"data:{data}")
+        # logger.debug(f"data:{data}")
         if self.receiving:
             return
 
