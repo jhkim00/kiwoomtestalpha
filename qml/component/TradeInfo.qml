@@ -63,7 +63,7 @@ Rectangle {
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignLeft
         font.pointSize: Globals.fontPointSize
-        text: "등락률 " + Globals.convertToPercentage(chegyeolProvider.changeRate)
+        text: "등락률 " + Globals.convertToPercentage(chegyeolProvider.changeRate, false)
         color: Globals.getPriceTextColorByUpDownSign(chegyeolProvider.upDownType)
     }
 

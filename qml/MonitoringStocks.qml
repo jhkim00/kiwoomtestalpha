@@ -50,16 +50,20 @@ ApplicationWindow {
             for (var i = 0; i < stockList.length; i++) {
                 var barWidth = (tradingValueList[i] * width) * 0.9
                 var y = i * barHeight
-                ctx.fillStyle = root.getColorByTrandingValue(stockList[i].tradingValue)
+                var stock = stockList[i]
+
+                ctx.fillStyle = root.getColorByTrandingValue(stock.tradingValue)
                 ctx.fillRect(0, y, barWidth, barHeight - 5)
 
-                //console.log("%1 %2".arg(stockList[i].name).arg(tradingValueInTimeList[i]))
+                //console.log("%1 %2".arg(stock.name).arg(tradingValueInTimeList[i]))
 
                 ctx.fillStyle = "black"
                 ctx.fillText(
-                    "%1 %2 (%3)"
-                    .arg(stockList[i].name)
-                    .arg(Globals.formatStringPrice(stockList[i].tradingValue))
+                    "%1 %2 (%3)    |    %4 (%5)"
+                    .arg(stock.name)
+                    .arg(Globals.formatStringPrice(stock.currentPrice))
+                    .arg(Globals.convertToPercentage(stock.diffRate, true))
+                    .arg(Globals.formatStringPrice(stock.tradingValue))
                     .arg(Globals.formatStringPrice(tradingValueInTimeList[i], true)),
                     10, y + barHeight / 2
                 )

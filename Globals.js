@@ -81,12 +81,17 @@ function formatStringPrice(input, showZero) {
     return formatted;
 }
 
-function convertToPercentage(value) {
-    // '-' 기호 제거
-    var cleaned = value.replace(/[-]/g, '');
+function convertToPercentage(input, keepSign) {
+    var isNegative = input.trim().startsWith("-");
+    // '+-' 기호 제거
+    var cleaned = input.replace(/[+-]/g, '');
 
     // 소수점 두 자리로 포맷 후 % 기호 추가
-    return parseFloat(cleaned).toFixed(2) + " %";
+    var formatted = parseFloat(cleaned).toFixed(2) + " %";
+    if (isNegative) {
+        formatted = '-' + formatted;
+    }
+    return formatted;
 }
 
 function formatStringProfitRatio(input, decimalPlaces) {
