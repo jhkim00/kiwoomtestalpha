@@ -276,7 +276,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Monitoring Stocks"
+            text: "Monitoring"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4
@@ -299,7 +299,7 @@ ApplicationWindow {
             width: 200
             height: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Monitoring Chegyeol"
+            text: "Monitoring 2"
             textSize: 20
             normalColor: 'lightsteelblue'
             radius: 4

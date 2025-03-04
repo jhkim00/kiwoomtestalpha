@@ -14,6 +14,7 @@ class ConditionModel(QAbstractListModel):
     NameRole = Qt.UserRole + 1
     CodeRole = Qt.UserRole + 2
     MonitoringRole = Qt.UserRole + 3
+    TimeRole = Qt.UserRole + 4
 
     def __init__(self, data=None):
         super().__init__()
@@ -37,6 +38,9 @@ class ConditionModel(QAbstractListModel):
         elif role == self.MonitoringRole:
             # logger.debug(f"{item['monitoring']}")
             return item['monitoring']
+        elif role == self.TimeRole:
+            # logger.debug(f"{item['time']}")
+            return item['time']
 
         return QVariant()
 
@@ -44,7 +48,8 @@ class ConditionModel(QAbstractListModel):
         return {
             self.NameRole: b"name",
             self.CodeRole: b"code",
-            self.MonitoringRole: b"monitoring"
+            self.MonitoringRole: b"monitoring",
+            self.TimeRole: b"time",
         }
 
     def addItem(self, item):
@@ -72,6 +77,8 @@ class ConditionModel(QAbstractListModel):
                 item["code"] = value
             elif role == self.MonitoringRole:
                 item["monitoring"] = value
+            elif role == self.TimeRole:
+                item["time"] = value
             else:
                 return False  # 지원되지 않는 역할일 경우 False 반환
 
@@ -148,6 +155,10 @@ class ConditionViewModel(QObject):
             self.conditionStockListChanged.emit()
             return
 
+        if foundCond['time'] is not None and time.time() - foundCond['time'] <= 60:
+            LogViewModel.getInstance().log(f"Can't request condition info. previous request time was in 60s... ({time.time() - foundCond['time']})")
+            return
+
         if len(self._conditionInfoDict) >= self.max_realtime_condition_count:
             LogViewModel.getInstance().log(f'condition count reached max count({self.max_realtime_condition_count})')
             stop_cond_key = next(iter(self._conditionInfoDict))
@@ -171,6 +182,7 @@ class ConditionViewModel(QObject):
             Client.getInstance().stop_condition_info(stopCond['name'], stop_cond_key, "1004")
 
         self._conditionList.setItemValue(foundCond, ConditionModel.MonitoringRole, True)
+        self._conditionList.setItemValue(foundCond, ConditionModel.TimeRole, time.time())
 
         result = Client.getInstance().condition_info(name, code, "1004")
         logger.debug(f"result:{result}")
@@ -192,7 +204,7 @@ class ConditionViewModel(QObject):
     """
     def onConditionList(self, result: list):
         logger.debug(f"result:{result}")
-        self.conditionList = ConditionModel([{'code': int(x[0]), 'name': x[1], 'monitoring': False} for x in result])
+        self.conditionList = ConditionModel([{'code': int(x[0]), 'name': x[1], 'monitoring': False, 'time': None} for x in result])
         logger.debug(f"self.conditionList:{self.conditionList.data}")
 
     def __onStockPriceReal(self, data: tuple):
