@@ -32,12 +32,12 @@ ApplicationWindow {
 
             for (var i = 0; i < stockList.length; i++) {
                 var buyVal = chegyeolBuyTradingValueInTimeList[i]
-                var selVal = chegyeolSellTradingValueInTimeList[i]
+                var sellVal = chegyeolSellTradingValueInTimeList[i]
                 var buyUi = buyVal > 5000000000 ? 1 : buyVal / 5000000000
                 var sellUi = sellVal > 5000000000 ? 1 : sellVal / 5000000000
                 var barWidth_buy = (buyUi * width) * 0.9
                 var barWidth_sell = (sellUi * width) * 0.9
-                var y = i * barHeight
+                var y = i * barHeight * 2
                 var stock = stockList[i]
 
                 ctx.fillStyle = "red"
@@ -56,7 +56,7 @@ ApplicationWindow {
                 )
                 ctx.fillText(
                     "%1"
-                    .arg(Globals.formatStringPrice(selVal, true)),
+                    .arg(Globals.formatStringPrice(sellVal, true)),
                     10, y + 1.5 * barHeight
                 )
             }
@@ -76,17 +76,6 @@ ApplicationWindow {
                 marketViewModel.setCurrentStock({'code': selectedStock.code, 'name': selectedStock.name})
             }
         }
-    }
-
-    Text {
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: 20
-        horizontalAlignment: Text.AlignRight
-        text: Globals.formatStringPrice(monitoringStockViewModel.maxTradingValue)
-        font.pixelSize: 20
-        font.bold: true
-        color: "black"
     }
 
     Connections {
