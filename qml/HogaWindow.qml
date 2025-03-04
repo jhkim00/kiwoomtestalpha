@@ -15,6 +15,14 @@ ApplicationWindow {
     property var fixedWidth: 480
     property var fixedHeight: 480
 
+    onVisibleChanged: {
+        if (visible) {
+            hogaViewModel.getHoga()
+        } else {
+            hogaViewModel.stopReceivingHoga()
+        }
+    }
+
     Column {
         id: col
 
@@ -66,23 +74,6 @@ ApplicationWindow {
                 width: rectAskVolume.width
                 height: col.cellHeight
                 text: Globals.formatStringPrice(hogaViewModel.totalBidVolume, true)
-            }
-        }
-        TextButton {
-            id: btnTest
-            width: 200
-            height: 30
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "test"
-            textSize: 20
-            normalColor: 'lightsteelblue'
-            radius: 4
-
-            property var cnt: 0
-
-            onBtnClicked: {
-                console.trace()
-                hogaViewModel.getHoga()
             }
         }
     }

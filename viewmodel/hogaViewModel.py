@@ -25,6 +25,8 @@ class HogaViewModel(QObject):
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty('hogaViewModel', self)
 
+        self._receiveHoga = False
+
         self._askPriceList = []
         self._askVolumeList = []
         self._askVolumeChangeList = []
@@ -154,7 +156,14 @@ class HogaViewModel(QObject):
     """
     @pyqtSlot()
     def getHoga(self):
+        logger.debug("")
+        self._receiveHoga = True
         Client.getInstance().get_hoga(self.marketViewModel.currentStock['code'], "1006")
+
+    @pyqtSlot()
+    def stopReceivingHoga(self):
+        logger.debug("")
+        self._receiveHoga = False
 
     """
     client model event
@@ -232,6 +241,8 @@ class HogaViewModel(QObject):
 
     def __onHogaRemainsReal(self, data):
         # logger.debug(f"{data}")
+        if not self._receiveHoga:
+            return
         if self.marketViewModel.currentStock and data['code'] == self.marketViewModel.currentStock['code']:
             askPriceList = []
             askVolumeList = []
