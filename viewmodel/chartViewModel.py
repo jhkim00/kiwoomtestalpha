@@ -101,6 +101,8 @@ class ChartViewModel(QObject):
         logger.debug(f"name:{name}, code:{name}, receiving:{self.receiving}, needUpdate:{self.needUpdate}")
         self.stockName = name
         self.stockCode = code
+        if not self.window.isVisible():
+            return
         if self.receiving:
             self.needUpdate = True
             return
@@ -122,6 +124,8 @@ class ChartViewModel(QObject):
     @pyqtSlot(tuple)
     def __onStockPriceReal(self, data):
         # logger.debug(f"data:{data}")
+        if not self.window.isVisible():
+            return
         self.stockPriceRealReceived.emit(data)
 
     """
@@ -274,6 +278,7 @@ class ChartViewModel(QObject):
             self.currentMinute = 5
             self.loadMinuteChart(5)
         else:
+            self.window.show()
             self.receiving = False
             if self.needUpdate:
                 self.needUpdate = False
@@ -281,7 +286,7 @@ class ChartViewModel(QObject):
 
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):
-        # logger.debug(f"data:{data}")
+        logger.debug(f"data:{data}")
         if self.receiving:
             return
 
