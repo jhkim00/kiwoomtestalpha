@@ -66,15 +66,17 @@ ApplicationWindow {
             Rectangle {
                 width: parent.width / 3
                 height: listView.itemHeight
-                border.color: "grey"
+                border.color: isMassVolume ? "red" : "grey"
                 border.width: 1
+
+                property var isMassVolume: parseInt(modelData.volume) > 3000000
 
                 Text {
                     anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                     font.pointSize: Globals.fontPointSize
-                    color: Globals.getPriceTextColor(modelData.volume)
+                    color: parent.isMassVolume ? "black" : Globals.getPriceTextColor(modelData.volume)
                     text: Globals.formatStringPrice(modelData.volume)
                 }
             }
