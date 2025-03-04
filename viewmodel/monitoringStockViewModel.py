@@ -11,6 +11,7 @@ class MonitoringStockViewModel(QObject):
     stockListChanged = pyqtSignal()
     tradingValueListChanged = pyqtSignal()
     maxTradingValueChanged = pyqtSignal()
+    tradingValueInTimeListChanged = pyqtSignal()
     stockPriceRealReceived = pyqtSignal(tuple)
     priceInfoKeys_ = ['시가', '고가', '저가', '현재가', '기준가', '전일대비기호', '전일대비', '등락율', '거래량', '전일거래량대비', '거래대금']
     maxCount = 10
@@ -24,6 +25,7 @@ class MonitoringStockViewModel(QObject):
         self._stockList = []
         self._tradingValueList = []
         self._maxTradingValue = '0'
+        self._tradingValueInTimeList = []
 
         self.mainViewModel = mainViewModel
         self.marketViewModel = marketViewModel
@@ -52,6 +54,16 @@ class MonitoringStockViewModel(QObject):
             self._tradingValueList = val
             self.tradingValueListChanged.emit()
 
+    @pyqtProperty(list, notify=tradingValueInTimeListChanged)
+    def tradingValueInTimeList(self):
+        return self._tradingValueInTimeList
+
+    @tradingValueInTimeList.setter
+    def tradingValueInTimeList(self, val):
+        if self._tradingValueInTimeList != val:
+            self._tradingValueInTimeList = val
+            self.tradingValueInTimeListChanged.emit()
+
     @pyqtProperty(str, notify=maxTradingValueChanged)
     def maxTradingValue(self):
         return self._maxTradingValue
@@ -73,7 +85,7 @@ class MonitoringStockViewModel(QObject):
         for stock in self._stockList:
             if stock.code == code:
                 return
-
+        Client.getInstance().stock_price_real(code, "1007", discard_old_stocks=False)
         self.__updateStockList([x.code for x in self._stockList] + [code])
         self.__updateTradingValueList()
 
@@ -84,6 +96,7 @@ class MonitoringStockViewModel(QObject):
         codeList = [x.code for x in self._stockList]
         self.__updateStockList([x for x in codeList if x not in [code]])
         self.__updateTradingValueList()
+        Client.getInstance().stop_stock_price_real(code, "1007")
 
         logger.debug(f"{self.stockList}")
 
@@ -140,16 +153,18 @@ class MonitoringStockViewModel(QObject):
     def __onStockPriceRealReceived(self, data):
         for stock in self._stockList:
             if data[0] == stock.code:
-                stock.currentPrice = data[1]['10']
-                stock.diffPrice = data[1]['11']
-                stock.diffRate = data[1]['12']
-                stock.volume = data[1]['13']
-                stock.startPrice = data[1]['16']
-                stock.highPrice = data[1]['17']
-                stock.lowPrice = data[1]['18']
-                stock.diffSign = data[1]['25']
-                stock.volumeRate = data[1]['30']
-                stock.tradingValue = data[1]['14']
+                if stock.chegyeolTime != data[1]['20']:
+                    stock.currentPrice = data[1]['10']
+                    stock.diffPrice = data[1]['11']
+                    stock.diffRate = data[1]['12']
+                    stock.volume = data[1]['13']
+                    stock.startPrice = data[1]['16']
+                    stock.highPrice = data[1]['17']
+                    stock.lowPrice = data[1]['18']
+                    stock.diffSign = data[1]['25']
+                    stock.volumeRate = data[1]['30']
+                    stock.tradingValue = data[1]['14']
+                    stock.chegyeolTime = data[1]['20']
 
                 self.__updateTradingValueList()
                 break

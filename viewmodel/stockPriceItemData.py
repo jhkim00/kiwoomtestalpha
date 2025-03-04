@@ -18,6 +18,7 @@ class StockPriceItemData(QObject):
     volumeChanged = pyqtSignal()
     volumeRateChanged = pyqtSignal()
     tradingValueChanged = pyqtSignal()
+    chegyeolTimeChanged = pyqtSignal()
 
     def __init__(self, name: str, code: str, priceInfo=None, fromSingleInfo=True):
         super().__init__()
@@ -39,7 +40,7 @@ class StockPriceItemData(QObject):
             else:
                 self._diffSign = priceInfo["전일대비기호"]
                 self._volumeRate = priceInfo["전일거래량대비"]
-                self._tradingValue = priceInfo["거래대금"]
+                self._tradingValue = priceInfo["거래대금"]            
 
             self.priceInfoReceived = True
         else:
@@ -56,6 +57,8 @@ class StockPriceItemData(QObject):
             self._tradingValue = ''
 
             self.priceInfoReceived = False
+
+        self._chegyeolTime = ''
 
     @pyqtProperty(str, notify=nameChanged)
     def name(self):
@@ -187,6 +190,16 @@ class StockPriceItemData(QObject):
             self._tradingValue = val
             self.tradingValueChanged.emit()
 
+    @pyqtProperty(str, notify=chegyeolTimeChanged)
+    def chegyeolTime(self):
+        return self._chegyeolTime
+
+    @chegyeolTime.setter
+    def chegyeolTime(self, val: str):
+        if self._chegyeolTime != val:
+            self._chegyeolTime = val
+            self.chegyeolTimeChanged.emit()
+
     def setPriceInfo(self, priceInfo: dict, fromSingleInfo=True):
         if priceInfo is not None:
             self.startPrice = priceInfo["시가"]
@@ -220,5 +233,6 @@ class StockPriceItemData(QObject):
         str_ += f"volume: {self._volume}\n"
         str_ += f"volumeRate: {self._volumeRate}\n"
         str_ += f"tradingValue: {self._tradingValue}\n"
+        str_ += f"chegyeolTime: {self._chegyeolTime}\n"
 
         return str_

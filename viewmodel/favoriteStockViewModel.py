@@ -122,14 +122,16 @@ class FavoriteStockViewModel(QObject):
     def __onStockPriceRealReceived(self, data):
         for stock in self._stockList:
             if data[0] == stock.code:
-                stock.currentPrice = data[1]['10']
-                stock.diffPrice = data[1]['11']
-                stock.diffRate = data[1]['12']
-                stock.volume = data[1]['13']
-                stock.startPrice = data[1]['16']
-                stock.highPrice = data[1]['17']
-                stock.lowPrice = data[1]['18']
-                stock.diffSign = data[1]['25']
-                stock.volumeRate = data[1]['30']
-                stock.tradingValue = data[1]['14']
+                if stock.chegyeolTime != data[1]['20']:
+                    stock.currentPrice = data[1]['10']
+                    stock.diffPrice = data[1]['11']
+                    stock.diffRate = data[1]['12']
+                    stock.volume = data[1]['13']
+                    stock.startPrice = data[1]['16']
+                    stock.highPrice = data[1]['17']
+                    stock.lowPrice = data[1]['18']
+                    stock.diffSign = data[1]['25']
+                    stock.volumeRate = data[1]['30']
+                    stock.tradingValue = data[1]['14']
+                    stock.chegyeolTime = data[1]['20']
                 break
