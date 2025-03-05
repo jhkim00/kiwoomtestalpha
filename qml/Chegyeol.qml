@@ -66,10 +66,11 @@ ApplicationWindow {
             Rectangle {
                 width: parent.width / 3
                 height: listView.itemHeight
-                border.color: isMassVolume ? "red" : "grey"
+                border.color: "grey"
                 border.width: 1
+                color: isMassVolume ? "red" : "white"
 
-                property var isMassVolume: parseInt(modelData.volume) > 3000000
+                property var isMassVolume: Math.abs(Number(modelData.volume)) * parseInt(modelData.price) > 30000000
 
                 Text {
                     anchors.fill: parent
