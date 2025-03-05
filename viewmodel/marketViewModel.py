@@ -17,6 +17,7 @@ class MarketViewModel(QObject):
     stockPriceInfoChanged = pyqtSignal(str, dict)
     basicInfoChanged = pyqtSignal()
     priceInfoChanged = pyqtSignal()
+    stockBasicInfoReceived = pyqtSignal(dict)
     stockPriceRealReceived = pyqtSignal(tuple)
 
     def __init__(self, mainViewModel, qmlContext, parent=None):
@@ -62,6 +63,7 @@ class MarketViewModel(QObject):
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
         mainViewModel.login_completedChanged.connect(self.__onLoginCompleted)
+        self.stockBasicInfoReceived.connect(self.__onStockBasicInfoReceived)
         self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
 
     @pyqtProperty(list, notify=stockListChanged)
@@ -185,7 +187,24 @@ class MarketViewModel(QObject):
     """
     client model event
     """
-    def onStockBasicInfo(self, result):
+    def onStockBasicInfo(self, result: dict):
+        self.stockBasicInfoReceived.emit(result)
+
+    def __onStockPriceReal(self, data: tuple):
+        # logger.debug(f"data:{data}")
+        self.stockPriceRealReceived.emit(data)
+
+    """
+    private method
+    """
+    @pyqtSlot()
+    def __onLoginCompleted(self):
+        logger.debug("")
+        if self.mainViewModel.login_completed:
+            self.load()
+
+    @pyqtSlot(dict)
+    def __onStockBasicInfoReceived(self, result):
         if len(result) > 0:
             basicInfo = {key: result[key] for key in self.basicInfo if key in result}
             logger.debug(basicInfo)
@@ -201,19 +220,6 @@ class MarketViewModel(QObject):
             stock.setPriceInfo(priceInfo)
             self.stockPriceInfoChanged.emit(stock.code, priceInfo)
             logger.debug(stock)
-
-    def __onStockPriceReal(self, data: tuple):
-        # logger.debug(f"data:{data}")
-        self.stockPriceRealReceived.emit(data)
-
-    """
-    private method
-    """
-    @pyqtSlot()
-    def __onLoginCompleted(self):
-        logger.debug("")
-        if self.mainViewModel.login_completed:
-            self.load()
 
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):

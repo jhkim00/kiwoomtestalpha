@@ -19,6 +19,8 @@ class HogaViewModel(QObject):
     totalAskVolumeChanged = pyqtSignal()
     totalBidVolumeChanged = pyqtSignal()
     currentTimeChanged = pyqtSignal()
+    hogaReceived = pyqtSignal(dict)
+    hogaRemainsRealReceived = pyqtSignal(dict)
     
     def __init__(self, marketViewModel, qmlContext, parent=None):
         super().__init__(parent)
@@ -51,6 +53,9 @@ class HogaViewModel(QObject):
 
         Client.getInstance().registerEventCallback("hoga", self.onHoga)
         Client.getInstance().registerRealDataCallback("hoga_remains_real", self.__onHogaRemainsReal)
+
+        self.hogaReceived.connect(self.__onHogaReceived)
+        self.hogaRemainsRealReceived.connect(self.__onHogaRemainsRealReceived)
 
     @pyqtProperty(list, notify=askPriceListChanged)
     def askPriceList(self):
@@ -169,7 +174,18 @@ class HogaViewModel(QObject):
     client model event
     """
     def onHoga(self, result: dict):
-        logger.debug(f"result:{result}")        
+        # logger.debug(f"result:{result}")
+        self.hogaReceived.emit(result)
+
+    def __onHogaRemainsReal(self, data):
+        # logger.debug(f"{data}")
+        self.hogaRemainsRealReceived.emit(data)
+
+    """
+    private method
+    """
+    @pyqtSlot(dict)
+    def __onHogaReceived(self, result: dict):
         askPriceList = []
         askVolumeList = []
         askVolumeIntList = []
@@ -239,7 +255,8 @@ class HogaViewModel(QObject):
         timeStr = result['호가잔량기준시간']
         self.currentTime = f"{timeStr[:2]}:{timeStr[2:4]}:{timeStr[4:]}"
 
-    def __onHogaRemainsReal(self, data):
+    @pyqtSlot(dict)
+    def __onHogaRemainsRealReceived(self, data):
         # logger.debug(f"{data}")
         if not self._receiveHoga:
             return
@@ -302,8 +319,3 @@ class HogaViewModel(QObject):
 
             # logger.debug(f"askVolumeList:{self.askVolumeList}")
             # logger.debug(f"bidVolumeList:{self.bidVolumeList}")
-
-
-
-
-
