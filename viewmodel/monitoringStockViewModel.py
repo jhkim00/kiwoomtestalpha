@@ -193,12 +193,14 @@ class MonitoringStockViewModel(QObject):
             if item[0] == stock.code:
                 tradingValue = 0 if stock.tradingValue == '' else int(stock.tradingValue)
                 chegyeolTradingValue = abs(int(stock.currentPrice)) * int(stock.chegyeolVolume)
+
                 item[1].append((stock.chegyeolTime, tradingValue, chegyeolTradingValue))
 
                 # 3천만원 이상 매수체결을 로그창에 출력
                 if chegyeolTradingValue > 30000000:
-                    formattedTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    log = f"\n[{formattedTime}][대량매수체결]({stock.name}:{chegyeolTradingValue})"
+                    log = f"\n[{stock.chegyeolTime}][대량매수체결]({stock.name}:{chegyeolTradingValue})"
+                    with open("대량매수체결.txt", "a", encoding="utf-8") as f:
+                        f.write(log)
                     LogViewModel.getInstance().log(log)
 
                 # 가장 오래된 데이터가 1분 이상 차이 나면 삭제 (최적화된 while 루프)
@@ -211,7 +213,7 @@ class MonitoringStockViewModel(QObject):
                         break
 
                 tradingValueInTime = item[1][-1][1] - item[1][0][1] if len(item[1]) > 0 else 0
-                tradingValueInTimeList[i] = tradingValueInTime
+                tradingValueInTimeList[i] = str(tradingValueInTime)
 
                 buySum = 0
                 sellSum = 0
@@ -222,20 +224,20 @@ class MonitoringStockViewModel(QObject):
                     elif t[2] < 0:
                         sellSum += t[2]
 
-                chegyeolBuyTradingValueInTimeList[i] = buySum
-                chegyeolSellTradingValueInTimeList[i] = sellSum
+                chegyeolBuyTradingValueInTimeList[i] = str(buySum)
+                chegyeolSellTradingValueInTimeList[i] = str(abs(sellSum))
                 break
 
-        logger.debug(f"chegyeolBuyTradingValueInTimeList:{chegyeolBuyTradingValueInTimeList}")
-        logger.debug(f"chegyeolSellTradingValueInTimeList:{chegyeolSellTradingValueInTimeList}")
+        # logger.debug(f"chegyeolBuyTradingValueInTimeList:{chegyeolBuyTradingValueInTimeList}")
+        # logger.debug(f"chegyeolSellTradingValueInTimeList:{chegyeolSellTradingValueInTimeList}")
 
-        self.tradingValueInTimeListChanged.emit()
+        # self.tradingValueInTimeListChanged.emit()
 
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):
         for stock in self._stockList:
             if data[0] == stock.code:
-                if stock.chegyeolTime != data[1]['20']:
+                if stock.volume != data[1]['13']:
                     stock.currentPrice = data[1]['10']
                     stock.diffPrice = data[1]['11']
                     stock.diffRate = data[1]['12']

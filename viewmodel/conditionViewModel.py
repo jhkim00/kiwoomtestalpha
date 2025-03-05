@@ -284,7 +284,7 @@ class ConditionViewModel(QObject):
             stockPriceList = self._conditionInfoDict[key]
             for stock in stockPriceList:
                 if data[0] == stock.code:
-                    if stock.chegyeolTime != data[1]['20']:
+                    if stock.volume != data[1]['13']:
                         stock.currentPrice = data[1]['10']
                         stock.diffPrice = data[1]['11']
                         stock.diffRate = data[1]['12']

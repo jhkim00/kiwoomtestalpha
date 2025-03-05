@@ -45,7 +45,8 @@ ApplicationWindow {
                 ctx.fillStyle = "blue"
                 ctx.fillRect(0, y + barHeight, barWidth_sell, barHeight - 5)
 
-                //console.log("%1 %2".arg(stock.name).arg(tradingValueInTimeList[i]))
+                //console.log("%1 %2".arg(stock.name).arg(buyVal))
+                //console.log("%1 %2".arg(stock.name).arg(sellVal))
 
                 ctx.fillStyle = "black"
                 ctx.fillText(
@@ -83,7 +84,17 @@ ApplicationWindow {
         function onStockListChanged() {
             canvas.requestPaint()
         }
-        function onTradingValueInTimeListChanged() {
+        /*function onTradingValueInTimeListChanged() {
+            canvas.requestPaint()
+        }*/
+    }
+
+    Timer {
+        interval: 200     // 1000밀리초 = 1초
+        repeat: true       // 반복 실행
+        running: true      // 타이머 자동 시작
+        onTriggered: {
+            //console.log("타이머 트리거됨!")
             canvas.requestPaint()
         }
     }
