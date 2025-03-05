@@ -26,6 +26,7 @@ ApplicationWindow {
     property var chegyeolWindow: null
     property var monitoringWindow: null
     property var monitoringChegyeolGraphWindow: null
+    property var orderWindow: null
 
     onClosing: {
         console.log("Application is closing")
@@ -60,6 +61,10 @@ ApplicationWindow {
         if (monitoringChegyeolGraphWindow) {
             monitoringChegyeolGraphWindow.close()
             monitoringChegyeolGraphWindow.destroy()
+        }
+        if (orderWindow) {
+            orderWindow.close()
+            orderWindow.destroy()
         }
         chartViewModel.closeChart()
     }
@@ -182,7 +187,14 @@ ApplicationWindow {
             onBtnClicked: {
                 console.log('btnBuy clicked')
 
-                tradeViewModel.buy()
+                //tradeViewModel.buy()
+                if (root.orderWindow === null) {
+                    var component = Qt.createComponent("Order.qml")
+                    if (component.status === Component.Ready) {
+                        root.orderWindow = component.createObject()
+                    }
+                }
+                root.orderWindow.show()
             }
         }
 

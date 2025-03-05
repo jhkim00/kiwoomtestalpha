@@ -7,6 +7,8 @@ from client import Client
 logger = logging.getLogger()
 
 class TradeViewModel(QObject):
+    orderTypeChanged = pyqtSignal()
+    hogaTypeChanged = pyqtSignal()
 
     def __init__(self, qmlContext, parent=None):
         super().__init__(parent)
@@ -15,6 +17,28 @@ class TradeViewModel(QObject):
 
         self._currentAccount = ''
         self._currentStockCode = ''
+        self._orderType = 1     # 1:신규매수, 2:신규매도 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
+        self._hogaType = 0      # 00 : 지정가, 03 : 시장가
+
+    @pyqtProperty(int, notify=orderTypeChanged)
+    def orderType(self):
+        return self._orderType
+
+    @orderType.setter
+    def orderType(self, val: int):
+        if self._orderType != val:
+            self._orderType = val
+            self.orderTypeChanged.emit()
+
+    @pyqtProperty(int, notify=hogaTypeChanged)
+    def hogaType(self):
+        return self._hogaType
+
+    @hogaType.setter
+    def hogaType(self, val: int):
+        if self._hogaType != val:
+            self._hogaType = val
+            self.hogaTypeChanged.emit()
 
     """
     method for qml side
