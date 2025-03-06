@@ -21,6 +21,7 @@ requestQueue = multiprocessing.Queue(maxsize=5)
 responseQueue = multiprocessing.Queue()
 eventQueue = multiprocessing.Queue()
 realDataQueue = multiprocessing.Queue()
+logQueue = multiprocessing.Queue()
 
 def _handleQmlWarnings(warnings):
     for warning in warnings:
@@ -31,6 +32,7 @@ def __onExit():
     requestQueue.put(("finish",))
     eventQueue.put(("finish", ""))
     realDataQueue.put(("finish", ""))
+    logQueue.put(("finish", ""))
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
@@ -68,6 +70,7 @@ if __name__ == "__main__":
     hogaViewModel = HogaViewModel(marketViewModel, engine.rootContext(), app)
     chegyeolViewModel = ChegyeolViewModel(marketViewModel, engine.rootContext(), app)
     logViewModel = LogViewModel.getInstance()
+    logViewModel.queue = logQueue
     engine.rootContext().setContextProperty('logViewModel', logViewModel)
 
     marketViewModel.currentStockChanged.connect(chartViewModel.setStock)

@@ -274,9 +274,8 @@ class ConditionViewModel(QObject):
             log = f"\n[{formattedTime}][종목이탈]({data['cond_name']}:{data['code']}:{stockName})"
 
         if len(log) > 0:
-            with open("실시간검색.txt", "a", encoding="utf-8") as f:
-                f.write(log)
             LogViewModel.getInstance().log(log)
+            LogViewModel.getInstance().logToFile(log, "실시간검색.txt")
 
     @pyqtSlot(tuple)
     def __onStockPriceRealReceived(self, data):

@@ -7,6 +7,7 @@ from client import Client
 from .stockPriceItemData import StockPriceItemData
 from .marketViewModel import MarketViewModel
 from .logViewModel import LogViewModel
+import util
 
 logger = logging.getLogger()
 
@@ -198,10 +199,9 @@ class MonitoringStockViewModel(QObject):
 
                 # 3천만원 이상 매수체결을 로그창에 출력
                 if chegyeolTradingValue > 30000000:
-                    log = f"\n[{stock.chegyeolTime}][대량매수체결]({stock.name}:{chegyeolTradingValue})"
-                    with open("대량매수체결.txt", "a", encoding="utf-8") as f:
-                        f.write(log)
+                    log = f"\n[{stock.chegyeolTime}][대량매수체결]({stock.name}:{util.formatStringPrice(str(chegyeolTradingValue))})"
                     LogViewModel.getInstance().log(log)
+                    LogViewModel.getInstance().logToFile(log, "대량매수체결.txt")
 
                 # 가장 오래된 데이터가 1분 이상 차이 나면 삭제 (최적화된 while 루프)
                 newChegyeolTime = self.timeToSeconds(stock.chegyeolTime)

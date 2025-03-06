@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant, Qt, QAbstractListModel, QModelIndex
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant, Qt, QAbstractListModel, QModelIndex, QThread
 
 from client import Client
 
@@ -21,7 +21,7 @@ class LogModel(QAbstractListModel):
 
         item = self._data[index.row()]
         if role == Qt.DisplayRole:
-            logger.debug(f'{item}')
+            # logger.debug(f'{item}')
             return item
 
         return QVariant()
@@ -38,6 +38,23 @@ class LogModel(QAbstractListModel):
         self._data.append(item)
         self.endInsertRows()
 
+class LogWorker(QThread):
+    def __init__(self, queue):
+        super().__init__()
+        logger.debug("")
+        self.queue = queue
+
+    def run(self):
+        while True:
+            # logger.debug(f".")
+            fileName, log = self.queue.get()
+            logger.debug(f"{fileName}: {log}")
+            if fileName == "finish":
+                logger.debug(f"finish received")
+                break
+            with open(fileName, "a", encoding="utf-8") as f:
+                f.write(log)
+
 class LogViewModel(QObject):
     instance = None
     logModelChanged = pyqtSignal()
@@ -45,6 +62,8 @@ class LogViewModel(QObject):
     def __init__(self):
         super().__init__()
         self._logModel = LogModel()
+        self._logWorker = None
+        self.queue = None
 
     @classmethod
     def getInstance(cls):
@@ -69,3 +88,11 @@ class LogViewModel(QObject):
     def log(self, log):
         logger.debug(f'{log}')
         self._logModel.addItem(log)
+
+    @pyqtSlot(str, str)
+    def logToFile(self, log, fileName):
+        if self._logWorker is None:
+            self._logWorker = LogWorker(self.queue)
+            self._logWorker.start()
+
+        self.queue.put((fileName, log))
