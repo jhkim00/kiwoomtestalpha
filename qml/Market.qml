@@ -3,13 +3,10 @@ import QtQuick.Controls 2.15
 import "./component"
 
 ApplicationWindow {
+    id: root
     visible: true
     width: fixedWidth
     height: fixedHeight
-    /*minimumWidth: fixedWidth
-    maximumWidth: fixedWidth
-    minimumHeight: fixedHeight
-    maximumHeight: fixedHeight*/
     title: "Market"
 
     property var fixedWidth: 1600
@@ -64,6 +61,7 @@ ApplicationWindow {
         anchors.topMargin: 2
         width: 200
         model: marketViewModel.searchedStockList
+        visible: root.active
     }
 
     ListView {

@@ -42,21 +42,63 @@ ApplicationWindow {
         return 1000
     }
 
+    Item {
+        id: stockInputItem
+        y: 10
+        z: 1
+        width: parent.width - 100
+        height: root.height - y - 36
+
+        StockInputField {
+            id: stockInputField
+            width: parent.width
+            height: 30
+
+            stockListView: _stockListView
+
+            onReturnPressed: {
+                console.log("stockInputField onReturnPressed")
+                var stock = stockListView.getCurrentStock()
+                if (typeof(stock) === 'undefined') {
+                    marketViewModel.showSearchedStockHistory()
+                    return
+                }
+                marketViewModel.setCurrentStock(stock)
+            }
+
+            onDisplayTextChanged: {
+                console.log('stockInputField onDisplayTextChanged ' + displayText)
+                marketViewModel.setInputText(displayText)
+            }
+
+            Connections {
+                target: marketViewModel
+                function onCurrentStockChanged(name, code) {
+                    stockInputField.text = name
+                }
+            }
+        }
+
+        StockListView {
+            id: _stockListView
+            anchors.top: stockInputField.bottom
+
+            anchors.topMargin: 2
+            width: stockInputField.width
+            height: 400
+            model: marketViewModel.searchedStockList
+            visible: root.active && model.length > 0
+        }
+    }
+
     ColumnLayout {
         id: columnLayout
+        y: 50
         width: parent.width - 100
-        y: 10
         spacing: 10
 
         property var childWidth: 100
         property var childHeight: 30
-
-        TextLabelLayout {
-            Layout.fillWidth: true
-            Layout.preferredWidth: columnLayout.childWidth
-            Layout.preferredHeight: columnLayout.childHeight
-            text: marketViewModel.currentStock['name']
-        }
 
         ComboBox {
             id: oderTypeComboBox
@@ -94,8 +136,23 @@ ApplicationWindow {
             editable: true
             from: 0          // 최소값
             to: 1000000          // 최대값
-            value: Math.abs(Number(marketViewModel.priceInfo['현재가']))         // 초기값
+            value: 0         // 초기값
             stepSize: root.getHogaSizeByPrice(value)      // 증감 단위 (기본값은 1)
+
+            property bool needUpdatePrice: true
+
+            Connections {
+                target: marketViewModel
+                function onCurrentStockChanged(name, code) {
+                    priceInput.needUpdatePrice = true
+                }
+                function onPriceInfoChanged() {
+                    if (priceInput.needUpdatePrice) {
+                        priceInput.value = Math.abs(Number(marketViewModel.priceInfo['현재가']))
+                        priceInput.needUpdatePrice = false
+                    }
+                }
+            }
         }
 
         SpinBox {

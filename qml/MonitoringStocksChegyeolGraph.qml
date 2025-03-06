@@ -90,7 +90,7 @@ ApplicationWindow {
     }
 
     Timer {
-        interval: 200     // 1000밀리초 = 1초
+        interval: 400     // 1000밀리초 = 1초
         repeat: true       // 반복 실행
         running: true      // 타이머 자동 시작
         onTriggered: {
