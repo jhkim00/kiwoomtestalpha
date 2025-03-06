@@ -42,9 +42,11 @@ ApplicationWindow {
         onReturnPressed: {
             console.log("stockInputField onReturnPressed")
             var stock = stockListView.getCurrentStock()
-            if (typeof(stock) !== 'undefined') {
-                marketViewModel.setCurrentStock(stock)
+            if (typeof(stock) === 'undefined') {
+                marketViewModel.showSearchedStockHistory()
+                return
             }
+            marketViewModel.setCurrentStock(stock)
         }
 
         onDisplayTextChanged: {
@@ -58,9 +60,9 @@ ApplicationWindow {
     StockListView {
         id: _stockListView
         anchors.top: stockInputField.bottom
+        anchors.bottom: parent.bottom
         anchors.topMargin: 2
         width: 200
-        height: 200
         model: marketViewModel.searchedStockList
     }
 

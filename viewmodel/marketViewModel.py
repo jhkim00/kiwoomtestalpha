@@ -33,6 +33,7 @@ class MarketViewModel(QObject):
         self._stockList = []
         self._stockPriceList = []
         self._searchedStockList = []
+        self._searchedStockHistoryList = []
         self._currentStock = None
 
         self._basicInfo = {
@@ -162,6 +163,9 @@ class MarketViewModel(QObject):
             self.currentStock = val.toVariant()
         self.searchedStockList = []
 
+        if self.currentStock not in self._searchedStockHistoryList:
+            self._searchedStockHistoryList.append(self.currentStock)
+
     @pyqtSlot(str)
     def setInputText(self, inputText):
         logger.debug(inputText)
@@ -173,6 +177,11 @@ class MarketViewModel(QObject):
                                               list(filter(lambda x: x["name"].lower().find(inputText.lower()) != -1
                                                                     or x["code"].lower().find(inputText.lower()) != -1,
                                                           self.stockList))))
+
+    @pyqtSlot()
+    def showSearchedStockHistory(self):
+        logger.debug('')
+        self.searchedStockList = self._searchedStockHistoryList
 
     @pyqtSlot()
     def getStockBasicInfo(self):
