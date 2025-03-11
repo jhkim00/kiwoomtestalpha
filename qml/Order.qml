@@ -46,7 +46,7 @@ ApplicationWindow {
         id: stockInputItem
         y: 10
         z: 1
-        width: parent.width - 100
+        width: parent.width
         height: root.height - y - 36
 
         StockInputField {
@@ -94,7 +94,7 @@ ApplicationWindow {
     ColumnLayout {
         id: columnLayout
         y: 50
-        width: parent.width - 100
+        width: parent.width
         spacing: 10
 
         property var childWidth: 100

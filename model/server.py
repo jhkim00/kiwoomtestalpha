@@ -16,7 +16,7 @@ class Server(Process):
 
     def __init__(self,
                  requestQueue, responseQueue,
-                 eventQueue, realDataQueue):
+                 eventQueue, realDataQueue, chejanDataQueue):
         super().__init__()
         logger.debug("")
 
@@ -24,6 +24,7 @@ class Server(Process):
         self.responseQueue = responseQueue
         self.eventQueue = eventQueue
         self.realDataQueue = realDataQueue
+        self.chejanDataQueue = chejanDataQueue
 
         self.requestHandlerMap = None
         self.eventList = None
@@ -62,9 +63,10 @@ class Server(Process):
             "minute_chart": [self.handle_minute_chart, asyncio.Future()],
             "send_order": [self.handle_send_order, asyncio.Future()],
             "hoga": [self.handle_hoga, asyncio.Future()],
+            "michegyeol": [self.handle_michegyeol, asyncio.Future()],
         }
         self.eventList = ["login", "account_info", "stock_basic_info", "condition_load", "weekly_chart", "daily_chart",
-                          "minute_chart", "hoga"]
+                          "minute_chart", "hoga", "michegyeol"]
         logger.debug("")
         self.manager = Manager()
         self.manager.notifyLoginResult = self.notifyLoginResult
@@ -83,6 +85,9 @@ class Server(Process):
         self.manager.notifyMinuteChart = self.notifyMinuteChart
         self.manager.notifyHogaRemainsReal = self.notifyHogaRemainsReal
         self.manager.notifyHoga = self.notifyHoga
+        self.manager.notifySendOrderResult = self.notifySendOrderResult
+        self.manager.notifyOrderChegyeolData = self.notifyOrderChegyeolData
+        self.manager.notifyChejanData = self.notifyChejanData
 
         """ `asyncio.create_task()`를 사용하여 여러 개의 태스크를 동시에 실행"""
         tasks = [
@@ -192,6 +197,18 @@ class Server(Process):
     def notifyHoga(self, data):
         self.requestHandlerMap["hoga"][self.futureIndex].set_result(data)
 
+    def notifySendOrderResult(self, result: int):
+        self.requestHandlerMap["send_order"][self.futureIndex].set_result(result)
+
+    def notifyOrderChegyeolData(self, data: dict):
+        self.chejanDataQueue.put(("주문체결", data))
+
+    def notifyChejanData(self, data: dict):
+        self.chejanDataQueue.put(("잔고", data))
+
+    def notifyMichegyeolInfo(self, info: list):
+        self.requestHandlerMap["michegyeol"][self.futureIndex].set_result(info)
+
     """
     request handler
     """
@@ -262,3 +279,7 @@ class Server(Process):
     async def handle_hoga(self, data):
         logger.debug("")
         await self.manager.getHoga(data)
+
+    async def handle_michegyeol(self, data):
+        logger.debug("")
+        await self.manager.getMichegyeol(data)

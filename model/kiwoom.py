@@ -28,6 +28,7 @@ class Kiwoom(QObject):
         self.ocx.OnReceiveConditionVer.connect(self.OnReceiveConditionVer)
         self.ocx.OnReceiveTrCondition.connect(self.OnReceiveTrCondition)
         self.ocx.OnReceiveRealCondition.connect(self.OnReceiveRealCondition)
+        self.ocx.OnReceiveMsg.connect(self.OnReceiveMsg)
         self.ocx.exception.connect(self.OnException)
 
         self.trCallbacks = {}
@@ -35,6 +36,7 @@ class Kiwoom(QObject):
         self.conditionVerCallback = None
         self.trConditionCallback = None
         self.realConditionCallback = None
+        self.chejanDataCallback = None
 
     @classmethod
     def getInstance(cls):
@@ -76,6 +78,8 @@ class Kiwoom(QObject):
             fid_list (str): fid list
         """
         logger.debug(f"gubun:{gubun}, item_cnt:{item_cnt}, fid_list:{fid_list}")
+        if self.chejanDataCallback is not None:
+            self.chejanDataCallback(gubun, item_cnt, fid_list)
 
     def OnReceiveRealData(self, code, rtype, data):
         # logger.debug(f'code: {code}')

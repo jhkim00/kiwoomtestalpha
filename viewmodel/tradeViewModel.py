@@ -20,6 +20,11 @@ class TradeViewModel(QObject):
         self._orderType = 1     # 1:신규매수, 2:신규매도 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
         self._hogaType = 0      # 00 : 지정가, 03 : 시장가
 
+        self._orderList = []
+
+        Client.getInstance().registerChejanDataCallback("주문체결", self.__onOrderChegyeolData)
+        Client.getInstance().registerChejanDataCallback("잔고", self.__onChejanData)
+
     @pyqtProperty(int, notify=orderTypeChanged)
     def orderType(self):
         return self._orderType
@@ -82,3 +87,13 @@ class TradeViewModel(QObject):
     """
     client model event
     """
+    def __onOrderChegyeolData(self, data: dict):
+        logger.debug(f'{data}')
+        for order in self._orderList:
+            if order['주문번호'] == data['주문번호']:
+                self._orderList.remove(order)
+                break
+        self._orderList.append(data)
+
+    def __onChejanData(self, data: dict):
+        logger.debug(f'{data}')

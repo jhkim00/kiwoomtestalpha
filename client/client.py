@@ -72,9 +72,11 @@ class Client(QObject):
         self.responseQueue = None
         self.eventQueue = None
         self.realDataQueue = None
+        self.chejanDataQueue = None
 
         self.eventQueueWorker = None
         self.realDataQueueWorker = None
+        self.chejanDataQueueWorker = None
         self.requestQueueProxy = None
 
     @classmethod
@@ -88,16 +90,19 @@ class Client(QObject):
     """
     def init(self,
              requestQueue, responseQueue,
-             eventQueue, realDataQueue):
+             eventQueue, realDataQueue, chejanDataQueue):
         self.requestQueue = requestQueue
         self.responseQueue = responseQueue
         self.eventQueue = eventQueue
         self.realDataQueue = realDataQueue
+        self.chejanDataQueue = chejanDataQueue
 
         self.eventQueueWorker = QueueWorker(self.eventQueue)
         self.eventQueueWorker.start()
         self.realDataQueueWorker = QueueWorker(self.realDataQueue)
         self.realDataQueueWorker.start()
+        self.chejanDataQueueWorker = QueueWorker(self.chejanDataQueue)
+        self.chejanDataQueueWorker.start()
         self.requestQueueProxy = RequestQueueProxy(self.requestQueue)
         self.requestQueueProxy.start()
 
@@ -199,16 +204,27 @@ class Client(QObject):
               "screen_no": screen_no}
              )
         )
+        request, result = self.responseQueue.get()
+        logger.debug(f"request: {request}, result:{result}")
+
+        return result
 
     def get_hoga(self, stock_no, screen_no):
         logging.debug("")
         self.requestQueueProxy.insert(("hoga", {"stock_no": stock_no, "screen_no": screen_no}))
+
+    def get_michegyeol(self, account_no, screen_no):
+        logging.debug("")
+        self.requestQueueProxy.insert(("michegyeol", {"account_no": account_no, "screen_no": screen_no}))
 
     def registerEventCallback(self, event: str, callback):
         self.registerCallback(self.eventQueueWorker, event, callback)
 
     def registerRealDataCallback(self, realType: str, callback):
         self.registerCallback(self.realDataQueueWorker, realType, callback)
+
+    def registerChejanDataCallback(self, realType: str, callback):
+        self.registerCallback(self.chejanDataQueueWorker, realType, callback)
 
     @classmethod
     def registerCallback(cls, que, type_: str, callback):

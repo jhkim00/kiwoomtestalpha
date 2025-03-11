@@ -21,6 +21,7 @@ requestQueue = multiprocessing.Queue(maxsize=5)
 responseQueue = multiprocessing.Queue()
 eventQueue = multiprocessing.Queue()
 realDataQueue = multiprocessing.Queue()
+chejanDataQueue = multiprocessing.Queue()
 logQueue = multiprocessing.Queue()
 
 def _handleQmlWarnings(warnings):
@@ -32,6 +33,7 @@ def __onExit():
     requestQueue.put(("finish",))
     eventQueue.put(("finish", ""))
     realDataQueue.put(("finish", ""))
+    chejanDataQueue.put(("finish", ""))
     logQueue.put(("finish", ""))
 
 if __name__ == "__main__":
@@ -47,11 +49,11 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     app.aboutToQuit.connect(__onExit)
-    server = Server(requestQueue, responseQueue, eventQueue, realDataQueue)
+    server = Server(requestQueue, responseQueue, eventQueue, realDataQueue, chejanDataQueue)
     server.start()
 
     client = Client().getInstance()
-    client.init(requestQueue, responseQueue, eventQueue, realDataQueue)
+    client.init(requestQueue, responseQueue, eventQueue, realDataQueue, chejanDataQueue)
 
     # """
     # GUI start
@@ -60,8 +62,8 @@ if __name__ == "__main__":
     engine.warnings.connect(_handleQmlWarnings)
 
     mainViewModel = MainViewModel(engine.rootContext(), app)
-    accountViewModel = AccountViewModel(engine.rootContext(), app)
     marketViewModel = MarketViewModel(mainViewModel, engine.rootContext(), app)
+    accountViewModel = AccountViewModel(marketViewModel, engine.rootContext(), app)
     favoriteStockViewModel = FavoriteStockViewModel(mainViewModel, marketViewModel, engine.rootContext(), app)
     conditionViewModel = ConditionViewModel(marketViewModel, engine.rootContext(), app)
     monitoringStockViewModel = MonitoringStockViewModel(mainViewModel, marketViewModel, engine.rootContext(), app)

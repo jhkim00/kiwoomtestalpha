@@ -1,6 +1,7 @@
 import sys
 import logging
 import asyncio
+import util
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from model.kiwoom import Kiwoom
@@ -22,11 +23,14 @@ class Manager(QObject):
         self.kw.trCallbacks["opt10081"] = self.__onDailyChart
         self.kw.trCallbacks["opt10080"] = self.__onMinuteChart
         self.kw.trCallbacks["opt10004"] = self.__onHoga
+        self.kw.trCallbacks["opt10075"] = self.__onMichegyeol
+        self.kw.trCallbacks["KOA_NORMAL_BUY_KQ_ORD"] = self.__onSendOrder
         self.kw.realDataCallbacks["주식체결"] = self.__onStockPriceReal
         self.kw.realDataCallbacks["주식호가잔량"] = self.__onStockHogaRemains
         self.kw.conditionVerCallback = self.__onReceiveConditionVer
         self.kw.trConditionCallback = self.__onReceiveTrCondition
         self.kw.realConditionCallback = self.__onReceiveRealCondition
+        self.kw.chejanDataCallback = self.__onReceiveChejanData
 
         self.notifyLoginResult = None
         self.notifyLoginInfo = None
@@ -44,6 +48,10 @@ class Manager(QObject):
         self.notifyConditionInfoReal = None
         self.notifyHogaRemainsReal = None
         self.notifyHoga = None
+        self.notifySendOrderResult = None
+        self.notifyOrderChegyeolData = None
+        self.notifyChejanData = None
+        self.notifyMichegyeolInfo = None
 
         self.stock_price_real_data_fid_list = [
             '20',   # 체결시간
@@ -237,7 +245,7 @@ class Manager(QObject):
     async def sendOrder(self, data):
         logger.debug(f"{data}")
         await self.coolDown.call()
-        self.kw.SendOrder(
+        ret = self.kw.SendOrder(
             rqname="주식주문",
             screen=data["screen_no"],
             accno=data["account_no"],
@@ -248,6 +256,7 @@ class Manager(QObject):
             hoga=data["hoga"],
             order_no=data["order_no"]
         )
+        self.notifySendOrderResult(ret)
 
     async def getHoga(self, data):
         logger.debug(f"{data}")
@@ -255,6 +264,27 @@ class Manager(QObject):
         await self.coolDown.call()
         while True:
             ret = self.kw.CommRqData(rqname="주식호가요청", trcode="opt10004", next=0, screen=data["screen_no"])
+            if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
+                break
+            if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
+                logger.error(f"error:{ret}")
+                raise Exception
+
+            await asyncio.sleep(1)
+
+    async def getMichegyeol(self, data):
+        logger.debug(f"{data}")
+        self.kw.SetInputValue(id="계좌번호", value=data["account_no"])
+        self.kw.SetInputValue(id="전체종목구분", value="0")  # 0:전체, 1:종목
+        self.kw.SetInputValue(id="매매구분", value="0")  # 0:전체, 1:매도, 2:매수
+        # 시세별 종목코드 (KRX:039490, NXT:039490_NX, 통합:039490_AL) (공백허용, 공백입력시 전체종목구분 "0" 입력하여 전체 종목 대상으로 조회)
+        self.kw.SetInputValue(id="종목코드", value="0")
+        self.kw.SetInputValue(id="체결구분", value="1")  # 0:전체, 2:체결, 1:미체결
+        # 0:통합, 1:KRX, 2:NXT (시세데이터 표시용 구분, 0은 통합시세, 1은 KRX시세, 2은 NXT시세, 공백시 KRX시세)
+        self.kw.SetInputValue(id="거래소구분", value="0")
+        await self.coolDown.call()
+        while True:
+            ret = self.kw.CommRqData(rqname="미체결요청", trcode="opt10075", next=0, screen=data["screen_no"])
             if ret != Kiwoom.ERROR_QUERY_RATE_LIMIT_EXCEEDED:
                 break
             if ret == Kiwoom.ERROR_QUERY_COUNT_EXCEEDED:
@@ -362,6 +392,39 @@ class Manager(QObject):
             _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
             self.notifyHoga(outList[0])
 
+    def __onMichegyeol(self, screen, rqname, trcode, record, next):
+        logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}")
+        if rqname == "미체결요청":
+            single_data_keys = []
+            multi_data_keys = [
+                "계좌번호",
+                "주문번호",
+                "종목코드",
+                "종목명",
+                "주문상태",
+                "주문수량",
+                "주문가격",
+                "미체결수량",
+                "원주문번호",
+                "주문구분",
+                "매매구분",
+                "시간",
+                "체결번호",
+                "체결가",
+                "체결량"
+            ]
+
+            _, outList = self.__getCommDataByKeys(trcode, rqname, single_data_keys, multi_data_keys)
+            self.notifyMichegyeolInfo(outList)
+
+    def __onSendOrder(self, screen, rqname, trcode, record, next):
+        logger.debug(f"screen:{screen}, rqname:{rqname}, trcode:{trcode}, record:{record}")
+        if rqname == "주식주문":
+            strData = self.kw.GetCommData(trcode, rqname, 0, '주문번호')
+            logger.debug(f"{strData}")
+            if strData == "":
+                self.notifySendOrderResult(-10)
+
     """
     real data callbacks
     """
@@ -449,6 +512,21 @@ class Manager(QObject):
         self.notifyConditionInfoReal(
             {"code": code, "id_type": id_type, "cond_name": cond_name, "cond_index": cond_index, }
         )
+
+    def __onReceiveChejanData(self, gubun, item_cnt, fid_list):
+        logger.debug("")
+        fidList = fid_list.strip(";").split(";")
+        data = {}
+        for fid in fidList:
+            strData = self.kw.GetChejanData(fid)
+            fidName = util.getFidName(fid)
+            logger.debug(f"{fid}:{fidName}:{strData}")
+            data[fidName] = strData
+
+        if gubun == "0":  # 접수와 체결시
+            self.notifyOrderChegyeolData(data)
+        elif gubun == "1":  # 국내주식 잔고변경
+            self.notifyChejanData(data)
 
     """
     private method

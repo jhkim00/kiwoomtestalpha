@@ -187,7 +187,7 @@ ApplicationWindow {
             onBtnClicked: {
                 console.log('btnBuy clicked')
 
-                //tradeViewModel.buy()
+                tradeViewModel.buy()
                 if (root.orderWindow === null) {
                     var component = Qt.createComponent("Order.qml")
                     if (component.status === Component.Ready) {
