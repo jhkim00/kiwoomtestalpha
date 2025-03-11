@@ -12,6 +12,7 @@ import util
 logger = logging.getLogger()
 
 class MonitoringStockViewModel(QObject):
+    monitoringTimeChanged = pyqtSignal()
     stockListChanged = pyqtSignal()
     tradingValueListChanged = pyqtSignal()
     maxTradingValueChanged = pyqtSignal()
@@ -26,6 +27,7 @@ class MonitoringStockViewModel(QObject):
         self.qmlContext = qmlContext
         self.qmlContext.setContextProperty("monitoringStockViewModel", self)
 
+        self._monitoringTime = 60
         self._stockList = []
         self._tradingValueList = []
         self._maxTradingValue = '0'
@@ -40,6 +42,17 @@ class MonitoringStockViewModel(QObject):
         Client.getInstance().registerRealDataCallback("stock_price_real", self.__onStockPriceReal)
 
         self.stockPriceRealReceived.connect(self.__onStockPriceRealReceived)
+
+    @pyqtProperty(int, notify=monitoringTimeChanged)
+    def monitoringTime(self):
+        return self._monitoringTime
+
+    @monitoringTime.setter
+    def monitoringTime(self, val):
+        logger.debug(f'{val}')
+        if self._monitoringTime != val:
+            self._monitoringTime = val
+            self.monitoringTimeChanged.emit()
 
     @pyqtProperty(list, notify=stockListChanged)
     def stockList(self):
@@ -207,7 +220,7 @@ class MonitoringStockViewModel(QObject):
                 newChegyeolTime = self.timeToSeconds(stock.chegyeolTime)
                 while item[1]:
                     firsTime = self.timeToSeconds(item[1][0][0])
-                    if (newChegyeolTime - firsTime) > 60:
+                    if (newChegyeolTime - firsTime) > self._monitoringTime:
                         item[1].popleft()
                     else:
                         break
