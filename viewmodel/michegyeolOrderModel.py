@@ -6,12 +6,14 @@ logger = logging.getLogger()
 
 class MichegyeolOrderModel(QAbstractListModel):
     StockNameRole = Qt.UserRole + 1
-    OrderNumberRole = Qt.UserRole + 2
-    GubunRole = Qt.UserRole + 3
-    OrderQuantityRole = Qt.UserRole + 4
-    OrderPriceRole = Qt.UserRole + 5
-    OrderTypeRole = Qt.UserRole + 6
-    MichegyeolQuantityRole = Qt.UserRole + 7
+    StockCodeRole = Qt.UserRole + 2
+    OrderNumberRole = Qt.UserRole + 3
+    HogaGubunRole = Qt.UserRole + 4
+    OrderQuantityRole = Qt.UserRole + 5
+    OrderPriceRole = Qt.UserRole + 6
+    OrderTypeRole = Qt.UserRole + 7
+    MichegyeolQuantityRole = Qt.UserRole + 8
+    keys = ["종목명", "종목코드", "주문번호", "매매구분", "주문수량", "주문가격", "주문구분", "미체결수량"]
 
     def __init__(self, data=None):
         super().__init__()
@@ -28,9 +30,11 @@ class MichegyeolOrderModel(QAbstractListModel):
         item = self._data[index.row()]
         if role == self.StockNameRole:
             return item["종목명"]
+        elif role == self.StockCodeRole:
+            return item["종목코드"]
         elif role == self.OrderNumberRole:
             return item["주문번호"]
-        elif role == self.GubunRole:
+        elif role == self.HogaGubunRole:
             return item["매매구분"]
         elif role == self.OrderQuantityRole:
             return item["주문수량"]
@@ -46,8 +50,9 @@ class MichegyeolOrderModel(QAbstractListModel):
     def roleNames(self):
         return {
             self.StockNameRole: b"stockName",
+            self.StockCodeRole: b"stockCode",
             self.OrderNumberRole: b"orderNumber",
-            self.GubunRole: b"gubun",
+            self.HogaGubunRole: b"hogaGubun",
             self.OrderQuantityRole: b"orderQuantity",
             self.OrderPriceRole: b"orderPrice",
             self.OrderTypeRole: b"orderType",

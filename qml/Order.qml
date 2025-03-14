@@ -191,5 +191,21 @@ ApplicationWindow {
                 tradeViewModel.buy()
             }
         }
+
+        TextButton {
+            id: btnBuyAsMarketPrice
+            width: 200
+            height: 30
+            Layout.alignment: Qt.AlignHCenter
+            text: "Buy as market price"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            onBtnClicked: {
+                console.log('btnBuyAsMarketPrice clicked')
+
+                tradeViewModel.buyAsMarketPrice()
+            }
+        }
     }
 }

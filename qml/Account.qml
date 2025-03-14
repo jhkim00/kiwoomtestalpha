@@ -169,7 +169,73 @@ ApplicationWindow {
 
         Tab {
             title: "미체결"
-            Rectangle {
+            Item {
+                TableView {
+                    id: accountMichegyeolOrderTableView
+                    width: tabView.width
+                    height: parent.height
+
+                    model: accountViewModel.currentMichegyeolOrderModel
+
+                    property var cellWidth: 100
+
+                    TableViewColumn {
+                        role: "stockName"; title: "종목명"; width: accountMichegyeolOrderTableView.cellWidth
+                    }
+                    TableViewColumn {
+                        role: "orderNumber"; title: "주문번호"; width: accountMichegyeolOrderTableView.cellWidth
+                    }
+                    TableViewColumn {
+                        role: "hogaGubun"; title: "매매구분"; width: accountMichegyeolOrderTableView.cellWidth
+                    }
+                    TableViewColumn {
+                        role: "orderQuantity"; title: "주문수량"; width: accountMichegyeolOrderTableView.cellWidth
+                        delegate: Text {
+                            text: Globals.formatStringSignedPrice(styleData.value)
+                            horizontalAlignment: Text.AlignRight
+                            rightPadding: 10
+                        }
+                    }
+                    TableViewColumn {
+                        role: "orderPrice"; title: "주문가격"; width: accountMichegyeolOrderTableView.cellWidth
+                        delegate: Text {
+                            text: Globals.formatStringSignedPrice(styleData.value)
+                            horizontalAlignment: Text.AlignRight
+                             rightPadding: 10
+                        }
+                    }
+                    TableViewColumn {
+                        role: "count"; title: "보유수량"; width: accountMichegyeolOrderTableView.cellWidth
+                        delegate: Text {
+                            text: Globals.formatStringPrice(styleData.value)
+                            horizontalAlignment: Text.AlignRight
+                             rightPadding: 10
+                        }
+                    }
+                    TableViewColumn {
+                        role: "orderType"; title: "주문구분"; width: accountMichegyeolOrderTableView.cellWidth
+                        delegate: Text {
+                            text: Globals.formatStringPrice(styleData.value)
+                            horizontalAlignment: Text.AlignRight
+                            rightPadding: 10
+                        }
+                    }
+                    TableViewColumn {
+                        role: "michegyeolQuantity"; title: "미체결수량"; width: accountMichegyeolOrderTableView.cellWidth
+                        delegate: Text {
+                            text: Globals.formatStringPrice(styleData.value)
+                            horizontalAlignment: Text.AlignRight
+                            rightPadding: 10
+                        }
+                    }
+
+                    onModelChanged: {
+                        console.log("accountViewModel.currentMichegyeolOrderModel changed!!!!!!!!")
+                        console.log(model)
+                    }
+                }
+            }
+            /*Rectangle {
                 color: "lightblue"
                 width: parent.width
                 height: parent.height
@@ -177,7 +243,7 @@ ApplicationWindow {
                     text: "Content of Tab 2"
                     anchors.centerIn: parent
                 }
-            }
+            }*/
         }
     }
 }

@@ -135,6 +135,11 @@ class AccountViewModel(QObject):
 
     def onMichegyeolInfo(self, result: list):
         logger.debug(f'{result}')
+        temp_list = []
+        for i in range(len(result)):
+            temp_list.append({key: result[i][key] for key in MichegyeolOrderModel.keys if key in result[i]})
+
+        self.currentMichegyeolOrderModel = MichegyeolOrderModel(temp_list)
 
     def __onOrderChegyeolData(self, data: dict):
         logger.debug(f'{data}')
