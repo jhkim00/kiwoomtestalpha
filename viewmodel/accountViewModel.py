@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal, QVariant, QModelIndex
 from client import Client
 from .accountStockInfoModel import AccountStockInfoModel
 from .michegyeolOrderModel import MichegyeolOrderModel
@@ -13,6 +13,8 @@ class AccountViewModel(QObject):
     currentAccountInfoChanged = pyqtSignal()
     currentAccountStockInfoChanged = pyqtSignal()
     currentMichegyeolOrderModelChanged = pyqtSignal()
+    michegyeolInfoReceived = pyqtSignal(list)
+    orderChegyeolDataReceived = pyqtSignal(dict)
 
     def __init__(self, marketViewModel, qmlContext, parent=None):
         super().__init__(parent)
@@ -34,6 +36,8 @@ class AccountViewModel(QObject):
         Client.getInstance().registerChejanDataCallback("잔고", self.__onChejanData)
 
         marketViewModel.loadCompleted.connect(self.__onMarketViewModelLoadCompleted)
+        self.michegyeolInfoReceived.connect(self.__onMichegyeolInfo)
+        self.orderChegyeolDataReceived.connect(self.__onOrderChegyeolDataReceived)
 
     @pyqtProperty(list, notify=accountListChanged)
     def accountList(self):
@@ -135,14 +139,11 @@ class AccountViewModel(QObject):
 
     def onMichegyeolInfo(self, result: list):
         logger.debug(f'{result}')
-        temp_list = []
-        for i in range(len(result)):
-            temp_list.append({key: result[i][key] for key in MichegyeolOrderModel.keys if key in result[i]})
-
-        self.currentMichegyeolOrderModel = MichegyeolOrderModel(temp_list)
+        self.michegyeolInfoReceived.emit(result)
 
     def __onOrderChegyeolData(self, data: dict):
-        logger.debug(f'{data}')
+        # logger.debug(f'{data}')
+        self.orderChegyeolDataReceived.emit(data)
 
     def __onChejanData(self, data: dict):
         logger.debug(f'{data}')
@@ -154,3 +155,51 @@ class AccountViewModel(QObject):
     def __onMarketViewModelLoadCompleted(self):
         logger.debug("")
         self.login_info()
+
+    @pyqtSlot(list)
+    def __onMichegyeolInfo(self, result: list):
+        logger.debug(f'{result}')
+        temp_list = []
+        for i in range(len(result)):
+            temp_list.append({key: result[i][key] for key in MichegyeolOrderModel.keys if key in result[i]})
+
+        self.currentMichegyeolOrderModel = MichegyeolOrderModel(temp_list)
+
+    @pyqtSlot(dict)
+    def __onOrderChegyeolDataReceived(self, data: dict):
+        logger.debug(f'{data}')
+        if data['계좌번호'] == self._currentAccount:
+            for i in range(len(self._currentMichegyeolOrderModel._data)):
+                order = self._currentMichegyeolOrderModel._data[i]
+                if order['주문번호'] == data['주문번호']:
+                    if data['미체결수량'] == '0':
+                        logger.debug('111111111111111')
+                        self._currentMichegyeolOrderModel.removeOrder(i, order)
+                    else:
+                        logger.debug('222222222222222')
+                        self._currentMichegyeolOrderModel.updateOrder(
+                            i,
+                            {
+                                '종목명': data['종목명'],
+                                '종목코드': data['종목코드_업종코드'][1:],
+                                '주문번호': data['주문번호'],
+                                '매매구분': data['매매구분'],
+                                '주문수량': data['주문수량'],
+                                '주문가격': data['주문가격'],
+                                '주문구분': data['주문구분'],
+                                '미체결수량': data['미체결수량']
+                            }
+                        )
+                    return
+
+            logger.debug('33333333333333')
+            self._currentMichegyeolOrderModel.appendOrder({
+                '종목명': data['종목명'],
+                '종목코드': data['종목코드_업종코드'][1:],
+                '주문번호': data['주문번호'],
+                '매매구분': data['매매구분'],
+                '주문수량': data['주문수량'],
+                '주문가격': data['주문가격'],
+                '주문구분': data['주문구분'],
+                '미체결수량': data['미체결수량']
+            })

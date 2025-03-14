@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import QAbstractListModel, Qt, QVariant
+from PyQt5.QtCore import QAbstractListModel, Qt, QVariant, QModelIndex
 
 logger = logging.getLogger()
 
@@ -58,3 +58,21 @@ class MichegyeolOrderModel(QAbstractListModel):
             self.OrderTypeRole: b"orderType",
             self.MichegyeolQuantityRole: b"michegyeolQuantity"
         }
+
+    def appendOrder(self, order):
+        insertPosition = len(self._data)
+        self.beginInsertRows(QModelIndex(), insertPosition, insertPosition)
+        self._data.append(order)
+        self.endInsertRows()
+
+    def updateOrder(self, row, order):
+        index = self.index(row, 0)
+        self._data[row] = order
+        self.dataChanged.emit(index, index, [])
+
+    def removeOrder(self, row, order):
+        logger.debug(f'row:{row}, order:{order}')
+        self.beginRemoveRows(QModelIndex(), row, row)
+        del self._data[row]
+        self.endRemoveRows()
+

@@ -186,7 +186,7 @@ ApplicationWindow {
                         role: "orderNumber"; title: "주문번호"; width: accountMichegyeolOrderTableView.cellWidth
                     }
                     TableViewColumn {
-                        role: "hogaGubun"; title: "매매구분"; width: accountMichegyeolOrderTableView.cellWidth
+                        role: "orderType"; title: "매매구분"; width: accountMichegyeolOrderTableView.cellWidth
                     }
                     TableViewColumn {
                         role: "orderQuantity"; title: "주문수량"; width: accountMichegyeolOrderTableView.cellWidth
@@ -205,20 +205,7 @@ ApplicationWindow {
                         }
                     }
                     TableViewColumn {
-                        role: "count"; title: "보유수량"; width: accountMichegyeolOrderTableView.cellWidth
-                        delegate: Text {
-                            text: Globals.formatStringPrice(styleData.value)
-                            horizontalAlignment: Text.AlignRight
-                             rightPadding: 10
-                        }
-                    }
-                    TableViewColumn {
-                        role: "orderType"; title: "주문구분"; width: accountMichegyeolOrderTableView.cellWidth
-                        delegate: Text {
-                            text: Globals.formatStringPrice(styleData.value)
-                            horizontalAlignment: Text.AlignRight
-                            rightPadding: 10
-                        }
+                        role: "hogaGubun"; title: "주문구분"; width: accountMichegyeolOrderTableView.cellWidth
                     }
                     TableViewColumn {
                         role: "michegyeolQuantity"; title: "미체결수량"; width: accountMichegyeolOrderTableView.cellWidth
@@ -232,6 +219,16 @@ ApplicationWindow {
                     onModelChanged: {
                         console.log("accountViewModel.currentMichegyeolOrderModel changed!!!!!!!!")
                         console.log(model)
+                    }
+
+                    Connections {
+                        target: accountMichegyeolOrderTableView.model
+                        function onDataChanged(topLeft, bottomRight, roles) {
+                            console.log("dataChanged signal received:")
+                            console.log("  topLeft row:", topLeft.row)
+                            console.log("  bottomRight row:", bottomRight.row)
+                            console.log("  roles changed:", roles)
+                        }
                     }
                 }
             }
