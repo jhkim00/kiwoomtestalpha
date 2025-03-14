@@ -272,7 +272,7 @@ class Manager(QObject):
 
             await asyncio.sleep(1)
 
-    async def getMichegyeol(self, data):
+    async def getMichegyeolInfo(self, data):
         logger.debug(f"{data}")
         self.kw.SetInputValue(id="계좌번호", value=data["account_no"])
         self.kw.SetInputValue(id="전체종목구분", value="0")  # 0:전체, 1:종목

@@ -213,9 +213,9 @@ class Client(QObject):
         logging.debug("")
         self.requestQueueProxy.insert(("hoga", {"stock_no": stock_no, "screen_no": screen_no}))
 
-    def get_michegyeol(self, account_no, screen_no):
+    def michegyeol_info(self, account_no, screen_no):
         logging.debug("")
-        self.requestQueueProxy.insert(("michegyeol", {"account_no": account_no, "screen_no": screen_no}))
+        self.requestQueueProxy.insert(("michegyeol_info", {"account_no": account_no, "screen_no": screen_no}))
 
     def registerEventCallback(self, event: str, callback):
         self.registerCallback(self.eventQueueWorker, event, callback)

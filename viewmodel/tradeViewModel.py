@@ -9,6 +9,8 @@ logger = logging.getLogger()
 class TradeViewModel(QObject):
     orderTypeChanged = pyqtSignal()
     hogaTypeChanged = pyqtSignal()
+    orderPriceChanged = pyqtSignal()
+    orderQuantityChanged = pyqtSignal()
 
     def __init__(self, qmlContext, parent=None):
         super().__init__(parent)
@@ -19,6 +21,8 @@ class TradeViewModel(QObject):
         self._currentStockCode = ''
         self._orderType = 1     # 1:신규매수, 2:신규매도 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
         self._hogaType = 0      # 00 : 지정가, 03 : 시장가
+        self._orderPrice = 0
+        self._orderQuantity = 0
 
         self._orderList = []
 
@@ -45,11 +49,31 @@ class TradeViewModel(QObject):
             self._hogaType = val
             self.hogaTypeChanged.emit()
 
+    @pyqtProperty(int, notify=orderPriceChanged)
+    def orderPrice(self):
+        return self._orderPrice
+
+    @orderPrice.setter
+    def orderPrice(self, val: int):
+        if self._orderPrice != val:
+            self._orderPrice = val
+            self.orderPriceChanged.emit()
+
+    @pyqtProperty(int, notify=orderQuantityChanged)
+    def orderQuantity(self):
+        return self._orderQuantity
+
+    @orderQuantity.setter
+    def orderQuantity(self, val: int):
+        if self._orderQuantity != val:
+            self._orderQuantity = val
+            self.orderQuantityChanged.emit()
+
     """
     method for qml side
     """
     @pyqtSlot()
-    def buy(self):
+    def buyAsMarketPrice(self):
         logger.debug("")
         Client.getInstance().send_order(
             self._currentAccount,
@@ -58,6 +82,20 @@ class TradeViewModel(QObject):
             quantity=1,
             price=0,
             hoga='03',
+            order_no='',
+            screen_no="1006"
+        )
+
+    @pyqtSlot()
+    def buy(self):
+        logger.debug("")
+        Client.getInstance().send_order(
+            self._currentAccount,
+            order_type=self._orderType,
+            stock_no=self._currentStockCode,
+            quantity=self._orderQuantity,
+            price=self._orderPrice,
+            hoga='00' if self._hogaType == 0 else '03',
             order_no='',
             screen_no="1006"
         )

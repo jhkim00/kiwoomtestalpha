@@ -141,6 +141,10 @@ ApplicationWindow {
 
             property bool needUpdatePrice: true
 
+            onValueChanged: {
+                tradeViewModel.orderPrice = value
+            }
+
             Connections {
                 target: marketViewModel
                 function onCurrentStockChanged(name, code) {
@@ -166,6 +170,26 @@ ApplicationWindow {
             to: 1000000          // 최대값
             value: 0         // 초기값
             stepSize: 1
+
+            onValueChanged: {
+                tradeViewModel.orderQuantity = value
+            }
+        }
+
+        TextButton {
+            id: btnBuy
+            width: 200
+            height: 30
+            Layout.alignment: Qt.AlignHCenter
+            text: "Buy"
+            textSize: 20
+            normalColor: 'lightsteelblue'
+            radius: 4
+            onBtnClicked: {
+                console.log('btnBuy clicked')
+
+                tradeViewModel.buy()
+            }
         }
     }
 }

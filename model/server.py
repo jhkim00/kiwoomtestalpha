@@ -63,10 +63,10 @@ class Server(Process):
             "minute_chart": [self.handle_minute_chart, asyncio.Future()],
             "send_order": [self.handle_send_order, asyncio.Future()],
             "hoga": [self.handle_hoga, asyncio.Future()],
-            "michegyeol": [self.handle_michegyeol, asyncio.Future()],
+            "michegyeol_info": [self.handle_michegyeol_info, asyncio.Future()],
         }
         self.eventList = ["login", "account_info", "stock_basic_info", "condition_load", "weekly_chart", "daily_chart",
-                          "minute_chart", "hoga", "michegyeol"]
+                          "minute_chart", "hoga", "michegyeol_info"]
         logger.debug("")
         self.manager = Manager()
         self.manager.notifyLoginResult = self.notifyLoginResult
@@ -88,6 +88,7 @@ class Server(Process):
         self.manager.notifySendOrderResult = self.notifySendOrderResult
         self.manager.notifyOrderChegyeolData = self.notifyOrderChegyeolData
         self.manager.notifyChejanData = self.notifyChejanData
+        self.manager.notifyMichegyeolInfo = self.notifyMichegyeolInfo
 
         """ `asyncio.create_task()`를 사용하여 여러 개의 태스크를 동시에 실행"""
         tasks = [
@@ -207,7 +208,7 @@ class Server(Process):
         self.chejanDataQueue.put(("잔고", data))
 
     def notifyMichegyeolInfo(self, info: list):
-        self.requestHandlerMap["michegyeol"][self.futureIndex].set_result(info)
+        self.requestHandlerMap["michegyeol_info"][self.futureIndex].set_result(info)
 
     """
     request handler
@@ -280,6 +281,6 @@ class Server(Process):
         logger.debug("")
         await self.manager.getHoga(data)
 
-    async def handle_michegyeol(self, data):
+    async def handle_michegyeol_info(self, data):
         logger.debug("")
-        await self.manager.getMichegyeol(data)
+        await self.manager.getMichegyeolInfo(data)

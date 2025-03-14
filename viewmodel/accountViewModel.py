@@ -29,6 +29,7 @@ class AccountViewModel(QObject):
         self.marketViewModel = marketViewModel
 
         Client.getInstance().registerEventCallback("account_info", self.onAccountInfo)
+        Client.getInstance().registerEventCallback("michegyeol_info", self.onMichegyeolInfo)
         Client.getInstance().registerChejanDataCallback("주문체결", self.__onOrderChegyeolData)
         Client.getInstance().registerChejanDataCallback("잔고", self.__onChejanData)
 
@@ -55,6 +56,7 @@ class AccountViewModel(QObject):
             self.currentAccountChanged.emit(val)
 
             self.account_info()
+            self.michegyeol_info()
 
     @pyqtProperty(list, notify=currentAccountInfoChanged)
     def currentAccountInfo(self):
@@ -112,6 +114,11 @@ class AccountViewModel(QObject):
         logger.debug("")
         Client.getInstance().account_info(self.currentAccount, "1001")
 
+    @pyqtSlot()
+    def michegyeol_info(self):
+        logger.debug("")
+        Client.getInstance().michegyeol_info(self.currentAccount, "1001")
+
     """
     client model event
     """
@@ -125,6 +132,9 @@ class AccountViewModel(QObject):
             temp_list.append({key: result[1][i][key] for key in self.currentAccountStockInfoKeys if key in result[1][i]})
 
         self.currentAccountStockInfo = AccountStockInfoModel(temp_list)
+
+    def onMichegyeolInfo(self, result: list):
+        logger.debug(f'{result}')
 
     def __onOrderChegyeolData(self, data: dict):
         logger.debug(f'{data}')
